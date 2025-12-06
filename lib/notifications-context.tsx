@@ -22,45 +22,48 @@ interface NotificationsContextType {
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined)
 
+// Fixed timestamps to avoid hydration mismatch
+const INITIAL_NOTIFICATIONS: Notification[] = [
+  {
+    id: "1",
+    title: "Nueva oferta en vuelos",
+    message: "Vuelos a Miami con 40% de descuento. ¡Solo por hoy!",
+    type: "offer",
+    timestamp: "2024-01-01T12:00:00.000Z",
+    read: false,
+    link: "/vuelos",
+  },
+  {
+    id: "2",
+    title: "Paquete especial disponible",
+    message: "Nuevo paquete todo incluido a Cancún desde $899",
+    type: "package",
+    timestamp: "2024-01-01T10:00:00.000Z",
+    read: false,
+    link: "/paquetes",
+  },
+  {
+    id: "3",
+    title: "¡Descuento por agotarse!",
+    message: "Solo quedan 3 habitaciones con 50% OFF en Hotel Margarita",
+    type: "expiring",
+    timestamp: "2024-01-01T07:00:00.000Z",
+    read: false,
+    link: "/hoteles",
+  },
+  {
+    id: "4",
+    title: "Últimos cupos disponibles",
+    message: "Crucero por el Caribe - Solo 5 cabinas disponibles",
+    type: "low-stock",
+    timestamp: "2023-12-31T12:00:00.000Z",
+    read: true,
+    link: "/cruceros",
+  },
+]
+
 export function NotificationsProvider({ children }: { children: ReactNode }) {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: "1",
-      title: "Nueva oferta en vuelos",
-      message: "Vuelos a Miami con 40% de descuento. ¡Solo por hoy!",
-      type: "offer",
-      timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-      read: false,
-      link: "/vuelos",
-    },
-    {
-      id: "2",
-      title: "Paquete especial disponible",
-      message: "Nuevo paquete todo incluido a Cancún desde $899",
-      type: "package",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-      read: false,
-      link: "/paquetes",
-    },
-    {
-      id: "3",
-      title: "¡Descuento por agotarse!",
-      message: "Solo quedan 3 habitaciones con 50% OFF en Hotel Margarita",
-      type: "expiring",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-      read: false,
-      link: "/hoteles",
-    },
-    {
-      id: "4",
-      title: "Últimos cupos disponibles",
-      message: "Crucero por el Caribe - Solo 5 cabinas disponibles",
-      type: "low-stock",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-      read: true,
-      link: "/cruceros",
-    },
-  ])
+  const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS)
 
   const unreadCount = notifications.filter((n) => !n.read).length
 

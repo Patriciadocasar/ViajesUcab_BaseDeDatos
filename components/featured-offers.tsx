@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils"
 import { useCurrency } from "@/lib/currency-context"
 import { useCart } from "@/lib/cart-context"
 import { useWishlist } from "@/lib/wishlist-context"
+import Image from "next/image"
+import { getMainServiceImage } from "@/lib/image-mapper"
 
 export function FeaturedOffers() {
   const { toast } = useToast()
@@ -201,15 +203,27 @@ export function FeaturedOffers() {
                   onClick={() => handleViewOffer(offer)}
                 >
                   <div className="relative group">
-                    <div className="h-48 w-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-                      <span className="text-4xl font-bold text-primary/30">{offer.type.toUpperCase()}</span>
+                    <div className="h-48 w-full relative overflow-hidden transition-transform duration-300 group-hover:scale-105">
+                      <Image
+                        src={getMainServiceImage(offer.type, offer.location, offer.title, undefined, offer.id)}
+                        alt={offer.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                      <div className="absolute bottom-2 left-2 right-2">
+                        <span className="text-xs font-bold text-white bg-primary/80 px-2 py-1 rounded uppercase">
+                          {offer.type}
+                        </span>
+                      </div>
                     </div>
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
                         toggleFavorite(offer)
                       }}
-                      className="absolute top-3 left-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-all hover:scale-110"
+                      className="absolute top-3 left-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-all hover:scale-110 z-10"
                     >
                       <Heart
                         className={cn(

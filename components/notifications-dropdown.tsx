@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Bell, Package, Tag, AlertCircle, TrendingDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,12 +12,16 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { useNotifications } from "@/lib/notifications-context"
-import { useRouter } from "next/navigation"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 export function NotificationsDropdown() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications()
-  const router = useRouter()
+  const [currentTime, setCurrentTime] = useState<Date | null>(null)
+
+  // Set current time only on client to avoid hydration mismatch
+  useEffect(() => {
+    setCurrentTime(new Date())
+  }, [])
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -36,9 +41,9 @@ export function NotificationsDropdown() {
   }
 
   const getTimeAgo = (timestamp: string) => {
-    const now = new Date()
+    if (!currentTime) return "Hace un momento"
     const time = new Date(timestamp)
-    const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / (1000 * 60))
+    const diffInMinutes = Math.floor((currentTime.getTime() - time.getTime()) / (1000 * 60))
 
     if (diffInMinutes < 60) return `Hace ${diffInMinutes} min`
     if (diffInMinutes < 1440) return `Hace ${Math.floor(diffInMinutes / 60)} h`
@@ -46,10 +51,9 @@ export function NotificationsDropdown() {
   }
 
   const handleNotificationClick = (notification: any) => {
+    // Solo marcar como leída, sin navegar
     markAsRead(notification.id)
-    if (notification.link) {
-      router.push(notification.link)
-    }
+    // Las notificaciones no son clicables/navegables
   }
 
   return (
@@ -81,8 +85,12 @@ export function NotificationsDropdown() {
             notifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
-                className="px-4 py-3 cursor-pointer focus:bg-accent"
+                className="px-4 py-3 cursor-default focus:bg-accent"
                 onClick={() => handleNotificationClick(notification)}
+                onSelect={(e) => {
+                  e.preventDefault()
+                  handleNotificationClick(notification)
+                }}
               >
                 <div className="flex gap-3 w-full">
                   <div className="mt-1">{getNotificationIcon(notification.type)}</div>

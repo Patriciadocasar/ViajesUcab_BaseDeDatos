@@ -27,7 +27,7 @@ export function SeatSelection({ serviceId, bookingData, updateBookingData, onNex
   const [additionalServices, setAdditionalServices] = useState<string[]>([])
   const [extraLuggage, setExtraLuggage] = useState(0)
 
-  const type = serviceType || "vuelos"
+  const type = (serviceType || "vuelos").toLowerCase()
 
   const handleNext = () => {
     updateBookingData({
@@ -222,8 +222,8 @@ export function SeatSelection({ serviceId, bookingData, updateBookingData, onNex
             </div>
           )}
 
-          {/* Hotel Room Selection */}
-          {type === "hoteles" && (
+          {/* Hotel Room Selection - Solo para hoteles, NO para traslados */}
+          {(type === "hoteles" || type === "hotel") && type !== "traslados" && type !== "transfer" && (
             <div className="space-y-6">
               <div>
                 <h3 className="font-semibold mb-4">Tipo de Habitación</h3>

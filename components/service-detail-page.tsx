@@ -18,6 +18,8 @@ import {
   Train,
   ArrowRight,
   Map,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -30,6 +32,8 @@ import { cn } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
+import Image from "next/image"
+import { getServiceImages } from "@/lib/image-mapper"
 
 const allServices = [
   {
@@ -153,6 +157,41 @@ const allServices = [
   },
   {
     id: 4,
+    type: "cruceros",
+    title: "Crucero Mediterráneo",
+    location: "Barcelona - Roma - Atenas",
+    rating: 4.9,
+    reviews: 890,
+    price: 2800,
+    originalPrice: 4000,
+    discount: 30,
+    duration: "10 días",
+    description: "Descubre las maravillas del Mediterráneo en este crucero inolvidable.",
+    includedServices: [
+      "Suite con vista al mar",
+      "Pensión completa",
+      "Tours guiados en cada puerto",
+      "Spa y gimnasio",
+      "Shows nocturnos",
+    ],
+    cruiseDetails: {
+      baggage: {
+        perPassenger: "2 maletas de 23kg cada una",
+        carryOn: "1 bolso de mano",
+      },
+      ports: [
+        { name: "Barcelona, España", day: "Día 1", arrivalTime: "Embarque: 2:00 PM - 4:00 PM" },
+        { name: "Marsella, Francia", day: "Día 2-3", arrivalTime: "Llegada: 8:00 AM" },
+        { name: "Roma (Civitavecchia), Italia", day: "Día 4-5", arrivalTime: "Llegada: 9:00 AM" },
+        { name: "Atenas (El Pireo), Grecia", day: "Día 6-7", arrivalTime: "Llegada: 8:00 AM" },
+        { name: "Regreso a Barcelona", day: "Día 10", arrivalTime: "Llegada: 7:00 AM" },
+      ],
+      arrivalDate: "2025-01-25",
+      departureDate: "2025-01-15",
+    },
+  },
+  {
+    id: 5,
     type: "traslados",
     title: "Traslado Aeropuerto - Hotel",
     location: "Miami International Airport",
@@ -210,7 +249,7 @@ const allServices = [
     },
   },
   {
-    id: 5,
+    id: 6,
     type: "hoteles",
     title: "Resort Todo Incluido",
     location: "Cancún, México",
@@ -242,7 +281,7 @@ const allServices = [
     },
   },
   {
-    id: 6,
+    id: 7,
     type: "hoteles",
     title: "Hotel 5 Estrellas",
     location: "Punta Cana, República Dominicana",
@@ -267,7 +306,7 @@ const allServices = [
     },
   },
   {
-    id: 7,
+    id: 8,
     type: "hoteles",
     title: "Hotel Boutique Colonial",
     location: "Cartagena, Colombia",
@@ -291,7 +330,7 @@ const allServices = [
     },
   },
   {
-    id: 8,
+    id: 9,
     type: "paquetes",
     title: "Paquete Completo Miami",
     location: "Vuelo + Hotel + Tours",
@@ -321,7 +360,7 @@ const allServices = [
     },
   },
   {
-    id: 9,
+    id: 10,
     type: "paquetes",
     title: "Paquete Europa Clásica",
     location: "París + Roma + Madrid",
@@ -357,7 +396,7 @@ const allServices = [
     },
   },
   {
-    id: 10,
+    id: 11,
     type: "paquetes",
     title: "Paquete Caribe Total",
     location: "Cancún + Punta Cana",
@@ -608,7 +647,7 @@ const allServices = [
     },
   },
   {
-    id: 15,
+    id: 16,
     type: "trenes",
     title: "Tren Caracas - Valencia",
     location: "Caracas - Valencia",
@@ -650,7 +689,7 @@ const allServices = [
     },
   },
   {
-    id: 16,
+    id: 17,
     type: "trenes",
     title: "Tren Madrid - Barcelona",
     location: "Madrid - Barcelona",
@@ -692,7 +731,7 @@ const allServices = [
     },
   },
   {
-    id: 17,
+    id: 18,
     type: "trenes",
     title: "Tren París - Londres",
     location: "París - Londres",
@@ -748,8 +787,16 @@ export function ServiceDetailPage({ serviceId }: ServiceDetailPageProps) {
 
   const [selectedVehicleType, setSelectedVehicleType] = useState<string>("")
   const [selectedBrand, setSelectedBrand] = useState<string>("")
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
 
-  const service = allServices.find((s) => s.id === Number.parseInt(serviceId))
+  // Buscar el servicio por ID, manejando tanto números como strings
+  const serviceIdNum = Number.parseInt(serviceId, 10)
+  const service = allServices.find((s) => {
+    // Comparar tanto como número como string para mayor compatibilidad
+    return s.id === serviceIdNum || String(s.id) === String(serviceId)
+  })
+  
+  const serviceImages = service ? getServiceImages(service.type, service.location, service.title, undefined, service.id) : []
 
   if (!service) {
     return (
@@ -869,9 +916,80 @@ export function ServiceDetailPage({ serviceId }: ServiceDetailPageProps) {
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <div className="relative">
-              <div className="h-96 w-full bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center">
-                <span className="text-6xl font-bold text-primary/30">{service.type.toUpperCase()}</span>
-              </div>
+              {serviceImages.length > 0 ? (
+                <div className="relative h-96 w-full rounded-lg overflow-hidden">
+                  <Image
+                    src={serviceImages[selectedImageIndex]}
+                    alt={service.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 66vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  
+                  {serviceImages.length > 1 && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background z-10"
+                        onClick={() => setSelectedImageIndex((prev) => (prev - 1 + serviceImages.length) % serviceImages.length)}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background z-10"
+                        onClick={() => setSelectedImageIndex((prev) => (prev + 1) % serviceImages.length)}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                      
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                        {serviceImages.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setSelectedImageIndex(index)}
+                            className={cn(
+                              "h-2 rounded-full transition-all",
+                              selectedImageIndex === index ? "w-8 bg-primary" : "w-2 bg-background/60"
+                            )}
+                            aria-label={`Ver imagen ${index + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="h-96 w-full bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center">
+                  <span className="text-6xl font-bold text-primary/30">{service.type.toUpperCase()}</span>
+                </div>
+              )}
+              
+              {serviceImages.length > 1 && (
+                <div className="mt-4 grid grid-cols-4 gap-2">
+                  {serviceImages.slice(0, 4).map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImageIndex(index)}
+                      className={cn(
+                        "relative h-20 w-full rounded-lg overflow-hidden border-2 transition-all",
+                        selectedImageIndex === index ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"
+                      )}
+                    >
+                      <Image
+                        src={image}
+                        alt={`${service.title} - Imagen ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 1024px) 25vw, 16vw"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div>

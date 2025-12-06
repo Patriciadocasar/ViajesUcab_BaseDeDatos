@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { useWishlist } from "@/lib/wishlist-context"
 import { useCurrency } from "@/lib/currency-context"
-import { Heart, Trash2 } from "lucide-react"
+import { Heart, Trash2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
+import { getMainServiceImage } from "@/lib/image-mapper"
 
 export default function WishlistPage() {
   const { items, removeFromWishlist } = useWishlist()
@@ -36,6 +38,10 @@ export default function WishlistPage() {
     <main className="min-h-screen bg-background py-12">
       <div className="container mx-auto px-4 lg:px-8">
         <div className="max-w-6xl mx-auto">
+          <Button variant="ghost" onClick={() => router.push("/")} className="mb-6 gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Volver
+          </Button>
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Mi Wishlist ({items.length})</h1>
             <p className="text-muted-foreground">Tus servicios guardados para consultar más tarde</p>
@@ -49,14 +55,29 @@ export default function WishlistPage() {
                 <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="relative">
                     <div
-                      className="h-48 w-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center cursor-pointer"
+                      className="h-48 w-full relative overflow-hidden cursor-pointer group"
                       onClick={() => router.push(`/servicio/${item.id}`)}
                     >
-                      <span className="text-4xl font-bold text-primary/30">{item.type.toUpperCase()}</span>
+                      <Image
+                        src={getMainServiceImage(item.type, item.location, item.title, undefined, item.id)}
+                        alt={item.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                      <div className="absolute bottom-2 left-2 right-2">
+                        <span className="text-xs font-bold text-white bg-primary/80 px-2 py-1 rounded uppercase">
+                          {item.type}
+                        </span>
+                      </div>
                     </div>
                     <button
-                      onClick={() => removeFromWishlist(item.id)}
-                      className="absolute top-3 left-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-all"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        removeFromWishlist(item.id)
+                      }}
+                      className="absolute top-3 left-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-all z-10"
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </button>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -25,6 +25,7 @@ type HistorialTasa = {
   transaccionId?: string
 }
 
+// Fixed timestamps to avoid hydration mismatch
 const monedasIniciales: Moneda[] = [
   {
     id: "1",
@@ -32,7 +33,7 @@ const monedasIniciales: Moneda[] = [
     nombre: "Dólar Estadounidense",
     tasaActual: 36.5,
     tasaAnterior: 36.2,
-    ultimaActualizacion: new Date().toISOString(),
+    ultimaActualizacion: "2024-01-01T12:00:00.000Z",
   },
   {
     id: "2",
@@ -40,7 +41,7 @@ const monedasIniciales: Moneda[] = [
     nombre: "Euro",
     tasaActual: 39.8,
     tasaAnterior: 39.5,
-    ultimaActualizacion: new Date().toISOString(),
+    ultimaActualizacion: "2024-01-01T12:00:00.000Z",
   },
   {
     id: "3",
@@ -48,7 +49,7 @@ const monedasIniciales: Moneda[] = [
     nombre: "Peso Colombiano",
     tasaActual: 0.0092,
     tasaAnterior: 0.0091,
-    ultimaActualizacion: new Date().toISOString(),
+    ultimaActualizacion: "2024-01-01T12:00:00.000Z",
   },
   {
     id: "4",
@@ -56,7 +57,7 @@ const monedasIniciales: Moneda[] = [
     nombre: "Peso Argentino",
     tasaActual: 0.037,
     tasaAnterior: 0.038,
-    ultimaActualizacion: new Date().toISOString(),
+    ultimaActualizacion: "2024-01-01T12:00:00.000Z",
   },
 ]
 
@@ -75,6 +76,12 @@ export default function TasasCambioPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [historialOpen, setHistorialOpen] = useState(false)
   const [monedaSeleccionada, setMonedaSeleccionada] = useState<Moneda | null>(null)
+  const [currentTime, setCurrentTime] = useState<string>("")
+
+  // Set current time only on client to avoid hydration mismatch
+  useEffect(() => {
+    setCurrentTime(new Date().toLocaleString("es-ES"))
+  }, [])
 
   const bolivar = {
     codigo: "VES",
@@ -130,7 +137,7 @@ export default function TasasCambioPage() {
               <CardContent>
                 <p className="text-sm text-muted-foreground">
                   Todas las tasas están expresadas en Bolívares. Última actualización:{" "}
-                  {new Date().toLocaleString("es-ES")}
+                  {currentTime || "Cargando..."}
                 </p>
               </CardContent>
             </Card>

@@ -7,6 +7,9 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useWishlist } from "@/lib/wishlist-context"
 import { useToast } from "@/hooks/use-toast"
+import Image from "next/image"
+import { getServiceImages } from "@/lib/image-mapper"
+import { cn } from "@/lib/utils"
 
 interface Restaurant {
   id: number
@@ -48,6 +51,15 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist()
   const { toast } = useToast()
   const inWishlist = isInWishlist(restaurant.id)
+  
+  // Obtener todas las imágenes del restaurante usando el mapeo de imágenes
+  const restaurantImages = getServiceImages(
+    "restaurant",
+    `${restaurant.city}, ${restaurant.country}`,
+    restaurant.name,
+    undefined,
+    restaurant.id
+  )
 
   const handleWishlistToggle = () => {
     if (inWishlist) {
@@ -98,12 +110,12 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
                   </div>
                 </div>
                 <Button
-                  variant={inWishlist ? "default" : "outline"}
+                  variant={inWishlist ? "secondary" : "outline"}
                   size="lg"
                   onClick={handleWishlistToggle}
-                  className="gap-2"
+                  className={cn("gap-2", inWishlist && "shadow-md")}
                 >
-                  <Heart className={`h-5 w-5 ${inWishlist ? "fill-current" : ""}`} />
+                  <Heart className={`h-5 w-5 ${inWishlist ? "fill-red-500 text-red-500" : ""}`} />
                   {inWishlist ? "En Wishlist" : "Agregar a Wishlist"}
                 </Button>
               </div>
@@ -115,16 +127,35 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
             <Card>
               <CardContent className="p-6">
                 <h2 className="text-2xl font-bold mb-4">Galería de Fotos</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {restaurant.photos.map((photo, idx) => (
-                    <div
-                      key={idx}
-                      className="aspect-square rounded-lg bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-950/20 dark:to-red-950/20 flex items-center justify-center"
-                    >
-                      <span className="text-sm text-muted-foreground">Foto {idx + 1}</span>
-                    </div>
-                  ))}
-                </div>
+                {restaurantImages.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {restaurantImages.map((image, idx) => (
+                      <div
+                        key={idx}
+                        className="aspect-square rounded-lg overflow-hidden relative"
+                      >
+                        <Image
+                          src={image}
+                          alt={`${restaurant.name} - Foto ${idx + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, 33vw"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {restaurant.photos.map((photo, idx) => (
+                      <div
+                        key={idx}
+                        className="aspect-square rounded-lg bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-950/20 dark:to-red-950/20 flex items-center justify-center"
+                      >
+                        <span className="text-sm text-muted-foreground">Foto {idx + 1}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 

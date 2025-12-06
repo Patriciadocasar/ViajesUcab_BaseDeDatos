@@ -5,6 +5,8 @@ import { MapPin, Star, Utensils, Wine, Coffee } from "lucide-react"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import Image from "next/image"
+import { getMainServiceImage } from "@/lib/image-mapper"
 
 export const restaurants = [
   {
@@ -359,8 +361,15 @@ export function RestaurantsSection({ onSelectRestaurant }: RestaurantsSectionPro
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredRestaurants.map((restaurant) => (
             <Card key={restaurant.id} className="overflow-hidden hover:shadow-xl transition-all duration-300">
-              <div className="h-48 w-full bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-950/20 dark:to-red-950/20 flex items-center justify-center">
-                <Utensils className="h-16 w-16 text-orange-500/30" />
+              <div className="h-48 w-full relative overflow-hidden">
+                <Image
+                  src={getMainServiceImage("restaurant", `${restaurant.city}, ${restaurant.country}`, restaurant.name, undefined, restaurant.id)}
+                  alt={restaurant.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
               </div>
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-3">

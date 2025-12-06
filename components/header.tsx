@@ -140,7 +140,7 @@ export function Header() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="gap-2">
                       <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                        <AvatarFallback className="text-xs bg-secondary text-secondary-foreground">
                           {getInitials(user.name)}
                         </AvatarFallback>
                       </Avatar>
@@ -189,7 +189,8 @@ export function Header() {
                   </Button>
                   <Button
                     size="sm"
-                    className="bg-primary hover:bg-primary/90"
+                    variant="secondary"
+                    className="shadow-md"
                     onClick={() => setShowRegisterModal(true)}
                   >
                     Registrarse

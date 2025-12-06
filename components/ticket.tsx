@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import { BoardingPass } from "@/components/boarding-pass"
 import type { CartItem } from "@/lib/cart-context"
 
@@ -10,7 +11,35 @@ interface TicketProps {
   purchaseDate: string
 }
 
+// Helper function to generate deterministic "random" values based on a seed
+function seededRandom(seed: string): number {
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // Convert to 32-bit integer
+  }
+  return Math.abs(hash) / 2147483647 // Normalize to 0-1
+}
+
 export function Ticket({ item, customerName, reservationNumber, purchaseDate }: TicketProps) {
+  // Generate deterministic random values based on reservationNumber to avoid hydration mismatch
+  const randomValues = useMemo(() => {
+    const seed = reservationNumber + item.id + (item.dates?.checkIn || "")
+    const r1 = seededRandom(seed + "1")
+    const r2 = seededRandom(seed + "2")
+    const r3 = seededRandom(seed + "3")
+    const r4 = seededRandom(seed + "4")
+    const r5 = seededRandom(seed + "5")
+    const r6 = seededRandom(seed + "6")
+    const r7 = seededRandom(seed + "7")
+    const r8 = seededRandom(seed + "8")
+    const r9 = seededRandom(seed + "9")
+    const r10 = seededRandom(seed + "10")
+    
+    return { r1, r2, r3, r4, r5, r6, r7, r8, r9, r10 }
+  }, [reservationNumber, item.id, item.dates?.checkIn])
+
   const getServiceType = () => {
     switch (item.type) {
       case "flight":
@@ -31,7 +60,10 @@ export function Ticket({ item, customerName, reservationNumber, purchaseDate }: 
     const [from, to] = item.location?.split(" - ") || [item.location || "ORIGEN", "DESTINO"]
 
     // Calculate arrival time/date based on service type
-    const departureDate = item.dates?.checkIn ? new Date(item.dates.checkIn) : new Date()
+    // Use a fixed date if checkIn is not available to avoid hydration mismatch
+    const departureDate = item.dates?.checkIn 
+      ? new Date(item.dates.checkIn) 
+      : new Date("2024-01-01T12:00:00.000Z")
     const arrivalDate = new Date(departureDate)
 
     if (serviceType === "vuelos") {
@@ -39,15 +71,15 @@ export function Ticket({ item, customerName, reservationNumber, purchaseDate }: 
       const arrivalTime = arrivalDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false })
 
       return {
-        number: `AV${Math.floor(Math.random() * 900) + 100}`,
+        number: `AV${Math.floor(randomValues.r1 * 900) + 100}`,
         from: from.toUpperCase().substring(0, 15),
         to: to.toUpperCase().substring(0, 15),
         date: departureDate
           .toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })
           .toUpperCase(),
         arrivalTime: arrivalTime,
-        seat: `${Math.floor(Math.random() * 30) + 1}${String.fromCharCode(65 + Math.floor(Math.random() * 6))}`,
-        gate: `${String.fromCharCode(65 + Math.floor(Math.random() * 10))}${Math.floor(Math.random() * 20) + 1}`,
+        seat: `${Math.floor(randomValues.r2 * 30) + 1}${String.fromCharCode(65 + Math.floor(randomValues.r3 * 6))}`,
+        gate: `${String.fromCharCode(65 + Math.floor(randomValues.r4 * 10))}${Math.floor(randomValues.r5 * 20) + 1}`,
         boardingTime: departureDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false }),
       }
     } else if (serviceType === "cruceros") {
@@ -57,15 +89,15 @@ export function Ticket({ item, customerName, reservationNumber, purchaseDate }: 
         .toUpperCase()
 
       return {
-        number: `CR${Math.floor(Math.random() * 900) + 100}`,
+        number: `CR${Math.floor(randomValues.r1 * 900) + 100}`,
         from: from.toUpperCase().substring(0, 15),
         to: to.toUpperCase().substring(0, 15),
         date: departureDate
           .toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })
           .toUpperCase(),
         arrivalDate: arrivalDateStr,
-        cabin: `${Math.floor(Math.random() * 200) + 100}`,
-        embarkationPort: `Puerto ${from} - Terminal ${Math.floor(Math.random() * 5) + 1}`,
+        cabin: `${Math.floor(randomValues.r2 * 200) + 100}`,
+        embarkationPort: `Puerto ${from} - Terminal ${Math.floor(randomValues.r3 * 5) + 1}`,
         boardingTime: "14:00",
       }
     } else if (serviceType === "traslados") {
@@ -73,26 +105,26 @@ export function Ticket({ item, customerName, reservationNumber, purchaseDate }: 
       const arrivalTime = arrivalDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false })
 
       return {
-        number: `TR${Math.floor(Math.random() * 900) + 100}`,
+        number: `TR${Math.floor(randomValues.r1 * 900) + 100}`,
         from: from.toUpperCase().substring(0, 15),
         to: to.toUpperCase().substring(0, 15),
         date: departureDate
           .toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })
           .toUpperCase(),
         arrivalTime: arrivalTime,
-        seat: `${Math.floor(Math.random() * 40) + 1}`,
+        seat: `${Math.floor(randomValues.r2 * 40) + 1}`,
         station: `Estación ${from}`,
         boardingTime: departureDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false }),
       }
     } else {
       return {
-        number: `HT${Math.floor(Math.random() * 900) + 100}`,
+        number: `HT${Math.floor(randomValues.r1 * 900) + 100}`,
         from: "HOTEL",
         to: from.toUpperCase().substring(0, 15),
         date: departureDate
           .toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })
           .toUpperCase(),
-        room: `${Math.floor(Math.random() * 500) + 100}`,
+        room: `${Math.floor(randomValues.r2 * 500) + 100}`,
         boardingTime: "15:00",
       }
     }
@@ -102,7 +134,10 @@ export function Ticket({ item, customerName, reservationNumber, purchaseDate }: 
   const serviceDetails = getServiceDetails()
 
   const getReturnServiceDetails = () => {
-    const returnDate = item.dates?.checkOut ? new Date(item.dates.checkOut) : new Date()
+    // Use a fixed date if checkOut is not available to avoid hydration mismatch
+    const returnDate = item.dates?.checkOut 
+      ? new Date(item.dates.checkOut) 
+      : new Date("2024-01-01T12:00:00.000Z")
     const returnArrivalDate = new Date(returnDate)
 
     if (serviceType === "vuelos") {
@@ -126,7 +161,7 @@ export function Ticket({ item, customerName, reservationNumber, purchaseDate }: 
         minute: "2-digit",
         hour12: false,
       }),
-      number: `${serviceDetails.number.substring(0, 2)}${Math.floor(Math.random() * 900) + 100}`,
+      number: `${serviceDetails.number.substring(0, 2)}${Math.floor(randomValues.r6 * 900) + 100}`,
     }
   }
 

@@ -51,27 +51,36 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     setItems((prev) => {
       const exists = prev.find((i) => i.id === item.id)
       if (exists) {
-        toast({
-          title: "Ya está en tu lista",
-          description: "Este artículo ya fue agregado a tu lista de deseos",
-          variant: "destructive",
-        })
+        // Diferir el toast después del render
+        setTimeout(() => {
+          toast({
+            title: "Ya está en tu lista",
+            description: "Este artículo ya fue agregado a tu lista de deseos",
+            variant: "destructive",
+          })
+        }, 0)
         return prev
       }
-      toast({
-        title: "Agregado a lista de deseos",
-        description: "Te notificaremos cuando baje el precio",
-      })
+      // Diferir el toast después del render
+      setTimeout(() => {
+        toast({
+          title: "Agregado a lista de deseos",
+          description: "Te notificaremos cuando baje el precio",
+        })
+      }, 0)
       return [...prev, { ...item, addedAt: new Date().toISOString() }]
     })
   }
 
   const removeFromWishlist = (id: number) => {
     setItems((prev) => prev.filter((item) => item.id !== id))
-    toast({
-      title: "Eliminado de lista de deseos",
-      description: "El artículo se eliminó de tu lista",
-    })
+    // Diferir el toast después del render
+    setTimeout(() => {
+      toast({
+        title: "Eliminado de lista de deseos",
+        description: "El artículo se eliminó de tu lista",
+      })
+    }, 0)
   }
 
   const isInWishlist = (id: number) => {

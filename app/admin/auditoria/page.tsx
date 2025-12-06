@@ -17,10 +17,11 @@ type AuditLog = {
   details: string
 }
 
+// Fixed timestamps to avoid hydration mismatch
 const auditLogs: AuditLog[] = [
   {
     id: "1",
-    timestamp: new Date().toISOString(),
+    timestamp: "2024-01-01T12:00:00.000Z",
     user: "admin@viajesucab.com",
     action: "CREATE",
     resource: "Promoción",
@@ -29,7 +30,7 @@ const auditLogs: AuditLog[] = [
   },
   {
     id: "2",
-    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    timestamp: "2024-01-01T11:00:00.000Z",
     user: "proveedor@example.com",
     action: "UPDATE",
     resource: "Inventario",
@@ -38,7 +39,7 @@ const auditLogs: AuditLog[] = [
   },
   {
     id: "3",
-    timestamp: new Date(Date.now() - 7200000).toISOString(),
+    timestamp: "2024-01-01T10:00:00.000Z",
     user: "admin@viajesucab.com",
     action: "DELETE",
     resource: "Usuario",
@@ -47,7 +48,7 @@ const auditLogs: AuditLog[] = [
   },
   {
     id: "4",
-    timestamp: new Date(Date.now() - 10800000).toISOString(),
+    timestamp: "2024-01-01T09:00:00.000Z",
     user: "admin@viajesucab.com",
     action: "UPDATE",
     resource: "Tasa de Cambio",
@@ -56,7 +57,7 @@ const auditLogs: AuditLog[] = [
   },
   {
     id: "5",
-    timestamp: new Date(Date.now() - 14400000).toISOString(),
+    timestamp: "2024-01-01T08:00:00.000Z",
     user: "cliente@example.com",
     action: "CREATE",
     resource: "Reserva",

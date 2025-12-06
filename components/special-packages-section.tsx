@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCurrency } from "@/lib/currency-context"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
+import { getMainServiceImage } from "@/lib/image-mapper"
 
 const specialPackages = [
   {
@@ -188,9 +190,16 @@ export function SpecialPackagesSection() {
                     className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer"
                     onClick={() => handleViewPackage(pkg.id)}
                   >
-                    <div className="h-48 w-full bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-950/20 dark:to-purple-950/20 flex items-center justify-center relative">
-                      <Cake className="h-20 w-20 text-pink-500/30" />
-                      <Badge className="absolute top-3 right-3 bg-pink-600">-{pkg.discount}%</Badge>
+                    <div className="h-48 w-full relative overflow-hidden">
+                      <Image
+                        src={getMainServiceImage("quinceanera", pkg.destination, pkg.title, pkg.destination, pkg.id)}
+                        alt={pkg.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                      <Badge className="absolute top-3 right-3 bg-pink-600 z-10">-{pkg.discount}%</Badge>
                     </div>
                     <CardContent className="p-6">
                       <h4 className="font-bold text-xl mb-2">{pkg.title}</h4>
@@ -267,9 +276,16 @@ export function SpecialPackagesSection() {
                     className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer"
                     onClick={() => handleViewPackage(pkg.id)}
                   >
-                    <div className="h-48 w-full bg-gradient-to-br from-red-100 to-pink-100 dark:from-red-950/20 dark:to-pink-950/20 flex items-center justify-center relative">
-                      <Heart className="h-20 w-20 text-red-500/30" />
-                      <Badge className="absolute top-3 right-3 bg-red-600">-{pkg.discount}%</Badge>
+                    <div className="h-48 w-full relative overflow-hidden">
+                      <Image
+                        src={getMainServiceImage("honeymoon", pkg.destination, pkg.title, pkg.destination, pkg.id)}
+                        alt={pkg.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                      <Badge className="absolute top-3 right-3 bg-red-600 z-10">-{pkg.discount}%</Badge>
                     </div>
                     <CardContent className="p-6">
                       <h4 className="font-bold text-xl mb-2">{pkg.title}</h4>

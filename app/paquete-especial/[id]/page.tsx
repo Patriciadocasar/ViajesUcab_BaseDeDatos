@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { useCurrency } from "@/lib/currency-context"
 import { useWishlist } from "@/lib/wishlist-context"
 import { useState } from "react"
+import { cn } from "@/lib/utils"
 
 const specialPackages = [
   {
@@ -789,11 +790,11 @@ export default function PackageDetailPage() {
                 </Button>
                 <Button
                   size="lg"
-                  variant={inWishlist ? "default" : "outline"}
+                  variant={inWishlist ? "secondary" : "outline"}
                   onClick={handleAddToWishlist}
-                  className="gap-2"
+                  className={cn("gap-2", inWishlist && "shadow-md")}
                 >
-                  <Heart className={`h-5 w-5 ${inWishlist ? "fill-current" : ""}`} />
+                  <Heart className={`h-5 w-5 ${inWishlist ? "fill-red-500 text-red-500" : ""}`} />
                   {inWishlist ? "En Wishlist" : "Wishlist"}
                 </Button>
               </div>
