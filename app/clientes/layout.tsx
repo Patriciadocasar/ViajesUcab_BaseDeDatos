@@ -9,7 +9,7 @@ export default function ClientesLayout({
   children: React.ReactNode
 }) {
   return (
-    <AuthGuard requiredRole={["cliente", "admin"]}>
+    <AuthGuard requiredRole={[3]}>
       {children}
     </AuthGuard>
   )

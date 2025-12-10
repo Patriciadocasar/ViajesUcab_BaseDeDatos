@@ -9,7 +9,7 @@ export default function ProveedorLayout({
   children: React.ReactNode
 }) {
   return (
-    <AuthGuard requiredRole={["proveedor", "admin"]}>
+    <AuthGuard requiredRole={[2]}>
       <div className="min-h-screen bg-background">
         <ProveedorNavigation />
         <main className="container mx-auto px-4 lg:px-8 py-8">

@@ -6,15 +6,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useUser, type UserRole } from "@/lib/user-context"
+import { useUser } from "@/lib/user-context"
 import { useToast } from "@/hooks/use-toast"
 import { Logo } from "@/components/logo"
 
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login } = useUser()
+  const { login, user } = useUser()
   const { toast } = useToast()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -27,36 +26,21 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      // Verificar primero si el usuario existe antes de intentar login
-      const existingUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
-      const user = existingUsers.find((u: any) => u.email === email)
-      
-      if (!user) {
-        toast({
-          title: "Usuario no registrado",
-          description: "Por favor regístrate primero antes de iniciar sesión",
-          variant: "destructive",
-        })
-        setIsLoading(false)
-        return
-      }
+      // Esperar a que login termine
+      await login(email, password)
 
-      // Si el usuario existe, proceder con el login
-      login(email, password)
-      const userRole = user.role || "cliente"
-      
       toast({
         title: "Inicio de sesión exitoso",
-        description: `Bienvenido como ${userRole}`,
+        description: `Bienvenido ${user?.name ?? ""}`,
       })
-      
-      // Redirigir según el rol
+
+      // Redirigir según rol
       if (redirectTo && redirectTo !== "/") {
         router.push(redirectTo)
       } else {
-        if (userRole === "admin") {
+        if (user?.role === 1) {
           router.push("/admin")
-        } else if (userRole === "proveedor") {
+        } else if (user?.role === 2) {
           router.push("/proveedores")
         } else {
           router.push("/clientes")
@@ -65,7 +49,10 @@ export default function LoginPage() {
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Error al iniciar sesión. Por favor intenta de nuevo.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Error al iniciar sesión. Por favor intenta de nuevo.",
         variant: "destructive",
       })
     } finally {
@@ -81,7 +68,9 @@ export default function LoginPage() {
             <Logo />
           </div>
           <CardTitle className="text-2xl">Iniciar Sesión</CardTitle>
-          <CardDescription>Ingresa tus credenciales para acceder a ViajesUCAB</CardDescription>
+          <CardDescription>
+            Ingresa tus credenciales para acceder a ViajesUCAB
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -126,4 +115,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

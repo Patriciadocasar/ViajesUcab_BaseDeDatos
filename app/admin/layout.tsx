@@ -9,7 +9,7 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <AuthGuard requiredRole="admin">
+    <AuthGuard requiredRole={[1]}>
       <div className="min-h-screen bg-background">
         <AdminNavigation />
         <main className="container mx-auto px-4 lg:px-8 py-8">

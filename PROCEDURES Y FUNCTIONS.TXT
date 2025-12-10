@@ -1,0 +1,113 @@
+--Registrar Usuario
+CREATE OR REPLACE FUNCTION registrar_usuario(
+    U_Correo VARCHAR,
+    U_Contrasena VARCHAR,
+    U_Primer_Nombre VARCHAR,
+    U_Primer_Apellido VARCHAR,
+    U_Rol_ID INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+    validar_existe VARCHAR(100);
+    nuevo_usuario_id INTEGER;
+BEGIN
+    -- Verificar si el correo ya existe
+    SELECT Usu_Correo INTO validar_existe
+    FROM Usuario
+    WHERE Usu_Correo = U_Correo;
+
+    IF validar_existe IS NOT NULL THEN
+        resultado := json_build_object(
+            'status', 'error',
+            'message', format('El correo %s ya está registrado', U_Correo)
+        );
+        RETURN resultado;
+    END IF;
+
+    -- Insertar nuevo usuario
+    INSERT INTO Usuario (
+        Usu_Correo, Usu_Contrasena, Usu_Primer_Nombre, Usu_Primer_Apellido, Rol_Rol_COD
+    )
+    VALUES (
+        U_Correo, U_Contrasena, U_Primer_Nombre, U_Primer_Apellido, U_Rol_ID
+    )
+    RETURNING Usu_COD INTO nuevo_usuario_id;
+
+    -- Si todo sale bien
+    resultado := json_build_object(
+        'status', 'success',
+        'message', 'Usuario registrado correctamente',
+        'usuario_ID', nuevo_usuario_id
+    );
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        resultado := json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+        RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;
+
+--Iniciar Sesion
+-- Iniciar Sesion
+CREATE OR REPLACE FUNCTION inicio_sesion(
+    correo VARCHAR,
+    contrasena VARCHAR
+) 
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+    v_usuario_id INTEGER;
+    v_rol_id INTEGER;
+    v_contrasena VARCHAR;
+    v_primer_nombre VARCHAR;
+    v_primer_apellido VARCHAR;
+    v_correo VARCHAR;
+BEGIN
+    -- Primero verificamos si el correo existe
+    SELECT Usu_COD, Rol_Rol_COD, Usu_Contrasena, Usu_Primer_Nombre, Usu_Primer_Apellido, Usu_Correo
+    INTO v_usuario_id, v_rol_id, v_contrasena, v_primer_nombre, v_primer_apellido, v_correo
+    FROM Usuario
+    WHERE Usu_Correo = correo;
+
+    IF NOT FOUND THEN
+        -- No existe el correo
+        resultado := json_build_object(
+            'status', 'error',
+            'message', 'Usuario no existe'
+        );
+    ELSE
+        -- Existe el correo, verificamos contraseña
+        IF v_contrasena = contrasena THEN
+            resultado := json_build_object(
+                'status', 'success',
+                'message', 'Inicio de sesión correcto',
+                'usuario_ID', v_usuario_id,
+                'rol_ID', v_rol_id,
+                'primerNombre', v_primer_nombre,
+                'primerApellido', v_primer_apellido,
+                'email', v_correo
+            );
+        ELSE
+            resultado := json_build_object(
+                'status', 'error',
+                'message', 'Usuario o contraseña no coinciden'
+            );
+        END IF;
+    END IF;
+
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        resultado := json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+        RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;

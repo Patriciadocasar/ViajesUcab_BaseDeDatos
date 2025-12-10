@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { useUser, type UserRole } from "@/lib/user-context"
+import { useUser } from "@/lib/user-context"
 
 interface AuthGuardProps {
   children: React.ReactNode
-  requiredRole?: UserRole | UserRole[]
+  requiredRole?: number | number[] // ahora numérico
   redirectTo?: string
 }
+
 
 export function AuthGuard({ children, requiredRole, redirectTo = "/auth/login" }: AuthGuardProps) {
   const { user, isAuthenticated, hasRole } = useUser()
@@ -37,9 +38,9 @@ export function AuthGuard({ children, requiredRole, redirectTo = "/auth/login" }
     // Si se requiere un rol específico, verificar
     if (requiredRole && user && !hasRole(requiredRole)) {
       // Redirigir según el rol del usuario
-      if (user.role === "admin") {
+      if (user.role === 1) {
         router.push("/admin")
-      } else if (user.role === "proveedor") {
+      } else if (user.role === 2) {
         router.push("/proveedores")
       } else {
         router.push("/clientes")
