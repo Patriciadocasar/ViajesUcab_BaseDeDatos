@@ -40,11 +40,6 @@ CREATE TABLE Cliente (
     Lugar_Lug_COD INTEGER
 );
 
-CREATE TABLE Comida (
-    Com_COD SERIAL PRIMARY KEY,
-    Com_tipo VARCHAR(60) NOT NULL,
-    Com_Costo NUMERIC(6,2) NOT NULL
-);
 
 CREATE TABLE Crucero (
     Cru_COD SERIAL PRIMARY KEY,
@@ -115,7 +110,6 @@ CREATE TABLE Hospedaje (
 CREATE TABLE Itinerario (
     Iti_COD SERIAL PRIMARY KEY,
     Paquete_Turistico_PT_COD INTEGER,
-    Comida_Com_COD INTEGER,
     Iti_Costo_Total NUMERIC(8,2) NOT NULL,
     Hospedaje_Hos_COD INTEGER,
     Restaurante_Rest_COD INTEGER,
@@ -343,8 +337,6 @@ CREATE TABLE Reserva (
     Res_Milla_Obtenida NUMERIC(3) NOT NULL,
     Res_Fecha_Hora TIMESTAMP NOT NULL,
     Res_Camarote VARCHAR(6),
-    Res_Asiento_Vuelo VARCHAR(6),
-    Res_Asiento_Transporte VARCHAR(6),
     Cliente_Cli_COD INTEGER,
     Res_Subtotal NUMERIC(8,2) NOT NULL,
     Res_Total NUMERIC(8,2) NOT NULL

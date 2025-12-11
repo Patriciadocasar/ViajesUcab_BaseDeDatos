@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { useUser } from "./user-context"
 
-export type ClaimStatus = "pendiente" | "en-proceso" | "resuelto" | "rechazado"
+export type ClaimStatus = "pendiente" | "listo"
 
 export interface Claim {
   id: string

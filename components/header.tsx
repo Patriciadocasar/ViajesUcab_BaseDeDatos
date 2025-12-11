@@ -155,7 +155,7 @@ export function Header() {
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
                     <DropdownMenuSeparator />
-                    {hasRole([3, 1]) && (
+                    {hasRole(3) && (
                       <DropdownMenuItem onClick={() => router.push("/clientes/perfil")}>
                         <User className="mr-2 h-4 w-4" />
                         Mi Perfil

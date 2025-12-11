@@ -22,10 +22,7 @@ type ReclamoDialogProps = {
 
 const estadosConfig = {
   pendiente: { label: "Pendiente", variant: "secondary" as const },
-  "en-proceso": { label: "En Proceso", variant: "default" as const },
-  resuelto: { label: "Resuelto", variant: "outline" as const },
-  rechazado: { label: "Rechazado", variant: "destructive" as const },
-  cancelado: { label: "Cancelado", variant: "destructive" as const },
+  listo: { label: "Listo", variant: "outline" as const },
 }
 
 export function ReclamoDialog({ open, onOpenChange, reclamo }: ReclamoDialogProps) {
@@ -171,9 +168,7 @@ export function ReclamoDialog({ open, onOpenChange, reclamo }: ReclamoDialogProp
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="pendiente">Pendiente</SelectItem>
-                        <SelectItem value="en-proceso">En Proceso</SelectItem>
-                        <SelectItem value="resuelto">Resuelto</SelectItem>
-                        <SelectItem value="rechazado">Rechazado</SelectItem>
+                        <SelectItem value="listo">Listo</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

@@ -105,10 +105,6 @@ export function AdminNavigation() {
                     <p className="text-xs text-muted-foreground">Administrador</p>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => router.push("/admin/perfil")}>
-                    <User className="mr-2 h-4 w-4" />
-                    Mi Perfil
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push("/admin/roles")}>
                     <Shield className="mr-2 h-4 w-4" />
                     Administrar Roles

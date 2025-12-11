@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { Plane, Ship, MapPin, AlertTriangle, Plus, Pencil, Trash2, Building2, Car, Package, Tag } from "lucide-react"
+import { Plane, Ship, MapPin, AlertTriangle, Plus, Pencil, Trash2, Building2, Car, Package, Tag, Hotel } from "lucide-react"
 import { InventarioDialog } from "@/components/inventario-dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -83,7 +83,16 @@ type Promocion = {
   tipo: string
   fechaInicio: string
   fechaFin: string
-  porcentajeDescuento: number
+  porcentajeDescuento: number | null
+}
+
+type Hotel = {
+  id: string
+  nombre: string
+  direccion: string
+  telefono: string
+  correo: string
+  fechaFundacion: string
 }
 
 const vuelosDataInicial: Vuelo[] = [
@@ -180,12 +189,17 @@ export default function InventarioPage() {
   const [companiasTransporte, setCompaniasTransporte] = useState<CompaniaTransporteTerrestre[]>([])
   const [paquetesTuristicos, setPaquetesTuristicos] = useState<PaqueteTuristico[]>([])
   const [promociones, setPromociones] = useState<Promocion[]>([])
+  const [hoteles, setHoteles] = useState<Hotel[]>([])
+  const [isLoadingPromociones, setIsLoadingPromociones] = useState(true)
+  const [isLoadingCompaniasCrucero, setIsLoadingCompaniasCrucero] = useState(true)
+  const [isLoadingCompaniasTransporte, setIsLoadingCompaniasTransporte] = useState(true)
+  const [isLoadingHoteles, setIsLoadingHoteles] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [tipoActual, setTipoActual] = useState<
-    "vuelo" | "crucero" | "tour" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion"
+    "vuelo" | "crucero" | "tour" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion" | "hotel"
   >("vuelo")
   const [itemSeleccionado, setItemSeleccionado] = useState<
-    Vuelo | Crucero | Tour | Aerolinea | CompaniaCrucero | CompaniaTransporteTerrestre | PaqueteTuristico | Promocion | null
+    Vuelo | Crucero | Tour | Aerolinea | CompaniaCrucero | CompaniaTransporteTerrestre | PaqueteTuristico | Promocion | Hotel | null
   >(null)
   const [modoEdicion, setModoEdicion] = useState(false)
 
@@ -214,6 +228,72 @@ export default function InventarioPage() {
       telefono: a.Aerolinea_Telefono?.toString() || a.aerolinea_telefono?.toString() || a.Pro_Telefono?.toString() || a.pro_telefono?.toString() || a.telefono?.toString() || a.Telefono?.toString() || "",
       correo: a.Aerolinea_Correo || a.aerolinea_correo || a.Pro_Correo || a.pro_correo || a.correo || a.Correo || "",
       fechaFundacion: a.Aerolinea_Fecha_Fundacion || a.aerolinea_fecha_fundacion || a.A_Fecha_Fundacion || a.a_fecha_fundacion || a.fechaFundacion || a.fecha_fundacion || a.Fecha_Fundacion || "",
+    }
+  }
+
+  // Función helper para mapear compañías de crucero de la base de datos
+  const mapearCompaniaCrucero = (c: any, index: number): CompaniaCrucero => {
+    const idRaw = c.Compania_Crucero_COD 
+      || c.compania_crucero_cod 
+      || c.compania_crucero_COD
+      || c.Compania_Crucero_cod
+      || c.CompaniaCruceroCod
+      || c.companiaCruceroCod
+      || c.cod
+      || c.COD
+      || c.id
+      || Object.values(c).find((val: any) => typeof val === 'number' && val > 0)
+    
+    const id = idRaw != null && !isNaN(Number(idRaw)) ? idRaw.toString() : `temp-${index}`
+    
+    return {
+      id: id,
+      nombre: c.Compania_Crucero_Nombre || c.compania_crucero_nombre || c.Pro_Nombre || c.pro_nombre || c.nombre || c.Nombre || "",
+      direccion: c.Compania_Crucero_Direccion || c.compania_crucero_direccion || c.Pro_Direccion || c.pro_direccion || c.direccion || c.Direccion || "",
+      telefono: c.Compania_Crucero_Telefono?.toString() || c.compania_crucero_telefono?.toString() || c.Pro_Telefono?.toString() || c.pro_telefono?.toString() || c.telefono?.toString() || c.Telefono?.toString() || "",
+      correo: c.Compania_Crucero_Correo || c.compania_crucero_correo || c.Pro_Correo || c.pro_correo || c.correo || c.Correo || "",
+      fechaFundacion: c.Compania_Crucero_Fecha_Fundacion || c.compania_crucero_fecha_fundacion || c.Fecha_Fundacion || c.fecha_fundacion || c.fechaFundacion || "",
+    }
+  }
+
+  // Función helper para mapear compañías de transporte terrestre de la base de datos
+  const mapearCompaniaTransporte = (t: any, index: number): CompaniaTransporteTerrestre => {
+    const idRaw = t.Compania_Transporte_Terrestre_COD 
+      || t.compania_transporte_terrestre_cod 
+      || t.compania_transporte_terrestre_COD
+      || t.Compania_Transporte_Terrestre_cod
+      || t.CompaniaTransporteTerrestreCod
+      || t.companiaTransporteTerrestreCod
+      || t.cod
+      || t.COD
+      || t.id
+      || Object.values(t).find((val: any) => typeof val === 'number' && val > 0)
+    
+    const id = idRaw != null && !isNaN(Number(idRaw)) ? idRaw.toString() : `temp-${index}`
+    
+    return {
+      id: id,
+      nombre: t.Compania_Transporte_Terrestre_Nombre || t.compania_transporte_terrestre_nombre || t.Pro_Nombre || t.pro_nombre || t.nombre || t.Nombre || "",
+      direccion: t.Compania_Transporte_Terrestre_Direccion || t.compania_transporte_terrestre_direccion || t.Pro_Direccion || t.pro_direccion || t.direccion || t.Direccion || "",
+      telefono: t.Compania_Transporte_Terrestre_Telefono?.toString() || t.compania_transporte_terrestre_telefono?.toString() || t.Pro_Telefono?.toString() || t.pro_telefono?.toString() || t.telefono?.toString() || t.Telefono?.toString() || "",
+      correo: t.Compania_Transporte_Terrestre_Correo || t.compania_transporte_terrestre_correo || t.Pro_Correo || t.pro_correo || t.correo || t.Correo || "",
+      fechaFundacion: t.Compania_Transporte_Terrestre_Fecha_Fundacion || t.compania_transporte_terrestre_fecha_fundacion || t.Fecha_Fundacion || t.fecha_fundacion || t.fechaFundacion || "",
+    }
+  }
+
+  // Función helper para mapear hoteles de la base de datos
+  const mapearHotel = (h: any, index: number): Hotel => {
+    const idRaw = h.Hotel_COD || h.hotel_cod || h.hotel_COD || h.Hotel_cod || h.HotelCod || h.hotelCod || h.Pro_COD || h.pro_cod || h.cod || h.COD || h.id || Object.values(h).find((val: any) => typeof val === 'number' && val > 0)
+    
+    const id = idRaw != null && !isNaN(Number(idRaw)) ? idRaw.toString() : `temp-${index}`
+    
+    return {
+      id: id,
+      nombre: h.Hotel_Nombre || h.hotel_nombre || h.Pro_Nombre || h.pro_nombre || h.nombre || h.Nombre || "",
+      direccion: h.Hotel_Direccion || h.hotel_direccion || h.Pro_Direccion || h.pro_direccion || h.direccion || h.Direccion || "",
+      telefono: h.Hotel_Telefono?.toString() || h.hotel_telefono?.toString() || h.Pro_Telefono?.toString() || h.pro_telefono?.toString() || h.telefono?.toString() || h.Telefono?.toString() || "",
+      correo: h.Hotel_Correo || h.hotel_correo || h.Pro_Correo || h.pro_correo || h.correo || h.Correo || "",
+      fechaFundacion: h.Hotel_Fecha_Fundacion || h.hotel_fecha_fundacion || h.Pro_Fecha_Fundacion || h.pro_fecha_fundacion || h.Fecha_Fundacion || h.fecha_fundacion || h.fechaFundacion || "",
     }
   }
 
@@ -246,7 +326,186 @@ export default function InventarioPage() {
     }
 
     cargarAerolineas()
-  }, [])
+  }, [toast])
+
+  // Cargar promociones desde la base de datos al montar el componente
+  useEffect(() => {
+    const cargarPromociones = async () => {
+      try {
+        setIsLoadingPromociones(true)
+        const res = await fetch("/api/promocion")
+        const data = await res.json()
+        
+        console.log("Respuesta completa de API promociones:", data) // Debug
+        
+        if (!res.ok) {
+          console.error("Error en respuesta de API:", res.status, res.statusText)
+          toast({
+            title: "Error",
+            description: `Error al cargar promociones: ${res.status} ${res.statusText}`,
+            variant: "destructive",
+          })
+          setIsLoadingPromociones(false)
+          return
+        }
+
+        if (data.status === "success" && Array.isArray(data.data)) {
+          // Log para ver la estructura del primer elemento
+          if (data.data.length > 0) {
+            console.log("Estructura de una promoción:", data.data[0])
+          }
+          
+          // Normalizar los datos de la base de datos al formato esperado
+          const promocionesFormateadas = data.data.map((p: any, index: number) => {
+            // Buscar el ID en todas las posibles variaciones
+            const idRaw = p.Prom_COD || p.prom_cod || p.prom_COD || p.Prom_cod || p.PromCod || p.promCod || p.cod || p.COD || p.id || Object.values(p).find((val: any) => typeof val === 'number' && val > 0)
+            const id = idRaw != null && !isNaN(Number(idRaw)) ? idRaw.toString() : `temp-${index}`
+            
+            return {
+              id: id,
+              idReal: idRaw != null && !isNaN(Number(idRaw)) ? idRaw.toString() : null,
+              tipo: p.Prom_Tipo || p.prom_tipo || p.tipo || p.Tipo || "",
+              fechaInicio: p.Prom_Fecha_Inicio || p.prom_fecha_inicio || p.fechaInicio || p.fecha_inicio || p.Fecha_Inicio || "",
+              fechaFin: p.Prom_Fecha_Fin || p.prom_fecha_fin || p.fechaFin || p.fecha_fin || p.Fecha_Fin || "",
+              porcentajeDescuento: p.Prom_Porcentaje != null ? Number(p.Prom_Porcentaje) : (p.prom_porcentaje != null ? Number(p.prom_porcentaje) : (p.porcentajeDescuento != null ? Number(p.porcentajeDescuento) : null)),
+            }
+          })
+          
+          console.log("Promociones formateadas:", promocionesFormateadas) // Debug
+          setPromociones(promocionesFormateadas)
+        } else {
+          console.error("Estructura de respuesta inesperada:", data)
+          toast({
+            title: "Error",
+            description: data.message || "Estructura de respuesta inesperada",
+            variant: "destructive",
+          })
+        }
+      } catch (error: any) {
+        console.error("Error cargando promociones:", error)
+        toast({
+          title: "Error",
+          description: error.message || "Error de conexión con el servidor",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoadingPromociones(false)
+      }
+    }
+
+    cargarPromociones()
+  }, [toast])
+
+  // Cargar compañías de crucero desde la base de datos al montar el componente
+  useEffect(() => {
+    const cargarCompaniasCrucero = async () => {
+      try {
+        setIsLoadingCompaniasCrucero(true)
+        const res = await fetch("/api/compania-crucero")
+        
+        if (!res.ok) {
+          throw new Error(`Error ${res.status}: ${res.statusText}`)
+        }
+        
+        const data = await res.json()
+        
+        if (data.status === "success" && Array.isArray(data.data)) {
+          const companiasFormateadas = data.data.map((c: any, index: number) => mapearCompaniaCrucero(c, index))
+          setCompaniasCrucero(companiasFormateadas)
+        } else {
+          console.error("Estructura de respuesta inesperada:", data)
+        }
+      } catch (error: any) {
+        console.error("Error cargando compañías de crucero:", error)
+        // Solo mostrar toast si no es un error de servidor crítico
+        if (error.message && !error.message.includes("500")) {
+          toast({
+            title: "Error",
+            description: "Error al cargar compañías de crucero",
+            variant: "destructive",
+          })
+        }
+      } finally {
+        setIsLoadingCompaniasCrucero(false)
+      }
+    }
+
+    cargarCompaniasCrucero()
+  }, [toast])
+
+  // Cargar compañías de transporte terrestre desde la base de datos al montar el componente
+  useEffect(() => {
+    const cargarCompaniasTransporte = async () => {
+      try {
+        setIsLoadingCompaniasTransporte(true)
+        const res = await fetch("/api/compania-traslado")
+        
+        if (!res.ok) {
+          throw new Error(`Error ${res.status}: ${res.statusText}`)
+        }
+        
+        const data = await res.json()
+        
+        if (data.status === "success" && Array.isArray(data.data)) {
+          const companiasFormateadas = data.data.map((t: any, index: number) => mapearCompaniaTransporte(t, index))
+          setCompaniasTransporte(companiasFormateadas)
+        } else {
+          console.error("Estructura de respuesta inesperada:", data)
+        }
+      } catch (error: any) {
+        console.error("Error cargando compañías de transporte:", error)
+        // Solo mostrar toast si no es un error de servidor crítico
+        if (error.message && !error.message.includes("500")) {
+          toast({
+            title: "Error",
+            description: "Error al cargar compañías de transporte terrestre",
+            variant: "destructive",
+          })
+        }
+      } finally {
+        setIsLoadingCompaniasTransporte(false)
+      }
+    }
+
+    cargarCompaniasTransporte()
+  }, [toast])
+
+  // Cargar hoteles desde la base de datos al montar el componente
+  useEffect(() => {
+    const cargarHoteles = async () => {
+      try {
+        setIsLoadingHoteles(true)
+        const res = await fetch("/api/hotel")
+        
+        if (!res.ok) {
+          throw new Error(`Error ${res.status}: ${res.statusText}`)
+        }
+        
+        const data = await res.json()
+        
+        if (data.status === "success" && Array.isArray(data.data)) {
+          const hotelesFormateados = data.data.map((h: any, index: number) => mapearHotel(h, index))
+          setHoteles(hotelesFormateados)
+        } else {
+          console.error("Estructura de respuesta inesperada:", data)
+        }
+      } catch (error: any) {
+        console.error("Error cargando hoteles:", error)
+        // Solo mostrar toast si no es un error de servidor crítico
+        if (error.message && !error.message.includes("500")) {
+          toast({
+            title: "Error",
+            description: "Error al cargar hoteles",
+            variant: "destructive",
+          })
+        }
+      } finally {
+        setIsLoadingHoteles(false)
+      }
+    }
+
+    cargarHoteles()
+  }, [toast])
 
   const calcularPorcentaje = (disponible: number, total: number) => {
     return ((disponible / total) * 100).toFixed(0)
@@ -260,7 +519,7 @@ export default function InventarioPage() {
   }
 
   const handleAgregar = (
-    tipo: "vuelo" | "crucero" | "tour" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion"
+    tipo: "vuelo" | "crucero" | "tour" | "hotel" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion"
   ) => {
     setTipoActual(tipo)
     setItemSeleccionado(null)
@@ -269,8 +528,8 @@ export default function InventarioPage() {
   }
 
   const handleEditar = (
-    item: Vuelo | Crucero | Tour | Aerolinea | CompaniaCrucero | CompaniaTransporteTerrestre | PaqueteTuristico | Promocion,
-    tipo: "vuelo" | "crucero" | "tour" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion"
+    item: Vuelo | Crucero | Tour | Hotel | Aerolinea | CompaniaCrucero | CompaniaTransporteTerrestre | PaqueteTuristico | Promocion,
+    tipo: "vuelo" | "crucero" | "tour" | "hotel" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion"
   ) => {
     setTipoActual(tipo)
     setItemSeleccionado(item)
@@ -280,7 +539,7 @@ export default function InventarioPage() {
 
   const handleEliminar = async (
     id: string,
-    tipo: "vuelo" | "crucero" | "tour" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion"
+    tipo: "vuelo" | "crucero" | "tour" | "hotel" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion"
   ) => {
     if (confirm("¿Estás seguro de que deseas eliminar este elemento?")) {
       if (tipo === "vuelo") {
@@ -289,6 +548,8 @@ export default function InventarioPage() {
         setCruceros(cruceros.filter((c) => c.id !== id))
       } else if (tipo === "tour") {
         setTours(tours.filter((t) => t.id !== id))
+      } else if (tipo === "hotel") {
+        setHoteles(hoteles.filter((h) => h.id !== id))
       } else if (tipo === "aerolinea") {
         // Buscar la aerolínea para obtener el ID real
         const aerolinea = aerolineas.find(a => a.id === id)
@@ -385,6 +646,13 @@ export default function InventarioPage() {
         setTours(tours.map((t) => (t.id === tour.id ? tour : t)))
       } else {
         setTours([...tours, { ...tour, id: Date.now().toString() }])
+      }
+    } else if (tipoActual === "hotel") {
+      const hotel = item as Hotel
+      if (modoEdicion) {
+        setHoteles(hoteles.map((h) => (h.id === hotel.id ? hotel : h)))
+      } else {
+        setHoteles([...hoteles, { ...hotel, id: Date.now().toString() }])
       }
     } else if (tipoActual === "aerolinea") {
       const aerolinea = item as Aerolinea
@@ -514,9 +782,74 @@ export default function InventarioPage() {
     } else if (tipoActual === "promocion") {
       const promocion = item as Promocion
       if (modoEdicion) {
+        // TODO: Implementar actualización de promoción
         setPromociones(promociones.map((p) => (p.id === promocion.id ? promocion : p)))
       } else {
-        setPromociones([...promociones, { ...promocion, id: Date.now().toString() }])
+        try {
+          const res = await fetch("/api/promocion", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              tipo: promocion.tipo,
+              fechaInicio: promocion.fechaInicio,
+              fechaFin: promocion.fechaFin,
+              porcentaje: promocion.porcentajeDescuento || null,
+            }),
+          })
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: "Error de conexión con el servidor" }))
+            toast({
+              title: "Error",
+              description: errorData.message || `Error ${res.status}: ${res.statusText}`,
+              variant: "destructive",
+            })
+            return
+          }
+
+          const data = await res.json()
+
+          if (data.status === "success") {
+            // Recargar promociones desde la base de datos
+            const resGet = await fetch("/api/promocion")
+            const dataGet = await resGet.json()
+            
+            if (dataGet.status === "success" && Array.isArray(dataGet.data)) {
+              const promocionesFormateadas = dataGet.data.map((p: any, index: number) => {
+                const idRaw = p.Prom_COD || p.prom_cod || p.prom_COD || p.Prom_cod || p.PromCod || p.promCod || p.cod || p.COD || p.id || Object.values(p).find((val: any) => typeof val === 'number' && val > 0)
+                const id = idRaw != null && !isNaN(Number(idRaw)) ? idRaw.toString() : `temp-${index}`
+                
+                return {
+                  id: id,
+                  idReal: idRaw != null && !isNaN(Number(idRaw)) ? idRaw.toString() : null,
+                  tipo: p.Prom_Tipo || p.prom_tipo || p.tipo || p.Tipo || "",
+                  fechaInicio: p.Prom_Fecha_Inicio || p.prom_fecha_inicio || p.fechaInicio || p.fecha_inicio || p.Fecha_Inicio || "",
+                  fechaFin: p.Prom_Fecha_Fin || p.prom_fecha_fin || p.fechaFin || p.fecha_fin || p.Fecha_Fin || "",
+                  porcentajeDescuento: p.Prom_Porcentaje != null ? Number(p.Prom_Porcentaje) : (p.prom_porcentaje != null ? Number(p.prom_porcentaje) : (p.porcentajeDescuento != null ? Number(p.porcentajeDescuento) : null)),
+                }
+              })
+              setPromociones(promocionesFormateadas)
+            }
+            toast({
+              title: "Promoción agregada",
+              description: "La promoción se ha guardado exitosamente en la base de datos",
+            })
+          } else {
+            toast({
+              title: "Error",
+              description: data.message || "No se pudo guardar la promoción",
+              variant: "destructive",
+            })
+            return
+          }
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Error de conexión con el servidor",
+            variant: "destructive",
+          })
+          return
+        }
       }
     }
     setDialogOpen(false)
@@ -526,11 +859,11 @@ export default function InventarioPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Inventario</h1>
-        <p className="text-muted-foreground">Monitorea la disponibilidad de vuelos, cruceros y tours</p>
+        <p className="text-muted-foreground">Monitorea la disponibilidad de vuelos, cruceros y traslados</p>
       </div>
 
       <Tabs defaultValue="vuelos" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
           <TabsTrigger value="vuelos" className="gap-2">
             <Plane className="h-4 w-4" />
             Vuelos
@@ -541,7 +874,11 @@ export default function InventarioPage() {
           </TabsTrigger>
           <TabsTrigger value="tours" className="gap-2">
             <MapPin className="h-4 w-4" />
-            Tours
+            Traslados
+          </TabsTrigger>
+          <TabsTrigger value="hoteles" className="gap-2">
+            <Hotel className="h-4 w-4" />
+            Hoteles
           </TabsTrigger>
           <TabsTrigger value="aerolineas" className="gap-2">
             <Building2 className="h-4 w-4" />
@@ -717,7 +1054,7 @@ export default function InventarioPage() {
           <div className="flex justify-end">
             <Button onClick={() => handleAgregar("tour")} className="gap-2">
               <Plus className="h-4 w-4" />
-              Agregar Tour
+              Agregar Traslado
             </Button>
           </div>
 
@@ -784,6 +1121,65 @@ export default function InventarioPage() {
               </Card>
             )
           })}
+        </TabsContent>
+
+        {/* Hoteles */}
+        <TabsContent value="hoteles" className="space-y-4">
+          {isLoadingHoteles ? (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Cargando hoteles...</p>
+              </CardContent>
+            </Card>
+          ) : hoteles.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Hotel className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No hay hoteles registrados</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {hoteles.map((hotel) => (
+                <Card key={hotel.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Hotel className="h-5 w-5 text-primary" />
+                          {hotel.nombre}
+                        </CardTitle>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Dirección</p>
+                      <p className="font-medium">{hotel.direccion}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Teléfono</p>
+                      <p className="font-medium">{hotel.telefono}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Correo</p>
+                      <p className="font-medium">{hotel.correo}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Fecha de Fundación</p>
+                      <p className="font-medium">
+                        {hotel.fechaFundacion 
+                          ? (hotel.fechaFundacion.includes("T") 
+                              ? new Date(hotel.fechaFundacion).toLocaleDateString("es-ES")
+                              : hotel.fechaFundacion.split("T")[0])
+                          : "No disponible"}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         {/* Aerolíneas */}
@@ -866,14 +1262,13 @@ export default function InventarioPage() {
 
         {/* Compañías de Crucero */}
         <TabsContent value="companias-crucero" className="space-y-4">
-          <div className="flex justify-end">
-            <Button onClick={() => handleAgregar("compania-crucero")} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Agregar Compañía de Crucero
-            </Button>
-          </div>
-
-          {companiasCrucero.length === 0 ? (
+          {isLoadingCompaniasCrucero ? (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Cargando compañías de crucero...</p>
+              </CardContent>
+            </Card>
+          ) : companiasCrucero.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Ship className="h-12 w-12 text-muted-foreground mb-4" />
@@ -892,24 +1287,6 @@ export default function InventarioPage() {
                           {compania.nombre}
                         </CardTitle>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditar(compania, "compania-crucero")}
-                          className="h-8 w-8"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEliminar(compania.id, "compania-crucero")}
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm">
@@ -927,7 +1304,13 @@ export default function InventarioPage() {
                     </div>
                     <div>
                       <p className="text-muted-foreground">Fecha de Fundación</p>
-                      <p className="font-medium">{new Date(compania.fechaFundacion).toLocaleDateString("es-ES")}</p>
+                      <p className="font-medium">
+                        {compania.fechaFundacion 
+                          ? (compania.fechaFundacion.includes("T") 
+                              ? new Date(compania.fechaFundacion).toLocaleDateString("es-ES")
+                              : compania.fechaFundacion.split("T")[0])
+                          : "No disponible"}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -938,14 +1321,13 @@ export default function InventarioPage() {
 
         {/* Compañías de Transporte Terrestre */}
         <TabsContent value="companias-transporte" className="space-y-4">
-          <div className="flex justify-end">
-            <Button onClick={() => handleAgregar("compania-transporte")} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Agregar Compañía de Transporte
-            </Button>
-          </div>
-
-          {companiasTransporte.length === 0 ? (
+          {isLoadingCompaniasTransporte ? (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Cargando compañías de transporte...</p>
+              </CardContent>
+            </Card>
+          ) : companiasTransporte.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Car className="h-12 w-12 text-muted-foreground mb-4" />
@@ -964,24 +1346,6 @@ export default function InventarioPage() {
                           {compania.nombre}
                         </CardTitle>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditar(compania, "compania-transporte")}
-                          className="h-8 w-8"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEliminar(compania.id, "compania-transporte")}
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm">
@@ -999,7 +1363,13 @@ export default function InventarioPage() {
                     </div>
                     <div>
                       <p className="text-muted-foreground">Fecha de Fundación</p>
-                      <p className="font-medium">{new Date(compania.fechaFundacion).toLocaleDateString("es-ES")}</p>
+                      <p className="font-medium">
+                        {compania.fechaFundacion 
+                          ? (compania.fechaFundacion.includes("T") 
+                              ? new Date(compania.fechaFundacion).toLocaleDateString("es-ES")
+                              : compania.fechaFundacion.split("T")[0])
+                          : "No disponible"}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1091,7 +1461,13 @@ export default function InventarioPage() {
             </Button>
           </div>
 
-          {promociones.length === 0 ? (
+          {isLoadingPromociones ? (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Cargando promociones...</p>
+              </CardContent>
+            </Card>
+          ) : promociones.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Tag className="h-12 w-12 text-muted-foreground mb-4" />
@@ -1113,24 +1489,6 @@ export default function InventarioPage() {
                           {promocion.porcentajeDescuento}% de descuento
                         </CardDescription>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditar(promocion, "promocion")}
-                          className="h-8 w-8"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEliminar(promocion.id, "promocion")}
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm">
@@ -1142,10 +1500,12 @@ export default function InventarioPage() {
                       <p className="text-muted-foreground">Fecha de Fin</p>
                       <p className="font-medium">{new Date(promocion.fechaFin).toLocaleDateString("es-ES")}</p>
                     </div>
-                    <div>
-                      <p className="text-muted-foreground">Descuento</p>
-                      <p className="font-medium text-primary">{promocion.porcentajeDescuento}%</p>
-                    </div>
+                    {promocion.porcentajeDescuento != null && (
+                      <div>
+                        <p className="text-muted-foreground">Descuento</p>
+                        <p className="font-medium text-primary">{promocion.porcentajeDescuento}%</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}

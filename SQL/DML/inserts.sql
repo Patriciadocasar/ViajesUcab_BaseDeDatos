@@ -6,31 +6,6 @@ VALUES ('Pendiente');
 INSERT INTO Estatus (Est_Descripcion)
 VALUES ('Listo');
 
-INSERT INTO Estatus (Est_Descripcion)
-VALUES ('Pendiente');
-
-INSERT INTO Estatus (Est_Descripcion)
-VALUES ('Listo');
-
-INSERT INTO Estatus (Est_Descripcion)
-VALUES ('Pendiente');
-
-INSERT INTO Estatus (Est_Descripcion)
-VALUES ('Listo');
-
-INSERT INTO Estatus (Est_Descripcion)
-VALUES ('Pendiente');
-
-INSERT INTO Estatus (Est_Descripcion)
-VALUES ('Listo');
-
-INSERT INTO Estatus (Est_Descripcion)
-VALUES ('Pendiente');
-
-INSERT INTO Estatus (Est_Descripcion)
-VALUES ('Listo');
-
-
 INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion)
 VALUES ('Lectura','Cliente','SELECT');
 
@@ -2620,38 +2595,6 @@ VALUES ('Halloween', TO_DATE('28 10 2026','DD MM YYYY'), TO_DATE('31 10 2026','D
 
 
 
-INSERT INTO Comida (Com_tipo, Com_Costo)
-VALUES ('Desayuno Continental', 12.50);
-
-INSERT INTO Comida (Com_tipo, Com_Costo)
-VALUES ('Almuerzo Ejecutivo', 25.00);
-
-INSERT INTO Comida (Com_tipo, Com_Costo)
-VALUES ('Cena Gourmet', 40.00);
-
-INSERT INTO Comida (Com_tipo, Com_Costo)
-VALUES ('Buffet Internacional', 35.00);
-
-INSERT INTO Comida (Com_tipo, Com_Costo)
-VALUES ('Snack Ligero', 8.75);
-
-INSERT INTO Comida (Com_tipo, Com_Costo)
-VALUES ('Menú Infantil', 15.00);
-
-INSERT INTO Comida (Com_tipo, Com_Costo)
-VALUES ('Comida Vegetariana', 22.00);
-
-INSERT INTO Comida (Com_tipo, Com_Costo)
-VALUES ('Comida Vegana', 24.50);
-
-INSERT INTO Comida (Com_tipo, Com_Costo)
-VALUES ('Mariscos Especiales', 38.00);
-
-INSERT INTO Comida (Com_tipo, Com_Costo)
-VALUES ('Postre Gourmet', 10.00);
-
-
-
 INSERT INTO Documento (Doc_Nombre, Doc_Numero_Identificacion, Doc_Fecha_Emision, Doc_Fecha_Vencimiento, Tipo_Documento_TP_COD)
 VALUES ('Pasaporte Venezolano', 'A1234567', TO_DATE('01 01 2020','DD MM YYYY'), TO_DATE('01 01 2030','DD MM YYYY'), 1);
 
@@ -2708,7 +2651,6 @@ VALUES ('Cape Horizon Cruises', 'Victoria & Alfred Waterfront, Ciudad del Cabo, 
 INSERT INTO Compania_Crucero (Pro_Nombre, Pro_Direccion, Pro_Telefono, Pro_Correo, CC_Fecha_Fundacion, Lugar_Lug_COD)
 VALUES ('Coral Reef Cruises', 'Circular Quay, Sydney, Australia', 61029876543, 'service@coralreefcruises.com.au', TO_DATE('01 02 1990','DD MM YYYY'), 11);
 
-OPERADOR TURÍSTICO
 
 -- Francia (6)
 INSERT INTO Operador_Turistico (Pro_Nombre, Pro_Direccion, Pro_Telefono, Pro_Correo, Lugar_Lug_COD)
@@ -3223,193 +3165,161 @@ VALUES ('Pago_Movil', 90000000004, 150.00, 'Banco de Venezuela', '2025-12-08', 7
 
 
 -- Cliente 1 - Vuelo
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (2001, 120, '2025-12-09 08:30:00', '10A', 1, 300.00, 330.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (2001, 120, '2025-12-09 08:30:00', 1, 300.00, 330.00);
 -- Cliente 2 - Crucero
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (2002, 250, '2025-12-09 09:00:00', 'B201', 2, 1500.00, 1650.00);
 
 -- Cliente 3 - Transporte terrestre
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (2003, 60, '2025-12-09 09:30:00', 'T12', 3, 40.00, 45.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (2003, 60, '2025-12-09 09:30:00', 3, 40.00, 45.00);
 -- Cliente 4 - Vuelo
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (2004, 180, '2025-12-09 10:00:00', '15C', 4, 450.00, 495.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (2004, 180, '2025-12-09 10:00:00', 4, 450.00, 495.00);
 -- Cliente 5 - Crucero
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (2005, 300, '2025-12-09 10:30:00', 'C305', 5, 1200.00, 1320.00);
 
 -- Cliente 6 - Transporte terrestre
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (2006, 45, '2025-12-09 11:00:00', 'A07', 6, 25.00, 28.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (2006, 45, '2025-12-09 11:00:00', 6, 25.00, 28.00);
 -- Cliente 7 - Vuelo
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (2007, 200, '2025-12-09 11:30:00', '22B', 7, 600.00, 660.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (2007, 200, '2025-12-09 11:30:00', 7, 600.00, 660.00);
 -- Cliente 8 - Crucero
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (2008, 280, '2025-12-09 12:00:00', 'D410', 8, 1350.00, 1485.00);
 
 -- Cliente 9 - Transporte terrestre
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (2009, 55, '2025-12-09 12:30:00', 'B09', 9, 35.00, 39.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (2009, 55, '2025-12-09 12:30:00', 9, 35.00, 39.00);
 -- Cliente 10 - Vuelo
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (2010, 150, '2025-12-09 13:00:00', '18D', 10, 380.00, 418.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (2010, 150, '2025-12-09 13:00:00', 10, 380.00, 418.00);
 -- Cliente 11 → (Vuelo)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1027, 160, '2025-12-10 09:00:00', '11A', 11, 320.00, 350.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1027, 160, '2025-12-10 09:00:00', 11, 320.00, 350.00);
 -- Cliente 12 → (Crucero)
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (1028, 280, '2025-12-10 09:30:00', 'C201', 12, 1000.00, 1100.00);
 
 -- Cliente 13 → (Transporte terrestre)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1029, 55, '2025-12-10 10:00:00', 'T12', 13, 35.00, 40.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1029, 55, '2025-12-10 10:00:00', 13, 35.00, 40.00);
 -- Cliente 14 → (Vuelo)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1030, 190, '2025-12-10 10:30:00', '14C', 14, 420.00, 460.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1030, 190, '2025-12-10 10:30:00', 14, 420.00, 460.00);
 -- Cliente 15 → (Crucero)
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (1031, 310, '2025-12-10 11:00:00', 'D301', 15, 1250.00, 1380.00);
 
 -- Cliente 16 → (Transporte terrestre)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1032, 65, '2025-12-10 11:30:00', 'B05', 16, 45.00, 50.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1032, 65, '2025-12-10 11:30:00', 16, 45.00, 50.00);
 -- Cliente 17 → (Vuelo)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1033, 175, '2025-12-10 12:00:00', '16B', 17, 360.00, 395.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1033, 175, '2025-12-10 12:00:00', 17, 360.00, 395.00);
 -- Cliente 18 → Reserva 34 (Crucero)
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (1034, 295, '2025-12-10 12:30:00', 'E401', 18, 1300.00, 1450.00);
 
 -- Cliente 19 → Reserva 35 (Transporte terrestre)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1035, 48, '2025-12-10 13:00:00', 'C09', 19, 28.00, 32.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1035, 48, '2025-12-10 13:00:00', 19, 28.00, 32.00);
 -- Cliente 20 → Reserva 36 (Vuelo)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1036, 185, '2025-12-10 13:30:00', '10D', 20, 410.00, 450.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1036, 185, '2025-12-10 13:30:00', 20, 410.00, 450.00);
 -- Cliente 21 → Reserva 37 (Crucero)
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (1037, 305, '2025-12-10 14:00:00', 'F501', 21, 1350.00, 1500.00);
 
 -- Cliente 22 → Reserva 38 (Transporte terrestre)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1038, 52, '2025-12-10 14:30:00', 'A07', 22, 32.00, 36.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1038, 52, '2025-12-10 14:30:00', 22, 32.00, 36.00);
 -- Cliente 23 → Reserva 39 (Vuelo)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1039, 165, '2025-12-10 15:00:00', '18A', 23, 340.00, 375.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1039, 165, '2025-12-10 15:00:00', 23, 340.00, 375.00);
 -- Cliente 24 → Reserva 40 (Crucero)
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (1040, 325, '2025-12-10 15:30:00', 'G601', 24, 1450.00, 1600.00);
 
 -- Cliente 25 → Reserva 41 (Transporte terrestre)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1041, 58, '2025-12-10 16:00:00', 'D11', 25, 38.00, 42.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1041, 58, '2025-12-10 16:00:00', 25, 38.00, 42.00);
 -- Cliente 26 → Reserva 42 (Vuelo)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1042, 195, '2025-12-10 16:30:00', '19C', 26, 430.00, 470.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1042, 195, '2025-12-10 16:30:00', 26, 430.00, 470.00);
 -- Cliente 27 → Reserva 43 (Crucero)
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (1043, 315, '2025-12-10 17:00:00', 'H701', 27, 1400.00, 1550.00);
 
 -- Cliente 28 → Reserva 44 (Transporte terrestre)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1044, 47, '2025-12-10 17:30:00', 'B08', 28, 27.00, 31.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1044, 47, '2025-12-10 17:30:00', 28, 27.00, 31.00);
 -- Cliente 29 → Reserva 45 (Vuelo)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1045, 155, '2025-12-10 18:00:00', '20B', 29, 310.00, 345.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1045, 155, '2025-12-10 18:00:00', 29, 310.00, 345.00);
 -- Cliente 30 → Reserva 46 (Crucero)
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (1046, 300, '2025-12-11 09:00:00', 'C301', 30, 1200.00, 1350.00);
 
 -- Cliente 31 → Reserva 47 (Transporte terrestre)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1047, 55, '2025-12-11 09:30:00', 'T15', 31, 40.00, 45.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1047, 55, '2025-12-11 09:30:00', 31, 40.00, 45.00);
 -- Cliente 32 → Reserva 48 (Vuelo)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1048, 180, '2025-12-11 10:00:00', '12C', 32, 380.00, 420.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1048, 180, '2025-12-11 10:00:00', 32, 380.00, 420.00);
 -- Cliente 33 → Reserva 49 (Crucero)
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (1049, 310, '2025-12-11 10:30:00', 'D401', 33, 1300.00, 1450.00);
 
 -- Cliente 34 → Reserva 50 (Transporte terrestre)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1050, 60, '2025-12-11 11:00:00', 'B10', 34, 35.00, 40.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1050, 60, '2025-12-11 11:00:00', 34, 35.00, 40.00);
 -- Cliente 35 → Reserva 51 (Vuelo)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1051, 200, '2025-12-11 11:30:00', '14A', 35, 450.00, 490.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1051, 200, '2025-12-11 11:30:00', 35, 450.00, 490.00);
 -- Cliente 36 → Reserva 52 (Crucero)
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (1052, 280, '2025-12-11 12:00:00', 'E501', 36, 1100.00, 1200.00);
 
 -- Cliente 37 → Reserva 53 (Transporte terrestre)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1053, 45, '2025-12-11 12:30:00', 'C07', 37, 25.00, 30.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1053, 45, '2025-12-11 12:30:00', 37, 25.00, 30.00);
 -- Cliente 38 → Reserva 54 (Vuelo)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1054, 170, '2025-12-11 13:00:00', '16D', 38, 360.00, 395.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1054, 170, '2025-12-11 13:00:00', 38, 360.00, 395.00);
 -- Cliente 39 → Reserva 55 (Crucero)
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (1055, 320, '2025-12-11 13:30:00', 'F601', 39, 1400.00, 1550.00);
 
 -- Cliente 40 → Reserva 56 (Transporte terrestre)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1056, 50, '2025-12-11 14:00:00', 'A09', 40, 30.00, 35.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1056, 50, '2025-12-11 14:00:00', 40, 30.00, 35.00);
 -- Cliente 41 → Reserva 57 (Vuelo)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1057, 185, '2025-12-11 14:30:00', '18B', 41, 400.00, 440.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1057, 185, '2025-12-11 14:30:00', 41, 400.00, 440.00);
 -- Cliente 42 → Reserva 58 (Crucero)
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (1058, 305, '2025-12-11 15:00:00', 'G701', 42, 1350.00, 1500.00);
 
 -- Cliente 43 → Reserva 59 (Transporte terrestre)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1059, 42, '2025-12-11 15:30:00', 'D13', 43, 22.00, 26.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1059, 42, '2025-12-11 15:30:00', 43, 22.00, 26.00);
 -- Cliente 44 → Reserva 60 (Vuelo)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1060, 195, '2025-12-11 16:00:00', '20C', 44, 430.00, 470.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1060, 195, '2025-12-11 16:00:00', 44, 430.00, 470.00);
 -- Cliente 45 → Reserva 61 (Crucero)
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (1061, 315, '2025-12-11 16:30:00', 'H801', 45, 1450.00, 1600.00);
 
 -- Cliente 46 → Reserva 62 (Transporte terrestre)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Transporte, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1062, 60, '2025-12-11 17:00:00', 'B11', 46, 40.00, 45.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1062, 60, '2025-12-11 17:00:00', 46, 40.00, 45.00);
 -- Cliente 47 → Reserva 63 (Vuelo)
-INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Asiento_Vuelo, Cliente_Cli_COD, Res_Subtotal, Res_Total)
-VALUES (1063, 175, '2025-12-11 17:30:00', '22A', 47, 370.00, 405.00);
-
+INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Cliente_Cli_COD, Res_Subtotal, Res_Total)
+VALUES (1063, 175, '2025-12-11 17:30:00', 47, 370.00, 405.00);
 -- Cliente 48 → Reserva 64 (Crucero)
 INSERT INTO Reserva (Res_Numero_Reserva, Res_Milla_Obtenida, Res_Fecha_Hora, Res_Camarote, Cliente_Cli_COD, Res_Subtotal, Res_Total)
 VALUES (1064, 330, '2025-12-11 18:00:00', 'I901', 48, 1500.00, 1650.00);
@@ -3860,8 +3770,6 @@ VALUES ('Parque','Parque San Esteban',9,'Recorrido histórico y natural por el p
 -- Parque 10
 INSERT INTO Servicio_Adicional (SA_Tipo, SA_Nombre, Operador_Turistico_Pro_COD, SA_Descripcion, SA_Costo, SA_Cant_Milla, SA_Fecha_Hora_Inicio, SA_Fecha_Hora_Fin)
 VALUES ('Parque','Parque Laguna de Tacarigua',10,'Visita a lagunas y observación de fauna marina',130.00,28,'2025-12-24 08:00:00','2025-12-24 14:00:00');
-
-RESTAURANTES
 
 -- Venezuela
 INSERT INTO Restaurante (Rest_Nombre, Rest_Direccion, Rest_Clasificacion, Lugar_Lug_COD, Rest_Tipo_Comida, Rest_Ambiente)
@@ -4440,336 +4348,336 @@ VALUES ('Duración máxima', 'El paquete Horizonte no puede extenderse más de 1
 
 
 -- Itinerario 1 → Cliente 1 (Reserva 1 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (1, NULL, 600.00, 1, NULL, 1, NULL, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
+VALUES (1, 600.00, 1, NULL, 1, NULL, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
         1, 120, 1);
 
 -- Itinerario 2 → Cliente 2 (Reserva 2 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (2, 1, 1650.00, NULL, 2, NULL, 1, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-15','YYYY-MM-DD'),
+VALUES (2, 1650.00, NULL, 2, NULL, 1, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-15','YYYY-MM-DD'),
         2, 250, 2);
 
 -- Itinerario 3 → Cliente 3 (Reserva 3 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (3, NULL, 45.00, NULL, 3, NULL, NULL, 1, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-10','YYYY-MM-DD'),
+VALUES (3, 45.00, NULL, 3, NULL, NULL, 1, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-10','YYYY-MM-DD'),
         3, 60, 3);
 
 -- Itinerario 4 → Cliente 4 (Reserva 4 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (4, 2, 900.00, 2, NULL, 2, NULL, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-13','YYYY-MM-DD'),
+VALUES (4, 900.00, 2, NULL, 2, NULL, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-13','YYYY-MM-DD'),
         4, 180, 4);
 
 -- Itinerario 5 → Cliente 5 (Reserva 5 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (5, NULL, 1320.00, 3, 3, NULL, 2, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
+VALUES (5, 1320.00, 3, 3, NULL, 2, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
         5, 300, 5);
 
 -- Itinerario 6 → Cliente 6 (Reserva 6 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (6, 3, 28.00, NULL, NULL, NULL, NULL, 2, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
+VALUES (6, 28.00, NULL, NULL, NULL, NULL, 2, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
         6, 45, 6);
 
 -- Itinerario 7 → Cliente 7 (Reserva 7 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (7, NULL, 660.00, 4, 4, 3, NULL, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
+VALUES (7, 660.00, 4, 4, 3, NULL, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
         7, 200, 7);
 
 -- Itinerario 8 → Cliente 8 (Reserva 8 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (8, 4, 1485.00, 5, NULL, NULL, 3, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-15','YYYY-MM-DD'),
+VALUES (8, 1485.00, 5, NULL, NULL, 3, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-15','YYYY-MM-DD'),
         8, 280, 8);
 
 -- Itinerario 9 → Cliente 9 (Reserva 9 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (9, NULL, 39.00, NULL, 5, NULL, NULL, 3, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
+VALUES (9, 39.00, NULL, 5, NULL, NULL, 3, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
         9, 55, 9);
 
 -- Itinerario 10 → Cliente 10 (Reserva 10 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (10, 5, 418.00, 6, NULL, 4, NULL, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-13','YYYY-MM-DD'),
+VALUES (10, 418.00, 6, NULL, 4, NULL, NULL, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('2025-12-13','YYYY-MM-DD'),
         10, 150, 10);
 
 -- Itinerario 11 → Cliente 11 (Reserva 11 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (1, NULL, 350.00, 2, NULL, 2, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-13','YYYY-MM-DD'),
+VALUES (1, 350.00, 2, NULL, 2, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-13','YYYY-MM-DD'),
         1, 160, 11);
 
 -- Itinerario 12 → Cliente 12 (Reserva 12 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (2, 1, 1100.00, NULL, 3, NULL, 2, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-15','YYYY-MM-DD'),
+VALUES (2, 1100.00, NULL, 3, NULL, 2, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-15','YYYY-MM-DD'),
         2, 280, 12);
 
 -- Itinerario 13 → Cliente 13 (Reserva 13 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (3, NULL, 40.00, NULL, 4, NULL, NULL, 1, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
+VALUES (3, 40.00, NULL, 4, NULL, NULL, 1, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
         3, 55, 13);
 
 -- Itinerario 14 → Cliente 14 (Reserva 14 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (4, 2, 460.00, 5, NULL, 3, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
+VALUES (4, 460.00, 5, NULL, 3, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
         4, 190, 14);
 
 -- Itinerario 15 → Cliente 15 (Reserva 15 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (5, NULL, 1380.00, 6, 5, NULL, 3, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
+VALUES (5, 1380.00, 6, 5, NULL, 3, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
         5, 310, 15);
 
 -- Itinerario 16 → Cliente 16 (Reserva 32 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (6, 3, 50.00, NULL, NULL, NULL, NULL, 2, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
+VALUES (6, 50.00, NULL, NULL, NULL, NULL, 2, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
         6, 65, 16);
 
 -- Itinerario 17 → Cliente 17 (Reserva 33 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (7, NULL, 395.00, 7, 6, 4, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
+VALUES (7, 395.00, 7, 6, 4, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
         7, 175, 17);
 
 -- Itinerario 18 → Cliente 18 (Reserva 34 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (8, 4, 1450.00, 8, NULL, NULL, 4, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-15','YYYY-MM-DD'),
+VALUES (8, 1450.00, 8, NULL, NULL, 4, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-15','YYYY-MM-DD'),
         8, 295, 18);
 
 -- Itinerario 19 → Cliente 19 (Reserva 35 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (9, NULL, 32.00, NULL, 7, NULL, NULL, 3, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
+VALUES (9, 32.00, NULL, 7, NULL, NULL, 3, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
         9, 48, 19);
 
 -- Itinerario 20 → Cliente 20 (Reserva 36 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (10, 5, 450.00, 9, NULL, 5, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
+VALUES (10, 450.00, 9, NULL, 5, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
         10, 185, 20);
 -- Itinerario 21 → Cliente 21 (Reserva 37 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (1, 1, 1500.00, 1, 1, NULL, 1, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-15','YYYY-MM-DD'),
+VALUES (1, 1500.00, 1, 1, NULL, 1, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-15','YYYY-MM-DD'),
         1, 305, 21);
 
 -- Itinerario 22 → Cliente 22 (Reserva 38 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (2, 2, 36.00, NULL, 2, NULL, NULL, 2, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
+VALUES (2, 36.00, NULL, 2, NULL, NULL, 2, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
         2, 52, 22);
 
 -- Itinerario 23 → Cliente 23 (Reserva 39 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (3, NULL, 375.00, 2, NULL, 2, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-13','YYYY-MM-DD'),
+VALUES (3, 375.00, 2, NULL, 2, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-13','YYYY-MM-DD'),
         3, 165, 23);
 
 -- Itinerario 24 → Cliente 24 (Reserva 40 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (4, 3, 1600.00, 3, 3, NULL, 2, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
+VALUES (4, 1600.00, 3, 3, NULL, 2, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
         4, 325, 24);
 
 -- Itinerario 25 → Cliente 25 (Reserva 41 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (5, NULL, 42.00, NULL, 4, NULL, NULL, 3, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
+VALUES (5, 42.00, NULL, 4, NULL, NULL, 3, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
         5, 58, 25);
 
 -- Itinerario 26 → Cliente 26 (Reserva 42 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (6, 4, 470.00, 4, NULL, 3, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
+VALUES (6, 470.00, 4, NULL, 3, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
         6, 195, 26);
 
 -- Itinerario 27 → Cliente 27 (Reserva 43 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (7, NULL, 1550.00, 5, 5, NULL, 3, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
+VALUES (7, 1550.00, 5, 5, NULL, 3, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
         7, 315, 27);
 
 -- Itinerario 28 → Cliente 28 (Reserva 44 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (8, 5, 31.00, NULL, NULL, NULL, NULL, 4, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
+VALUES (8, 31.00, NULL, NULL, NULL, NULL, 4, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-11','YYYY-MM-DD'),
         8, 47, 28);
 
 -- Itinerario 29 → Cliente 29 (Reserva 45 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (9, NULL, 345.00, 6, NULL, 4, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-13','YYYY-MM-DD'),
+VALUES (9, 345.00, 6, NULL, 4, NULL, NULL, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('2025-12-13','YYYY-MM-DD'),
         9, 155, 29);
 
 -- Itinerario 30 → Cliente 30 (Reserva 46 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (10, 6, 1350.00, 7, 6, NULL, 4, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
+VALUES (10, 1350.00, 7, 6, NULL, 4, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
         10, 300, 30);
 -- Itinerario 31 → Cliente 31 (Reserva 47 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (1, NULL, 45.00, NULL, 1, NULL, NULL, 1, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
+VALUES (1, 45.00, NULL, 1, NULL, NULL, 1, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
         1, 55, 31);
 
 -- Itinerario 32 → Cliente 32 (Reserva 48 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (2, 1, 420.00, 2, NULL, 2, NULL, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
+VALUES (2, 420.00, 2, NULL, 2, NULL, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
         2, 180, 32);
 
 -- Itinerario 33 → Cliente 33 (Reserva 49 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (3, 2, 1450.00, 3, 2, NULL, 3, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
+VALUES (3, 1450.00, 3, 2, NULL, 3, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
         3, 310, 33);
 
 -- Itinerario 34 → Cliente 34 (Reserva 50 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (4, NULL, 40.00, NULL, 3, NULL, NULL, 2, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
+VALUES (4, 40.00, NULL, 3, NULL, NULL, 2, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
         4, 60, 34);
 
 -- Itinerario 35 → Cliente 35 (Reserva 51 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (5, 3, 490.00, 4, NULL, 4, NULL, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
+VALUES (5, 490.00, 4, NULL, 4, NULL, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
         5, 200, 35);
 
 -- Itinerario 36 → Cliente 36 (Reserva 52 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (6, NULL, 1200.00, 5, 4, NULL, 4, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
+VALUES (6, 1200.00, 5, 4, NULL, 4, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
         6, 280, 36);
 
 -- Itinerario 37 → Cliente 37 (Reserva 53 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (7, 4, 30.00, NULL, NULL, NULL, NULL, 3, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
+VALUES (7, 30.00, NULL, NULL, NULL, NULL, 3, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
         7, 45, 37);
 
 -- Itinerario 38 → Cliente 38 (Reserva 54 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (8, NULL, 395.00, 6, NULL, 5, NULL, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
+VALUES (8, 395.00, 6, NULL, 5, NULL, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
         8, 170, 38);
 
 -- Itinerario 39 → Cliente 39 (Reserva 55 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (9, 5, 1550.00, 7, 5, NULL, 5, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
+VALUES (9, 1550.00, 7, 5, NULL, 5, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
         9, 320, 39);
 
 -- Itinerario 40 → Cliente 40 (Reserva 56 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (10, NULL, 35.00, NULL, 6, NULL, NULL, 4, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
+VALUES (10, 35.00, NULL, 6, NULL, NULL, 4, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
         10, 50, 40);
 -- Itinerario 41 → Cliente 41 (Reserva 57 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (1, 1, 440.00, 1, NULL, 6, NULL, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
+VALUES (1, 440.00, 1, NULL, 6, NULL, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
         1, 185, 41);
 
 -- Itinerario 42 → Cliente 42 (Reserva 58 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (2, 2, 1500.00, 2, 2, NULL, 6, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
+VALUES (2, 1500.00, 2, 2, NULL, 6, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
         2, 305, 42);
 
 -- Itinerario 43 → Cliente 43 (Reserva 59 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (3, NULL, 26.00, NULL, 3, NULL, NULL, 7, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
+VALUES (3, 26.00, NULL, 3, NULL, NULL, 7, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
         3, 42, 43);
 
 -- Itinerario 44 → Cliente 44 (Reserva 60 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (4, 3, 470.00, 4, NULL, 7, NULL, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
+VALUES (4, 470.00, 4, NULL, 7, NULL, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
         4, 195, 44);
 
 -- Itinerario 45 → Cliente 45 (Reserva 61 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (5, NULL, 1600.00, 5, 4, NULL, 7, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
+VALUES (5, 1600.00, 5, 4, NULL, 7, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
         5, 315, 45);
 
 -- Itinerario 46 → Cliente 46 (Reserva 62 - Transporte terrestre)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (6, 4, 45.00, NULL, NULL, NULL, NULL, 8, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
+VALUES (6, 45.00, NULL, NULL, NULL, NULL, 8, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-12','YYYY-MM-DD'),
         6, 60, 46);
 
 -- Itinerario 47 → Cliente 47 (Reserva 63 - Vuelo)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (7, NULL, 405.00, 6, 5, 8, NULL, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
+VALUES (7, 405.00, 6, 5, 8, NULL, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-14','YYYY-MM-DD'),
         7, 175, 47);
 
 -- Itinerario 48 → Cliente 48 (Reserva 64 - Crucero)
-INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Comida_Com_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
+INSERT INTO Itinerario (Paquete_Turistico_PT_COD, Iti_Costo_Total, Hospedaje_Hos_COD, Restaurante_Rest_COD,
                         Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Iti_Fecha_Inicio, Iti_Fecha_Fin,
                         Servicio_Adicional_SA_COD, Iti_Cant_Milla_Total, Reserva_Res_COD)
-VALUES (8, 5, 1650.00, 7, 6, NULL, 8, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
+VALUES (8, 1650.00, 7, 6, NULL, 8, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('2025-12-16','YYYY-MM-DD'),
         8, 330, 48);
 
 
@@ -5209,7 +5117,7 @@ VALUES (DATE '2025-12-02', DATE '2025-12-06', 2, NULL, 1);
 -- Registro 3 → Asociado a Reserva (Reserva 2)
 INSERT INTO Registro_Reclamos (Fecha_Inicio, Fecha_Fin, Estatus_Est_COD,
                                Reserva_Res_COD, Reclamo_Rec_COD)
-VALUES (DATE '2025-12-03', DATE '2025-12-07', 3, 2, NULL);
+VALUES (DATE '2025-12-03', DATE '2025-12-07', 2, 2, NULL);
 
 -- Registro 4 → Asociado a Reclamo (Reclamo 2)
 INSERT INTO Registro_Reclamos (Fecha_Inicio, Fecha_Fin, Estatus_Est_COD,
@@ -5224,7 +5132,7 @@ VALUES (DATE '2025-12-05', DATE '2025-12-09', 2, 3, NULL);
 -- Registro 6 → Asociado a Reclamo (Reclamo 3)
 INSERT INTO Registro_Reclamos (Fecha_Inicio, Fecha_Fin, Estatus_Est_COD,
                                Reserva_Res_COD, Reclamo_Rec_COD)
-VALUES (DATE '2025-12-06', DATE '2025-12-10', 3, NULL, 3);
+VALUES (DATE '2025-12-06', DATE '2025-12-10', 1, NULL, 3);
 
 -- Registro 7 → Asociado a Reserva (Reserva 4)
 INSERT INTO Registro_Reclamos (Fecha_Inicio, Fecha_Fin, Estatus_Est_COD,
@@ -5239,7 +5147,7 @@ VALUES (DATE '2025-12-08', DATE '2025-12-12', 2, NULL, 4);
 -- Registro 9 → Asociado a Reserva (Reserva 5)
 INSERT INTO Registro_Reclamos (Fecha_Inicio, Fecha_Fin, Estatus_Est_COD,
                                Reserva_Res_COD, Reclamo_Rec_COD)
-VALUES (DATE '2025-12-09', DATE '2025-12-13', 3, 5, NULL);
+VALUES (DATE '2025-12-09', DATE '2025-12-13', 2, 5, NULL);
 
 -- Registro 10 → Asociado a Reclamo (Reclamo 5)
 INSERT INTO Registro_Reclamos (Fecha_Inicio, Fecha_Fin, Estatus_Est_COD,

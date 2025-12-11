@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
 
 type Vuelo = {
   id: string
@@ -80,20 +81,30 @@ type Promocion = {
   tipo: string
   fechaInicio: string
   fechaFin: string
-  porcentajeDescuento: number
+  porcentajeDescuento: number | null
+}
+
+type Hotel = {
+  id: string
+  nombre: string
+  direccion: string
+  telefono: string
+  correo: string
+  fechaFundacion: string
 }
 
 type InventarioDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  tipo: "vuelo" | "crucero" | "tour" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion"
-  item: Vuelo | Crucero | Tour | Aerolinea | CompaniaCrucero | CompaniaTransporteTerrestre | PaqueteTuristico | Promocion | null
-  onGuardar: (item: Vuelo | Crucero | Tour | Aerolinea | CompaniaCrucero | CompaniaTransporteTerrestre | PaqueteTuristico | Promocion) => void
+  tipo: "vuelo" | "crucero" | "tour" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion" | "hotel"
+  item: Vuelo | Crucero | Tour | Aerolinea | CompaniaCrucero | CompaniaTransporteTerrestre | PaqueteTuristico | Promocion | Hotel | null
+  onGuardar: (item: Vuelo | Crucero | Tour | Aerolinea | CompaniaCrucero | CompaniaTransporteTerrestre | PaqueteTuristico | Promocion | Hotel) => void
   modoEdicion: boolean
 }
 
 export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, modoEdicion }: InventarioDialogProps) {
   const [formData, setFormData] = useState<any>({})
+  const { toast } = useToast()
 
   useEffect(() => {
     if (item) {
@@ -118,6 +129,14 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
           capacidadDisponible: 0,
         })
       } else if (tipo === "aerolinea") {
+        setFormData({
+          nombre: "",
+          direccion: "",
+          telefono: "",
+          correo: "",
+          fechaFundacion: "",
+        })
+      } else if (tipo === "hotel") {
         setFormData({
           nombre: "",
           direccion: "",
@@ -155,7 +174,7 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
           tipo: "",
           fechaInicio: "",
           fechaFin: "",
-          porcentajeDescuento: 0,
+          porcentajeDescuento: null,
         })
       } else {
         setFormData({
@@ -171,10 +190,40 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validaciones específicas para promociones
+    if (tipo === "promocion") {
+      const hoy = new Date()
+      hoy.setHours(0, 0, 0, 0) // Resetear horas para comparar solo fechas
+      
+      const fechaInicio = formData.fechaInicio ? new Date(formData.fechaInicio) : null
+      const fechaFin = formData.fechaFin ? new Date(formData.fechaFin) : null
+      
+      // Validar que la fecha de inicio no sea pasada
+      if (fechaInicio && fechaInicio < hoy) {
+        toast({
+          title: "Error de validación",
+          description: "La fecha de inicio no puede ser una fecha pasada",
+          variant: "destructive",
+        })
+        return
+      }
+      
+      // Validar que la fecha fin no sea antes de la fecha de inicio
+      if (fechaInicio && fechaFin && fechaFin < fechaInicio) {
+        toast({
+          title: "Error de validación",
+          description: "La fecha de fin no puede ser anterior a la fecha de inicio",
+          variant: "destructive",
+        })
+        return
+      }
+    }
+    
     onGuardar(formData)
   }
 
-  const handleChange = (field: string, value: string | number) => {
+  const handleChange = (field: string, value: string | number | null) => {
     setFormData({ ...formData, [field]: value })
   }
 
@@ -183,6 +232,7 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
       vuelo: "Vuelo",
       crucero: "Crucero",
       tour: "Tour",
+      hotel: "Hotel",
       aerolinea: "Aerolínea",
       "compania-crucero": "Compañía de Crucero",
       "compania-transporte": "Compañía de Transporte Terrestre",
@@ -448,6 +498,64 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
             </>
           )}
 
+          {/* Formulario Hotel */}
+          {tipo === "hotel" && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="nombre">Nombre</Label>
+                <Input
+                  id="nombre"
+                  value={formData.nombre || ""}
+                  onChange={(e) => handleChange("nombre", e.target.value)}
+                  placeholder="Nombre del hotel"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="direccion">Dirección</Label>
+                <Input
+                  id="direccion"
+                  value={formData.direccion || ""}
+                  onChange={(e) => handleChange("direccion", e.target.value)}
+                  placeholder="Dirección completa"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="telefono">Teléfono</Label>
+                <Input
+                  id="telefono"
+                  type="tel"
+                  value={formData.telefono || ""}
+                  onChange={(e) => handleChange("telefono", e.target.value)}
+                  placeholder="+58 412-555-0100"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="correo">Correo</Label>
+                <Input
+                  id="correo"
+                  type="email"
+                  value={formData.correo || ""}
+                  onChange={(e) => handleChange("correo", e.target.value)}
+                  placeholder="contacto@hotel.com"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fechaFundacion">Fecha de Fundación</Label>
+                <Input
+                  id="fechaFundacion"
+                  type="date"
+                  value={formData.fechaFundacion || ""}
+                  onChange={(e) => handleChange("fechaFundacion", e.target.value)}
+                  required
+                />
+              </div>
+            </>
+          )}
+
           {/* Formulario Compañía de Crucero */}
           {tipo === "compania-crucero" && (
             <>
@@ -651,7 +759,7 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
                   id="tipo"
                   value={formData.tipo || ""}
                   onChange={(e) => handleChange("tipo", e.target.value)}
-                  placeholder="Ej: Descuento de Verano, Black Friday, etc."
+                  placeholder="Ej: Navideñas, Temporada Baja, Black Friday, Semana Santa"
                   required
                 />
               </div>
@@ -662,7 +770,33 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
                     id="fechaInicio"
                     type="date"
                     value={formData.fechaInicio || ""}
-                    onChange={(e) => handleChange("fechaInicio", e.target.value)}
+                    onChange={(e) => {
+                      const nuevaFechaInicio = e.target.value
+                      const hoy = new Date()
+                      hoy.setHours(0, 0, 0, 0)
+                      
+                      // Validar que no sea una fecha pasada
+                      if (nuevaFechaInicio && new Date(nuevaFechaInicio) < hoy) {
+                        toast({
+                          title: "Error de validación",
+                          description: "La fecha de inicio no puede ser una fecha pasada",
+                          variant: "destructive",
+                        })
+                        return
+                      }
+                      
+                      // Si la fecha fin es anterior a la nueva fecha inicio, resetearla
+                      if (formData.fechaFin && new Date(formData.fechaFin) < new Date(nuevaFechaInicio)) {
+                        handleChange("fechaFin", "")
+                        toast({
+                          title: "Fecha de fin actualizada",
+                          description: "La fecha de fin se ha reseteado porque era anterior a la nueva fecha de inicio",
+                        })
+                      }
+                      
+                      handleChange("fechaInicio", nuevaFechaInicio)
+                    }}
+                    min={new Date().toISOString().split('T')[0]} // No permitir fechas pasadas
                     required
                   />
                 </div>
@@ -672,22 +806,34 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
                     id="fechaFin"
                     type="date"
                     value={formData.fechaFin || ""}
-                    onChange={(e) => handleChange("fechaFin", e.target.value)}
+                    onChange={(e) => {
+                      const nuevaFechaFin = e.target.value
+                      // Si la nueva fecha fin es anterior a la fecha inicio, no permitir el cambio
+                      if (formData.fechaInicio && nuevaFechaFin && new Date(nuevaFechaFin) < new Date(formData.fechaInicio)) {
+                        toast({
+                          title: "Error de validación",
+                          description: "La fecha de fin no puede ser anterior a la fecha de inicio",
+                          variant: "destructive",
+                        })
+                        return
+                      }
+                      handleChange("fechaFin", nuevaFechaFin)
+                    }}
+                    min={formData.fechaInicio || new Date().toISOString().split('T')[0]} // No permitir fechas antes de la fecha de inicio
                     required
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="porcentajeDescuento">Porcentaje de Descuento</Label>
+                <Label htmlFor="porcentajeDescuento">Porcentaje de Descuento (Opcional)</Label>
                 <Input
                   id="porcentajeDescuento"
                   type="number"
                   min="0"
                   max="100"
-                  value={formData.porcentajeDescuento || 0}
-                  onChange={(e) => handleChange("porcentajeDescuento", Number.parseInt(e.target.value))}
-                  placeholder="0"
-                  required
+                  value={formData.porcentajeDescuento || ""}
+                  onChange={(e) => handleChange("porcentajeDescuento", e.target.value ? Number.parseInt(e.target.value) : null)}
+                  placeholder="Ej: 10, 20, 30..."
                 />
               </div>
             </>

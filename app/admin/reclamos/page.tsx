@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -16,7 +16,7 @@ import {
   ArrowLeft,
 } from "lucide-react"
 import { ReclamoDialog } from "@/components/reclamo-dialog"
-import { useClaims, type Claim } from "@/lib/claims-context"
+import { useClaims, type Claim, type ClaimStatus } from "@/lib/claims-context"
 import { useUser } from "@/lib/user-context"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
@@ -28,44 +28,139 @@ const estadosConfig = {
     variant: "secondary" as const,
     description: "Tu reclamo ha sido recibido y está en espera de revisión",
   },
-  "en-proceso": {
-    label: "En Proceso",
-    icon: AlertCircle,
-    variant: "default" as const,
-    description: "Estamos trabajando en resolver tu reclamo",
-  },
-  resuelto: {
-    label: "Resuelto",
+  listo: {
+    label: "Listo",
     icon: CheckCircle,
     variant: "outline" as const,
     description: "Tu reclamo ha sido resuelto satisfactoriamente",
-  },
-  rechazado: {
-    label: "Rechazado",
-    icon: XCircle,
-    variant: "destructive" as const,
-    description: "Tu reclamo no pudo ser procesado",
-  },
-  cancelado: {
-    label: "Cancelado",
-    icon: XCircle,
-    variant: "destructive" as const,
-    description: "Tu reclamo ha sido cancelado",
   },
 }
 
 const categorias = ["Vuelo", "Hotel", "Crucero", "Tour", "Traslado", "Tren", "Paquete", "Reembolso", "Otro"]
 
 export default function ReclamosPage() {
-  const { claims } = useClaims()
+  const { updateClaim } = useClaims()
   const { user, isAuthenticated, hasRole } = useUser()
   const { toast } = useToast()
   const router = useRouter()
   const [reclamoSeleccionado, setReclamoSeleccionado] = useState<Claim | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [allClaims, setAllClaims] = useState<Claim[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Obtener todos los reclamos del sistema (solo para admin)
-  const allClaims = hasRole(1) ? claims : []
+  // Función para mapear reclamos de la base de datos
+  const mapearReclamo = (r: any, index: number): Claim => {
+    const idRaw = r.Rec_COD || r.rec_cod || r.rec_COD || r.Rec_cod || r.RecCod || r.recCod || r.cod || r.COD || r.id || Object.values(r).find((val: any) => typeof val === 'number' && val > 0)
+    const id = idRaw != null && !isNaN(Number(idRaw)) ? idRaw.toString() : `temp-${index}`
+    
+    // Mapear estado de la BD al formato esperado
+    const estadoBD = r.Rec_Estado || r.rec_estado || r.estado || r.Estado || "pendiente"
+    let estado: ClaimStatus = "pendiente"
+    
+    const estadoBDLower = String(estadoBD).toLowerCase().trim()
+    if (estadoBDLower === "pendiente") {
+      estado = "pendiente"
+    } else if (estadoBDLower === "listo") {
+      estado = "listo"
+    } else {
+      // Si el estado no es reconocido, usar "pendiente" por defecto
+      console.warn(`Estado no reconocido: "${estadoBD}", usando "pendiente" por defecto`)
+      estado = "pendiente"
+    }
+    
+    return {
+      id: id,
+      numeroReclamo: r.Rec_Numero || r.rec_numero || r.numeroReclamo || r.Numero || `REC-${id}`,
+      userId: r.Rec_Usuario_ID?.toString() || r.rec_usuario_id?.toString() || r.userId || r.Usuario_ID?.toString() || "",
+      categoria: r.Rec_Categoria || r.rec_categoria || r.categoria || r.Categoria || "Otro",
+      razon: r.Rec_Razon || r.rec_razon || r.razon || r.Razon || "",
+      descripcion: r.Rec_Descripcion || r.rec_descripcion || r.descripcion || r.Descripcion || "",
+      estado: estado,
+      urgente: r.Rec_Urgente === true || r.rec_urgente === true || r.Rec_Urgente === 1 || r.rec_urgente === 1 || r.urgente === true || false,
+      fechaCreacion: r.Rec_Fecha_Creacion || r.rec_fecha_creacion || r.fechaCreacion || r.Fecha_Creacion || new Date().toISOString(), // Usar fecha actual si no existe
+      reservaRelacionada: r.Rec_Reserva_ID?.toString() || r.rec_reserva_id?.toString() || r.reservaRelacionada || r.Reserva_ID?.toString() || r.Itinerario_Iti_COD?.toString() || r.itinerario_iti_cod?.toString() || undefined,
+      respuestaAdmin: r.Rec_Respuesta_Admin || r.rec_respuesta_admin || r.respuestaAdmin || r.Respuesta_Admin || undefined,
+    }
+  }
+
+  // Cargar reclamos desde la base de datos
+  useEffect(() => {
+    const cargarReclamos = async () => {
+      if (!hasRole(1)) {
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        setIsLoading(true)
+        const res = await fetch("/api/reclamos")
+        
+        if (!res.ok) {
+          throw new Error(`Error ${res.status}: ${res.statusText}`)
+        }
+        
+        const data = await res.json()
+        
+        if (data.status === "success" && Array.isArray(data.data)) {
+          console.log("Datos recibidos de la API:", data.data.length, "reclamos")
+          const reclamosFormateados = data.data.map((r: any, index: number) => {
+            try {
+              return mapearReclamo(r, index)
+            } catch (error: any) {
+              console.error(`Error mapeando reclamo ${index}:`, error, r)
+              return null
+            }
+          }).filter((r: any) => r !== null) as Claim[]
+          
+          console.log("Reclamos formateados:", reclamosFormateados.length)
+          setAllClaims(reclamosFormateados)
+        } else {
+          console.error("Estructura de respuesta inesperada:", data)
+          toast({
+            title: "Error",
+            description: data.message || "Estructura de respuesta inesperada",
+            variant: "destructive",
+          })
+        }
+      } catch (error: any) {
+        console.error("Error cargando reclamos:", error)
+        toast({
+          title: "Error",
+          description: error.message || "Error al cargar reclamos",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    cargarReclamos()
+  }, [hasRole, toast])
+
+  // Recargar reclamos cuando se cierre el diálogo (por si se actualizó algo)
+  const handleDialogChange = (open: boolean) => {
+    setDialogOpen(open)
+    if (!open) {
+      // Recargar reclamos cuando se cierra el diálogo
+      setTimeout(() => {
+        const recargar = async () => {
+          try {
+            const res = await fetch("/api/reclamos")
+            if (res.ok) {
+              const data = await res.json()
+              if (data.status === "success" && Array.isArray(data.data)) {
+                const reclamosFormateados = data.data.map((r: any, index: number) => mapearReclamo(r, index))
+                setAllClaims(reclamosFormateados)
+              }
+            }
+          } catch (error) {
+            console.error("Error recargando reclamos:", error)
+          }
+        }
+        recargar()
+      }, 500) // Pequeño delay para asegurar que la actualización en BD se complete
+    }
+  }
 
   const handleVerDetalle = (reclamo: Claim) => {
     setReclamoSeleccionado(reclamo)
@@ -92,7 +187,13 @@ export default function ReclamosPage() {
           </Badge>
         </div>
 
-        {allClaims.length === 0 ? (
+        {isLoading ? (
+          <Card>
+            <CardContent className="flex items-center justify-center py-12">
+              <p className="text-muted-foreground">Cargando reclamos...</p>
+            </CardContent>
+          </Card>
+        ) : allClaims.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <FileText className="h-12 w-12 text-muted-foreground mb-4" />
@@ -105,7 +206,7 @@ export default function ReclamosPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {allClaims.map((reclamo) => {
-                    const estadoConfig = estadosConfig[reclamo.estado]
+                    const estadoConfig = estadosConfig[reclamo.estado] || estadosConfig.pendiente
                     const IconoEstado = estadoConfig.icon
 
                     return (
@@ -161,7 +262,7 @@ export default function ReclamosPage() {
               )}
             </div>
 
-      <ReclamoDialog open={dialogOpen} onOpenChange={setDialogOpen} reclamo={reclamoSeleccionado} />
+      <ReclamoDialog open={dialogOpen} onOpenChange={handleDialogChange} reclamo={reclamoSeleccionado} />
     </div>
   )
 }

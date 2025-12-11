@@ -58,11 +58,6 @@ ALTER TABLE Hospedaje
     ADD CONSTRAINT fk_hospedaje_hotel
     FOREIGN KEY (Hotel_Pro_COD) REFERENCES Hotel(Pro_COD) ON DELETE CASCADE;
 
--- Itinerario → Comida
-ALTER TABLE Itinerario
-    ADD CONSTRAINT fk_itinerario_comida
-    FOREIGN KEY (Comida_Com_COD) REFERENCES Comida(Com_COD) ON DELETE CASCADE;
-
 -- Itinerario → Crucero
 ALTER TABLE Itinerario
     ADD CONSTRAINT fk_itinerario_crucero
@@ -382,7 +377,6 @@ ALTER SEQUENCE Auditoria_aud_cod_seq RESTART WITH 1;
 ALTER SEQUENCE Avion_avi_cod_seq RESTART WITH 1;
 ALTER SEQUENCE Barco_bar_cod_seq RESTART WITH 1;
 ALTER SEQUENCE Cliente_cli_cod_seq RESTART WITH 1;
-ALTER SEQUENCE Comida_com_cod_seq RESTART WITH 1;
 ALTER SEQUENCE Crucero_cru_cod_seq RESTART WITH 1;
 ALTER SEQUENCE Cuota_cuo_cod_seq RESTART WITH 1;
 ALTER SEQUENCE Documento_doc_cod_seq RESTART WITH 1;

@@ -117,12 +117,27 @@ CREATE OR REPLACE FUNCTION insertar_aerolinea(
     Aer_Direccion TEXT,
     Aer_Telefono NUMERIC,
     Aer_Correo VARCHAR,
-    Aer_Fecha_Fundacion DATE
+    Aer_Fecha_Fundacion DATE,
+    Lugar_ID INTEGER
 )
 RETURNS JSON AS $$
 BEGIN
-    INSERT INTO Aerolinea(Pro_Nombre, Pro_Direccion, Pro_Telefono, Pro_Correo, A_Fecha_Fundacion)
-    VALUES (Aer_Nombre, Aer_Direccion, Aer_Telefono, Aer_Correo, Aer_Fecha_Fundacion);
+    INSERT INTO Aerolinea(
+        Pro_Nombre, 
+        Pro_Direccion, 
+        Pro_Telefono, 
+        Pro_Correo, 
+        A_Fecha_Fundacion,
+        Lugar_Lug_COD
+    )
+    VALUES (
+        Aer_Nombre, 
+        Aer_Direccion, 
+        Aer_Telefono, 
+        Aer_Correo, 
+        Aer_Fecha_Fundacion,
+        Lugar_ID
+    );
 
     RETURN json_build_object(
         'status', 'success',
@@ -188,7 +203,8 @@ CREATE OR REPLACE FUNCTION actualizar_aerolinea(
     Aer_Direccion TEXT,
     Aer_Telefono NUMERIC,
     Aer_Correo VARCHAR,
-    Aer_Fecha_Fundacion DATE
+    Aer_Fecha_Fundacion DATE,
+    Lugar_ID INTEGER
 )
 RETURNS JSON AS $$
 DECLARE
@@ -200,7 +216,8 @@ BEGIN
         Pro_Direccion = Aer_Direccion,
         Pro_Telefono = Aer_Telefono,
         Pro_Correo = Aer_Correo,
-        A_Fecha_Fundacion = Aer_Fecha_Fundacion
+        A_Fecha_Fundacion = Aer_Fecha_Fundacion,
+        Lugar_Lug_COD = Lugar_ID
     WHERE Pro_COD = Aer_ID;
 
     IF NOT FOUND THEN
@@ -427,5 +444,232 @@ EXCEPTION
     WHEN OTHERS THEN
         resultado := json_build_object('status','error','message',SQLERRM);
         RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION registrar_promocion(
+    P_Tipo VARCHAR,
+    P_Fecha_Inicio DATE,
+    P_Fecha_Fin DATE,
+    P_Porcentaje NUMERIC
+)
+RETURNS JSON AS $$
+DECLARE
+    nuevo_id INTEGER;
+BEGIN
+    INSERT INTO Promocion (Prom_Tipo, Prom_Fecha_Inicio, Prom_Fecha_Fin, Prom_Porcentaje)
+    VALUES (P_Tipo, P_Fecha_Inicio, P_Fecha_Fin, P_Porcentaje)
+    RETURNING Prom_COD INTO nuevo_id;
+
+    RETURN json_build_object(
+        'status', 'success',
+        'message', 'Promoción registrada correctamente',
+        'Prom_COD', nuevo_id
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION consultar_promocion(
+    ID INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado RECORD;
+BEGIN
+    SELECT *
+    INTO resultado
+    FROM Promocion
+    WHERE Prom_COD = ID;
+
+    IF resultado IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Promoción no encontrada'
+        );
+    END IF;
+
+    RETURN json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'Prom_COD', resultado.Prom_COD,
+            'Prom_Tipo', resultado.Prom_Tipo,
+            'Prom_Fecha_Inicio', resultado.Prom_Fecha_Inicio,
+            'Prom_Fecha_Fin', resultado.Prom_Fecha_Fin,
+            'Prom_Porcentaje', resultado.Prom_Porcentaje
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION consultar_compania_crucero(
+    ID INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado RECORD;
+BEGIN
+    SELECT *
+    INTO resultado
+    FROM Compania_Crucero
+    WHERE Pro_COD = ID;
+
+    IF resultado IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Compañía de crucero no encontrada'
+        );
+    END IF;
+
+    RETURN json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'Pro_COD', resultado.Pro_COD,
+            'Pro_Nombre', resultado.Pro_Nombre,
+            'Pro_Direccion', resultado.Pro_Direccion,
+            'Pro_Telefono', resultado.Pro_Telefono,
+            'Pro_Correo', resultado.Pro_Correo,
+            'CC_Fecha_Fundacion', resultado.CC_Fecha_Fundacion
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION consultar_transporte_terrestre(
+    ID INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado RECORD;
+BEGIN
+    SELECT *
+    INTO resultado
+    FROM Compania_Transporte_Terrestre
+    WHERE Pro_COD = ID;
+
+    IF resultado IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Compañía de transporte terrestre no encontrada'
+        );
+    END IF;
+
+    RETURN json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'Pro_COD', resultado.Pro_COD,
+            'Pro_Nombre', resultado.Pro_Nombre,
+            'Pro_Direccion', resultado.Pro_Direccion,
+            'Pro_Telefono', resultado.Pro_Telefono,
+            'Pro_Correo', resultado.Pro_Correo
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION consultar_reclamos(
+    ID INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado RECORD;
+BEGIN
+    SELECT *
+    INTO resultado
+    FROM Reclamo
+    WHERE Rec_COD = ID;
+
+    -- Si no existe
+    IF resultado IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Reclamo no encontrado'
+        );
+    END IF;
+
+    -- Si existe
+    RETURN json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'Rec_COD', resultado.Rec_COD,
+            'Rec_Descripcion', resultado.Rec_Descripcion
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION consultar_hotel(
+    ID INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado RECORD;
+BEGIN
+    -- Buscar el hotel
+    SELECT *
+    INTO resultado
+    FROM Hotel
+    WHERE Pro_COD = ID;
+
+    -- Si no existe
+    IF resultado IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Hotel no encontrado'
+        );
+    END IF;
+
+    -- Si existe
+    RETURN json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'Pro_COD', resultado.Pro_COD,
+            'Pro_Nombre', resultado.Pro_Nombre,
+            'Pro_Direccion', resultado.Pro_Direccion,
+            'Pro_Telefono', resultado.Pro_Telefono,
+            'Pro_Correo', resultado.Pro_Correo
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
 END;
 $$ LANGUAGE plpgsql;
