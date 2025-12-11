@@ -1,13 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { Plane, Ship, MapPin, AlertTriangle, Plus, Pencil, Trash2 } from "lucide-react"
+import { Plane, Ship, MapPin, AlertTriangle, Plus, Pencil, Trash2, Building2, Car, Package, Tag } from "lucide-react"
 import { InventarioDialog } from "@/components/inventario-dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
 
 type Vuelo = {
   id: string
@@ -35,6 +38,52 @@ type Tour = {
   fecha: string
   capacidadTotal: number
   capacidadDisponible: number
+}
+
+type Aerolinea = {
+  id: string
+  idReal?: string | null
+  nombre: string
+  direccion: string
+  telefono: string
+  correo: string
+  fechaFundacion: string
+}
+
+type CompaniaCrucero = {
+  id: string
+  nombre: string
+  direccion: string
+  telefono: string
+  correo: string
+  fechaFundacion: string
+}
+
+type CompaniaTransporteTerrestre = {
+  id: string
+  nombre: string
+  direccion: string
+  telefono: string
+  correo: string
+  fechaFundacion: string
+}
+
+type PaqueteTuristico = {
+  id: string
+  nombre: string
+  descripcion: string
+  costo: number
+  costoMillas: number
+  millasOtorga: number
+  tipo: "especial" | "regular"
+}
+
+type Promocion = {
+  id: string
+  tipo: string
+  fechaInicio: string
+  fechaFin: string
+  porcentajeDescuento: number
 }
 
 const vuelosDataInicial: Vuelo[] = [
@@ -122,13 +171,82 @@ const toursDataInicial: Tour[] = [
 ]
 
 export default function InventarioPage() {
+  const { toast } = useToast()
   const [vuelos, setVuelos] = useState<Vuelo[]>(vuelosDataInicial)
   const [cruceros, setCruceros] = useState<Crucero[]>(crucerosDataInicial)
   const [tours, setTours] = useState<Tour[]>(toursDataInicial)
+  const [aerolineas, setAerolineas] = useState<Aerolinea[]>([])
+  const [companiasCrucero, setCompaniasCrucero] = useState<CompaniaCrucero[]>([])
+  const [companiasTransporte, setCompaniasTransporte] = useState<CompaniaTransporteTerrestre[]>([])
+  const [paquetesTuristicos, setPaquetesTuristicos] = useState<PaqueteTuristico[]>([])
+  const [promociones, setPromociones] = useState<Promocion[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [tipoActual, setTipoActual] = useState<"vuelo" | "crucero" | "tour">("vuelo")
-  const [itemSeleccionado, setItemSeleccionado] = useState<Vuelo | Crucero | Tour | null>(null)
+  const [tipoActual, setTipoActual] = useState<
+    "vuelo" | "crucero" | "tour" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion"
+  >("vuelo")
+  const [itemSeleccionado, setItemSeleccionado] = useState<
+    Vuelo | Crucero | Tour | Aerolinea | CompaniaCrucero | CompaniaTransporteTerrestre | PaqueteTuristico | Promocion | null
+  >(null)
   const [modoEdicion, setModoEdicion] = useState(false)
+
+  // Función helper para mapear aerolíneas de la base de datos
+  const mapearAerolinea = (a: any, index: number): Aerolinea => {
+    // Buscar el ID en todas las posibles variaciones de nombres de columnas
+    const idRaw = a.Aerolinea_COD 
+      || a.aerolinea_cod 
+      || a.aerolinea_COD
+      || a.Aerolinea_cod
+      || a.AerolineaCod
+      || a.aerolineaCod
+      || a.cod
+      || a.COD
+      || a.id
+      || Object.values(a).find((val: any) => typeof val === 'number' && val > 0)
+    
+    // Solo usar el ID si es un número válido
+    const idReal = idRaw != null && !isNaN(Number(idRaw)) ? idRaw.toString() : null
+    
+    return {
+      id: idReal || `temp-${index}`,
+      idReal: idReal,
+      nombre: a.Aerolinea_Nombre || a.aerolinea_nombre || a.Pro_Nombre || a.pro_nombre || a.nombre || a.Nombre || "",
+      direccion: a.Aerolinea_Direccion || a.aerolinea_direccion || a.Pro_Direccion || a.pro_direccion || a.direccion || a.Direccion || "",
+      telefono: a.Aerolinea_Telefono?.toString() || a.aerolinea_telefono?.toString() || a.Pro_Telefono?.toString() || a.pro_telefono?.toString() || a.telefono?.toString() || a.Telefono?.toString() || "",
+      correo: a.Aerolinea_Correo || a.aerolinea_correo || a.Pro_Correo || a.pro_correo || a.correo || a.Correo || "",
+      fechaFundacion: a.Aerolinea_Fecha_Fundacion || a.aerolinea_fecha_fundacion || a.A_Fecha_Fundacion || a.a_fecha_fundacion || a.fechaFundacion || a.fecha_fundacion || a.Fecha_Fundacion || "",
+    }
+  }
+
+  // Cargar aerolíneas desde la base de datos al montar el componente
+  useEffect(() => {
+    const cargarAerolineas = async () => {
+      try {
+        const res = await fetch("/api/aerolinea")
+        const data = await res.json()
+        
+        console.log("Respuesta completa de API aerolíneas:", data) // Debug
+        
+        if (data.status === "success" && Array.isArray(data.data)) {
+          // Log para ver la estructura del primer elemento
+          if (data.data.length > 0) {
+            console.log("Estructura de una aerolínea:", data.data[0])
+          }
+          
+          // Normalizar los datos usando la función helper
+          const aerolineasFormateadas = data.data.map((a: any, index: number) => mapearAerolinea(a, index))
+          
+          console.log("Aerolíneas formateadas:", aerolineasFormateadas) // Debug
+          setAerolineas(aerolineasFormateadas)
+        } else {
+          console.error("Estructura de respuesta inesperada:", data)
+        }
+      } catch (error) {
+        console.error("Error cargando aerolíneas:", error)
+      }
+    }
+
+    cargarAerolineas()
+  }, [])
 
   const calcularPorcentaje = (disponible: number, total: number) => {
     return ((disponible / total) * 100).toFixed(0)
@@ -141,33 +259,112 @@ export default function InventarioPage() {
     return { label: "Disponible", variant: "secondary" as const }
   }
 
-  const handleAgregar = (tipo: "vuelo" | "crucero" | "tour") => {
+  const handleAgregar = (
+    tipo: "vuelo" | "crucero" | "tour" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion"
+  ) => {
     setTipoActual(tipo)
     setItemSeleccionado(null)
     setModoEdicion(false)
     setDialogOpen(true)
   }
 
-  const handleEditar = (item: Vuelo | Crucero | Tour, tipo: "vuelo" | "crucero" | "tour") => {
+  const handleEditar = (
+    item: Vuelo | Crucero | Tour | Aerolinea | CompaniaCrucero | CompaniaTransporteTerrestre | PaqueteTuristico | Promocion,
+    tipo: "vuelo" | "crucero" | "tour" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion"
+  ) => {
     setTipoActual(tipo)
     setItemSeleccionado(item)
     setModoEdicion(true)
     setDialogOpen(true)
   }
 
-  const handleEliminar = (id: string, tipo: "vuelo" | "crucero" | "tour") => {
+  const handleEliminar = async (
+    id: string,
+    tipo: "vuelo" | "crucero" | "tour" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion"
+  ) => {
     if (confirm("¿Estás seguro de que deseas eliminar este elemento?")) {
       if (tipo === "vuelo") {
         setVuelos(vuelos.filter((v) => v.id !== id))
       } else if (tipo === "crucero") {
         setCruceros(cruceros.filter((c) => c.id !== id))
-      } else {
+      } else if (tipo === "tour") {
         setTours(tours.filter((t) => t.id !== id))
+      } else if (tipo === "aerolinea") {
+        // Buscar la aerolínea para obtener el ID real
+        const aerolinea = aerolineas.find(a => a.id === id)
+        const idReal = aerolinea?.idReal || (id.startsWith("temp-") ? null : id)
+        
+        // Validar que tengamos un ID válido (numérico)
+        if (!idReal || idReal.startsWith("temp-") || idReal.startsWith("aerolinea-")) {
+          toast({
+            title: "Error",
+            description: "No se puede eliminar esta aerolínea porque no tiene un ID válido de la base de datos",
+            variant: "destructive",
+          })
+          return
+        }
+        
+        try {
+          const res = await fetch("/api/aerolinea", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: idReal }),
+          })
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: "Error de conexión con el servidor" }))
+            toast({
+              title: "Error",
+              description: errorData.message || `Error ${res.status}: ${res.statusText}`,
+              variant: "destructive",
+            })
+            return
+          }
+
+          const data = await res.json()
+
+          if (data.status === "success") {
+            // Recargar aerolíneas desde la base de datos
+            const resGet = await fetch("/api/aerolinea")
+            const dataGet = await resGet.json()
+            
+            if (dataGet.status === "success" && Array.isArray(dataGet.data)) {
+              const aerolineasFormateadas = dataGet.data.map((a: any, index: number) => mapearAerolinea(a, index))
+              setAerolineas(aerolineasFormateadas)
+            }
+            toast({
+              title: "Aerolínea eliminada",
+              description: "La aerolínea se ha eliminado exitosamente",
+            })
+          } else {
+            toast({
+              title: "Error",
+              description: data.message || "No se pudo eliminar la aerolínea",
+              variant: "destructive",
+            })
+          }
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Error de conexión con el servidor",
+            variant: "destructive",
+          })
+        }
+      } else if (tipo === "compania-crucero") {
+        setCompaniasCrucero(companiasCrucero.filter((c) => c.id !== id))
+      } else if (tipo === "compania-transporte") {
+        setCompaniasTransporte(companiasTransporte.filter((c) => c.id !== id))
+      } else if (tipo === "paquete") {
+        setPaquetesTuristicos(paquetesTuristicos.filter((p) => p.id !== id))
+      } else if (tipo === "promocion") {
+        setPromociones(promociones.filter((p) => p.id !== id))
       }
     }
   }
 
-  const handleGuardar = (item: Vuelo | Crucero | Tour) => {
+  const handleGuardar = async (
+    item: Vuelo | Crucero | Tour | Aerolinea | CompaniaCrucero | CompaniaTransporteTerrestre | PaqueteTuristico | Promocion
+  ) => {
     if (tipoActual === "vuelo") {
       const vuelo = item as Vuelo
       if (modoEdicion) {
@@ -182,12 +379,144 @@ export default function InventarioPage() {
       } else {
         setCruceros([...cruceros, { ...crucero, id: Date.now().toString() }])
       }
-    } else {
+    } else if (tipoActual === "tour") {
       const tour = item as Tour
       if (modoEdicion) {
         setTours(tours.map((t) => (t.id === tour.id ? tour : t)))
       } else {
         setTours([...tours, { ...tour, id: Date.now().toString() }])
+      }
+    } else if (tipoActual === "aerolinea") {
+      const aerolinea = item as Aerolinea
+      if (modoEdicion) {
+        try {
+          const res = await fetch("/api/aerolinea", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: aerolinea.id,
+              nombre: aerolinea.nombre,
+              direccion: aerolinea.direccion,
+              telefono: aerolinea.telefono,
+              correo: aerolinea.correo,
+              fechaFundacion: aerolinea.fechaFundacion,
+            }),
+          })
+
+          const data = await res.json()
+
+          if (data.status === "success") {
+            // Recargar aerolíneas desde la base de datos
+            const resGet = await fetch("/api/aerolinea")
+            const dataGet = await resGet.json()
+            
+            if (dataGet.status === "success" && Array.isArray(dataGet.data)) {
+              const aerolineasFormateadas = dataGet.data.map((a: any, index: number) => mapearAerolinea(a, index))
+              setAerolineas(aerolineasFormateadas)
+            }
+            toast({
+              title: "Aerolínea actualizada",
+              description: "La aerolínea se ha actualizado exitosamente",
+            })
+          } else {
+            toast({
+              title: "Error",
+              description: data.message || "No se pudo actualizar la aerolínea",
+              variant: "destructive",
+            })
+            return
+          }
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Error de conexión con el servidor",
+            variant: "destructive",
+          })
+          return
+        }
+      } else {
+        try {
+          const res = await fetch("/api/aerolinea", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              nombre: aerolinea.nombre,
+              direccion: aerolinea.direccion,
+              telefono: aerolinea.telefono,
+              correo: aerolinea.correo,
+              fechaFundacion: aerolinea.fechaFundacion,
+            }),
+          })
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: "Error de conexión con el servidor" }))
+            toast({
+              title: "Error",
+              description: errorData.message || `Error ${res.status}: ${res.statusText}`,
+              variant: "destructive",
+            })
+            return
+          }
+
+          const data = await res.json()
+
+          if (data.status === "success") {
+            // Recargar aerolíneas desde la base de datos
+            const resGet = await fetch("/api/aerolinea")
+            const dataGet = await resGet.json()
+            
+            if (dataGet.status === "success" && Array.isArray(dataGet.data)) {
+              const aerolineasFormateadas = dataGet.data.map((a: any, index: number) => mapearAerolinea(a, index))
+              setAerolineas(aerolineasFormateadas)
+            }
+            toast({
+              title: "Aerolínea agregada",
+              description: "La aerolínea se ha guardado exitosamente en la base de datos",
+            })
+          } else {
+            toast({
+              title: "Error",
+              description: data.message || "No se pudo guardar la aerolínea",
+              variant: "destructive",
+            })
+            return
+          }
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Error de conexión con el servidor",
+            variant: "destructive",
+          })
+          return
+        }
+      }
+    } else if (tipoActual === "compania-crucero") {
+      const compania = item as CompaniaCrucero
+      if (modoEdicion) {
+        setCompaniasCrucero(companiasCrucero.map((c) => (c.id === compania.id ? compania : c)))
+      } else {
+        setCompaniasCrucero([...companiasCrucero, { ...compania, id: Date.now().toString() }])
+      }
+    } else if (tipoActual === "compania-transporte") {
+      const compania = item as CompaniaTransporteTerrestre
+      if (modoEdicion) {
+        setCompaniasTransporte(companiasTransporte.map((c) => (c.id === compania.id ? compania : c)))
+      } else {
+        setCompaniasTransporte([...companiasTransporte, { ...compania, id: Date.now().toString() }])
+      }
+    } else if (tipoActual === "paquete") {
+      const paquete = item as PaqueteTuristico
+      if (modoEdicion) {
+        setPaquetesTuristicos(paquetesTuristicos.map((p) => (p.id === paquete.id ? paquete : p)))
+      } else {
+        setPaquetesTuristicos([...paquetesTuristicos, { ...paquete, id: Date.now().toString() }])
+      }
+    } else if (tipoActual === "promocion") {
+      const promocion = item as Promocion
+      if (modoEdicion) {
+        setPromociones(promociones.map((p) => (p.id === promocion.id ? promocion : p)))
+      } else {
+        setPromociones([...promociones, { ...promocion, id: Date.now().toString() }])
       }
     }
     setDialogOpen(false)
@@ -201,7 +530,7 @@ export default function InventarioPage() {
       </div>
 
       <Tabs defaultValue="vuelos" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
           <TabsTrigger value="vuelos" className="gap-2">
             <Plane className="h-4 w-4" />
             Vuelos
@@ -213,6 +542,26 @@ export default function InventarioPage() {
           <TabsTrigger value="tours" className="gap-2">
             <MapPin className="h-4 w-4" />
             Tours
+          </TabsTrigger>
+          <TabsTrigger value="aerolineas" className="gap-2">
+            <Building2 className="h-4 w-4" />
+            Aerolíneas
+          </TabsTrigger>
+          <TabsTrigger value="companias-crucero" className="gap-2">
+            <Ship className="h-4 w-4" />
+            Cías. Crucero
+          </TabsTrigger>
+          <TabsTrigger value="companias-transporte" className="gap-2">
+            <Car className="h-4 w-4" />
+            Cías. Transporte
+          </TabsTrigger>
+          <TabsTrigger value="paquetes" className="gap-2">
+            <Package className="h-4 w-4" />
+            Paquetes
+          </TabsTrigger>
+          <TabsTrigger value="promociones" className="gap-2">
+            <Tag className="h-4 w-4" />
+            Promociones
           </TabsTrigger>
         </TabsList>
 
@@ -435,6 +784,373 @@ export default function InventarioPage() {
               </Card>
             )
           })}
+        </TabsContent>
+
+        {/* Aerolíneas */}
+        <TabsContent value="aerolineas" className="space-y-4">
+          <div className="flex justify-end">
+            <Button onClick={() => handleAgregar("aerolinea")} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Agregar Aerolínea
+            </Button>
+          </div>
+
+          {aerolineas.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No hay aerolíneas registradas</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {aerolineas.map((aerolinea) => (
+                <Card key={aerolinea.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Building2 className="h-5 w-5 text-primary" />
+                          {aerolinea.nombre}
+                        </CardTitle>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditar(aerolinea, "aerolinea")}
+                          className="h-8 w-8"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEliminar(aerolinea.id, "aerolinea")}
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Dirección</p>
+                      <p className="font-medium">{aerolinea.direccion}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Teléfono</p>
+                      <p className="font-medium">{aerolinea.telefono}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Correo</p>
+                      <p className="font-medium">{aerolinea.correo}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Fecha de Fundación</p>
+                      <p className="font-medium">
+                        {aerolinea.fechaFundacion 
+                          ? (aerolinea.fechaFundacion.includes("T") 
+                              ? new Date(aerolinea.fechaFundacion).toLocaleDateString("es-ES")
+                              : aerolinea.fechaFundacion.split("T")[0])
+                          : "No disponible"}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Compañías de Crucero */}
+        <TabsContent value="companias-crucero" className="space-y-4">
+          <div className="flex justify-end">
+            <Button onClick={() => handleAgregar("compania-crucero")} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Agregar Compañía de Crucero
+            </Button>
+          </div>
+
+          {companiasCrucero.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Ship className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No hay compañías de crucero registradas</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {companiasCrucero.map((compania) => (
+                <Card key={compania.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Ship className="h-5 w-5 text-accent" />
+                          {compania.nombre}
+                        </CardTitle>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditar(compania, "compania-crucero")}
+                          className="h-8 w-8"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEliminar(compania.id, "compania-crucero")}
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Dirección</p>
+                      <p className="font-medium">{compania.direccion}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Teléfono</p>
+                      <p className="font-medium">{compania.telefono}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Correo</p>
+                      <p className="font-medium">{compania.correo}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Fecha de Fundación</p>
+                      <p className="font-medium">{new Date(compania.fechaFundacion).toLocaleDateString("es-ES")}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Compañías de Transporte Terrestre */}
+        <TabsContent value="companias-transporte" className="space-y-4">
+          <div className="flex justify-end">
+            <Button onClick={() => handleAgregar("compania-transporte")} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Agregar Compañía de Transporte
+            </Button>
+          </div>
+
+          {companiasTransporte.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Car className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No hay compañías de transporte registradas</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {companiasTransporte.map((compania) => (
+                <Card key={compania.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Car className="h-5 w-5 text-secondary" />
+                          {compania.nombre}
+                        </CardTitle>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditar(compania, "compania-transporte")}
+                          className="h-8 w-8"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEliminar(compania.id, "compania-transporte")}
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Dirección</p>
+                      <p className="font-medium">{compania.direccion}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Teléfono</p>
+                      <p className="font-medium">{compania.telefono}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Correo</p>
+                      <p className="font-medium">{compania.correo}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Fecha de Fundación</p>
+                      <p className="font-medium">{new Date(compania.fechaFundacion).toLocaleDateString("es-ES")}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Paquetes Turísticos */}
+        <TabsContent value="paquetes" className="space-y-4">
+          <div className="flex justify-end">
+            <Button onClick={() => handleAgregar("paquete")} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Agregar Paquete Turístico
+            </Button>
+          </div>
+
+          {paquetesTuristicos.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Package className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No hay paquetes turísticos registrados</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {paquetesTuristicos.map((paquete) => (
+                <Card key={paquete.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Package className="h-5 w-5 text-primary" />
+                          {paquete.nombre}
+                        </CardTitle>
+                        <CardDescription className="line-clamp-2">{paquete.descripcion}</CardDescription>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={paquete.tipo === "especial" ? "default" : "secondary"}>
+                          {paquete.tipo}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditar(paquete, "paquete")}
+                          className="h-8 w-8"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEliminar(paquete.id, "paquete")}
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-muted-foreground">Costo</p>
+                        <p className="font-medium">${paquete.costo.toFixed(2)}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Costo en Millas</p>
+                        <p className="font-medium">{paquete.costoMillas}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Millas que Otorga</p>
+                      <p className="font-medium">{paquete.millasOtorga}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Promociones */}
+        <TabsContent value="promociones" className="space-y-4">
+          <div className="flex justify-end">
+            <Button onClick={() => handleAgregar("promocion")} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Agregar Promoción
+            </Button>
+          </div>
+
+          {promociones.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Tag className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No hay promociones registradas</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {promociones.map((promocion) => (
+                <Card key={promocion.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Tag className="h-5 w-5 text-primary" />
+                          {promocion.tipo}
+                        </CardTitle>
+                        <CardDescription>
+                          {promocion.porcentajeDescuento}% de descuento
+                        </CardDescription>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditar(promocion, "promocion")}
+                          className="h-8 w-8"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEliminar(promocion.id, "promocion")}
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Fecha de Inicio</p>
+                      <p className="font-medium">{new Date(promocion.fechaInicio).toLocaleDateString("es-ES")}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Fecha de Fin</p>
+                      <p className="font-medium">{new Date(promocion.fechaFin).toLocaleDateString("es-ES")}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Descuento</p>
+                      <p className="font-medium text-primary">{promocion.porcentajeDescuento}%</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 

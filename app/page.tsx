@@ -52,11 +52,11 @@ export default function HomePage() {
   // Redirigir usuarios autenticados según su rol
   useEffect(() => {
     if (isAuthenticated && user) {
-      if (user.role === "admin") {
+      if (user.role === 1) {
         router.push("/admin")
-      } else if (user.role === "proveedor") {
+      } else if (user.role === 2) {
         router.push("/proveedores")
-      } else if (user.role === "cliente") {
+      } else if (user.role === 3) {
         router.push("/clientes")
       }
     }

@@ -19,7 +19,6 @@ const serviceFilters = [
   { id: "cruceros" as ServiceType, label: "Cruceros", icon: Ship },
   { id: "traslados" as ServiceType, label: "Traslados", icon: Car },
   { id: "hoteles" as ServiceType, label: "Hoteles", icon: Building2 },
-  { id: "trenes" as ServiceType, label: "Trenes", icon: Train },
   { id: "paquetes" as ServiceType, label: "Paquetes", icon: Package },
 ]
 
@@ -558,7 +557,11 @@ export function ExploreServices() {
   const router = useRouter()
 
   const filteredOptions =
-    selectedFilter === "todos" ? exploreOptions : exploreOptions.filter((option) => option.type === selectedFilter)
+    selectedFilter === "todos"
+      ? exploreOptions
+      : selectedFilter === "traslados"
+        ? exploreOptions.filter((option) => option.type === "traslados" || option.type === "trenes")
+        : exploreOptions.filter((option) => option.type === selectedFilter)
 
   const toggleFavorite = (option: (typeof exploreOptions)[0]) => {
     if (isInWishlist(option.id)) {

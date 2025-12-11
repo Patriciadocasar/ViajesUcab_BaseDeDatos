@@ -23,6 +23,7 @@ interface ClaimsContextType {
   claims: Claim[]
   addClaim: (claim: Omit<Claim, "id" | "numeroReclamo" | "userId" | "estado" | "fechaCreacion">) => void
   getUserClaims: () => Claim[]
+  updateClaim: (claimId: string, updates: Partial<Claim>) => void
 }
 
 const ClaimsContext = createContext<ClaimsContextType | undefined>(undefined)
@@ -70,7 +71,13 @@ export function ClaimsProvider({ children }: { children: ReactNode }) {
     return claims.filter((claim) => claim.userId === user.id)
   }
 
-  return <ClaimsContext.Provider value={{ claims, addClaim, getUserClaims }}>{children}</ClaimsContext.Provider>
+  const updateClaim = (claimId: string, updates: Partial<Claim>) => {
+    setClaims((prev) =>
+      prev.map((claim) => (claim.id === claimId ? { ...claim, ...updates } : claim))
+    )
+  }
+
+  return <ClaimsContext.Provider value={{ claims, addClaim, getUserClaims, updateClaim }}>{children}</ClaimsContext.Provider>
 }
 
 export function useClaims() {

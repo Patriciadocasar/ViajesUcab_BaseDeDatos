@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 type Vuelo = {
   id: string
@@ -36,12 +38,57 @@ type Tour = {
   capacidadDisponible: number
 }
 
+type Aerolinea = {
+  id: string
+  nombre: string
+  direccion: string
+  telefono: string
+  correo: string
+  fechaFundacion: string
+}
+
+type CompaniaCrucero = {
+  id: string
+  nombre: string
+  direccion: string
+  telefono: string
+  correo: string
+  fechaFundacion: string
+}
+
+type CompaniaTransporteTerrestre = {
+  id: string
+  nombre: string
+  direccion: string
+  telefono: string
+  correo: string
+  fechaFundacion: string
+}
+
+type PaqueteTuristico = {
+  id: string
+  nombre: string
+  descripcion: string
+  costo: number
+  costoMillas: number
+  millasOtorga: number
+  tipo: "especial" | "regular"
+}
+
+type Promocion = {
+  id: string
+  tipo: string
+  fechaInicio: string
+  fechaFin: string
+  porcentajeDescuento: number
+}
+
 type InventarioDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  tipo: "vuelo" | "crucero" | "tour"
-  item: Vuelo | Crucero | Tour | null
-  onGuardar: (item: Vuelo | Crucero | Tour) => void
+  tipo: "vuelo" | "crucero" | "tour" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "promocion"
+  item: Vuelo | Crucero | Tour | Aerolinea | CompaniaCrucero | CompaniaTransporteTerrestre | PaqueteTuristico | Promocion | null
+  onGuardar: (item: Vuelo | Crucero | Tour | Aerolinea | CompaniaCrucero | CompaniaTransporteTerrestre | PaqueteTuristico | Promocion) => void
   modoEdicion: boolean
 }
 
@@ -70,6 +117,46 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
           capacidadTotal: 0,
           capacidadDisponible: 0,
         })
+      } else if (tipo === "aerolinea") {
+        setFormData({
+          nombre: "",
+          direccion: "",
+          telefono: "",
+          correo: "",
+          fechaFundacion: "",
+        })
+      } else if (tipo === "compania-crucero") {
+        setFormData({
+          nombre: "",
+          direccion: "",
+          telefono: "",
+          correo: "",
+          fechaFundacion: "",
+        })
+      } else if (tipo === "compania-transporte") {
+        setFormData({
+          nombre: "",
+          direccion: "",
+          telefono: "",
+          correo: "",
+          fechaFundacion: "",
+        })
+      } else if (tipo === "paquete") {
+        setFormData({
+          nombre: "",
+          descripcion: "",
+          costo: 0,
+          costoMillas: 0,
+          millasOtorga: 0,
+          tipo: "regular",
+        })
+      } else if (tipo === "promocion") {
+        setFormData({
+          tipo: "",
+          fechaInicio: "",
+          fechaFin: "",
+          porcentajeDescuento: 0,
+        })
       } else {
         setFormData({
           nombre: "",
@@ -92,10 +179,21 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
   }
 
   const getTitulo = () => {
-    if (modoEdicion) {
-      return `Editar ${tipo === "vuelo" ? "Vuelo" : tipo === "crucero" ? "Crucero" : "Tour"}`
+    const tipos: Record<string, string> = {
+      vuelo: "Vuelo",
+      crucero: "Crucero",
+      tour: "Tour",
+      aerolinea: "Aerolínea",
+      "compania-crucero": "Compañía de Crucero",
+      "compania-transporte": "Compañía de Transporte Terrestre",
+      paquete: "Paquete Turístico",
+      promocion: "Promoción",
     }
-    return `Agregar ${tipo === "vuelo" ? "Vuelo" : tipo === "crucero" ? "Crucero" : "Tour"}`
+    const nombreTipo = tipos[tipo] || "Elemento"
+    if (modoEdicion) {
+      return `Editar ${nombreTipo}`
+    }
+    return `Agregar ${nombreTipo}`
   }
 
   return (
@@ -288,6 +386,309 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
                     required
                   />
                 </div>
+              </div>
+            </>
+          )}
+
+          {/* Formulario Aerolínea */}
+          {tipo === "aerolinea" && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="nombre">Nombre</Label>
+                <Input
+                  id="nombre"
+                  value={formData.nombre || ""}
+                  onChange={(e) => handleChange("nombre", e.target.value)}
+                  placeholder="Nombre de la aerolínea"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="direccion">Dirección</Label>
+                <Input
+                  id="direccion"
+                  value={formData.direccion || ""}
+                  onChange={(e) => handleChange("direccion", e.target.value)}
+                  placeholder="Dirección completa"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="telefono">Teléfono</Label>
+                <Input
+                  id="telefono"
+                  type="tel"
+                  value={formData.telefono || ""}
+                  onChange={(e) => handleChange("telefono", e.target.value)}
+                  placeholder="+58 412-555-0100"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="correo">Correo</Label>
+                <Input
+                  id="correo"
+                  type="email"
+                  value={formData.correo || ""}
+                  onChange={(e) => handleChange("correo", e.target.value)}
+                  placeholder="contacto@aerolinea.com"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fechaFundacion">Fecha de Fundación</Label>
+                <Input
+                  id="fechaFundacion"
+                  type="date"
+                  value={formData.fechaFundacion || ""}
+                  onChange={(e) => handleChange("fechaFundacion", e.target.value)}
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          {/* Formulario Compañía de Crucero */}
+          {tipo === "compania-crucero" && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="nombre">Nombre</Label>
+                <Input
+                  id="nombre"
+                  value={formData.nombre || ""}
+                  onChange={(e) => handleChange("nombre", e.target.value)}
+                  placeholder="Nombre de la compañía"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="direccion">Dirección</Label>
+                <Input
+                  id="direccion"
+                  value={formData.direccion || ""}
+                  onChange={(e) => handleChange("direccion", e.target.value)}
+                  placeholder="Dirección completa"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="telefono">Teléfono</Label>
+                <Input
+                  id="telefono"
+                  type="tel"
+                  value={formData.telefono || ""}
+                  onChange={(e) => handleChange("telefono", e.target.value)}
+                  placeholder="+58 412-555-0100"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="correo">Correo</Label>
+                <Input
+                  id="correo"
+                  type="email"
+                  value={formData.correo || ""}
+                  onChange={(e) => handleChange("correo", e.target.value)}
+                  placeholder="contacto@cruceros.com"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fechaFundacion">Fecha de Fundación</Label>
+                <Input
+                  id="fechaFundacion"
+                  type="date"
+                  value={formData.fechaFundacion || ""}
+                  onChange={(e) => handleChange("fechaFundacion", e.target.value)}
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          {/* Formulario Compañía de Transporte Terrestre */}
+          {tipo === "compania-transporte" && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="nombre">Nombre</Label>
+                <Input
+                  id="nombre"
+                  value={formData.nombre || ""}
+                  onChange={(e) => handleChange("nombre", e.target.value)}
+                  placeholder="Nombre de la compañía"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="direccion">Dirección</Label>
+                <Input
+                  id="direccion"
+                  value={formData.direccion || ""}
+                  onChange={(e) => handleChange("direccion", e.target.value)}
+                  placeholder="Dirección completa"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="telefono">Teléfono</Label>
+                <Input
+                  id="telefono"
+                  type="tel"
+                  value={formData.telefono || ""}
+                  onChange={(e) => handleChange("telefono", e.target.value)}
+                  placeholder="+58 412-555-0100"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="correo">Correo</Label>
+                <Input
+                  id="correo"
+                  type="email"
+                  value={formData.correo || ""}
+                  onChange={(e) => handleChange("correo", e.target.value)}
+                  placeholder="contacto@transporte.com"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fechaFundacion">Fecha de Fundación</Label>
+                <Input
+                  id="fechaFundacion"
+                  type="date"
+                  value={formData.fechaFundacion || ""}
+                  onChange={(e) => handleChange("fechaFundacion", e.target.value)}
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          {/* Formulario Paquete Turístico */}
+          {tipo === "paquete" && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="nombre">Nombre</Label>
+                <Input
+                  id="nombre"
+                  value={formData.nombre || ""}
+                  onChange={(e) => handleChange("nombre", e.target.value)}
+                  placeholder="Nombre del paquete"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="descripcion">Descripción</Label>
+                <Textarea
+                  id="descripcion"
+                  value={formData.descripcion || ""}
+                  onChange={(e) => handleChange("descripcion", e.target.value)}
+                  placeholder="Descripción del paquete turístico"
+                  rows={4}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="costo">Costo</Label>
+                  <Input
+                    id="costo"
+                    type="number"
+                    step="0.01"
+                    value={formData.costo || 0}
+                    onChange={(e) => handleChange("costo", Number.parseFloat(e.target.value))}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="costoMillas">Costo en Millas</Label>
+                  <Input
+                    id="costoMillas"
+                    type="number"
+                    value={formData.costoMillas || 0}
+                    onChange={(e) => handleChange("costoMillas", Number.parseInt(e.target.value))}
+                    placeholder="0"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="millasOtorga">Millas que Otorga</Label>
+                <Input
+                  id="millasOtorga"
+                  type="number"
+                  value={formData.millasOtorga || 0}
+                  onChange={(e) => handleChange("millasOtorga", Number.parseInt(e.target.value))}
+                  placeholder="0"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tipo">Tipo</Label>
+                <Select
+                  value={formData.tipo || "regular"}
+                  onValueChange={(value) => handleChange("tipo", value)}
+                >
+                  <SelectTrigger id="tipo">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="regular">Regular</SelectItem>
+                    <SelectItem value="especial">Especial</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+
+          {/* Formulario Promoción */}
+          {tipo === "promocion" && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="tipo">Tipo</Label>
+                <Input
+                  id="tipo"
+                  value={formData.tipo || ""}
+                  onChange={(e) => handleChange("tipo", e.target.value)}
+                  placeholder="Ej: Descuento de Verano, Black Friday, etc."
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fechaInicio">Fecha de Inicio</Label>
+                  <Input
+                    id="fechaInicio"
+                    type="date"
+                    value={formData.fechaInicio || ""}
+                    onChange={(e) => handleChange("fechaInicio", e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fechaFin">Fecha de Fin</Label>
+                  <Input
+                    id="fechaFin"
+                    type="date"
+                    value={formData.fechaFin || ""}
+                    onChange={(e) => handleChange("fechaFin", e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="porcentajeDescuento">Porcentaje de Descuento</Label>
+                <Input
+                  id="porcentajeDescuento"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formData.porcentajeDescuento || 0}
+                  onChange={(e) => handleChange("porcentajeDescuento", Number.parseInt(e.target.value))}
+                  placeholder="0"
+                  required
+                />
               </div>
             </>
           )}

@@ -1,10 +1,18 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Calendar, FileText, AlertCircle, MessageSquare } from "lucide-react"
-import type { Claim } from "@/lib/claims-context"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar, FileText, AlertCircle, MessageSquare, Send } from "lucide-react"
+import type { Claim, ClaimStatus } from "@/lib/claims-context"
+import { useUser } from "@/lib/user-context"
+import { useClaims } from "@/lib/claims-context"
+import { useToast } from "@/hooks/use-toast"
 
 type ReclamoDialogProps = {
   open: boolean
@@ -21,9 +29,47 @@ const estadosConfig = {
 }
 
 export function ReclamoDialog({ open, onOpenChange, reclamo }: ReclamoDialogProps) {
+  const { hasRole } = useUser()
+  const { updateClaim } = useClaims()
+  const { toast } = useToast()
+  const [respuesta, setRespuesta] = useState("")
+  const isAdmin = hasRole(1)
+
   if (!reclamo) return null
 
   const estadoConfig = estadosConfig[reclamo.estado]
+  const [nuevoEstado, setNuevoEstado] = useState<ClaimStatus>(reclamo.estado)
+
+  useEffect(() => {
+    if (reclamo) {
+      setNuevoEstado(reclamo.estado)
+      setRespuesta(reclamo.respuestaAdmin || "")
+    }
+  }, [reclamo])
+
+  const handleResponder = () => {
+    if (!respuesta.trim()) {
+      toast({
+        title: "Error",
+        description: "Por favor escribe una respuesta",
+        variant: "destructive",
+      })
+      return
+    }
+
+    updateClaim(reclamo.id, {
+      respuestaAdmin: respuesta,
+      estado: nuevoEstado,
+    })
+
+    toast({
+      title: "Respuesta enviada",
+      description: "La respuesta ha sido guardada exitosamente",
+    })
+
+    setRespuesta("")
+    onOpenChange(false)
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -103,6 +149,48 @@ export function ReclamoDialog({ open, onOpenChange, reclamo }: ReclamoDialogProp
                   <p className="text-sm text-muted-foreground leading-relaxed bg-muted p-3 rounded-lg">
                     {reclamo.respuestaAdmin}
                   </p>
+                </div>
+              </div>
+            </>
+          )}
+
+          {isAdmin && (
+            <>
+              <Separator />
+              <div>
+                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Responder al Reclamo
+                </h4>
+                <div className="space-y-4 pl-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="estado">Cambiar Estado</Label>
+                    <Select value={nuevoEstado} onValueChange={(value) => setNuevoEstado(value as ClaimStatus)}>
+                      <SelectTrigger id="estado">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pendiente">Pendiente</SelectItem>
+                        <SelectItem value="en-proceso">En Proceso</SelectItem>
+                        <SelectItem value="resuelto">Resuelto</SelectItem>
+                        <SelectItem value="rechazado">Rechazado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="respuesta">Respuesta</Label>
+                    <Textarea
+                      id="respuesta"
+                      placeholder="Escribe tu respuesta al cliente..."
+                      rows={4}
+                      value={respuesta}
+                      onChange={(e) => setRespuesta(e.target.value)}
+                    />
+                  </div>
+                  <Button onClick={handleResponder} className="w-full">
+                    <Send className="h-4 w-4 mr-2" />
+                    Enviar Respuesta
+                  </Button>
                 </div>
               </div>
             </>

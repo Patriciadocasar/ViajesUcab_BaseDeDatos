@@ -167,7 +167,7 @@ export default function InventarioPage() {
     }
   }
 
-  const handleGuardar = (item: Vuelo | Crucero | Tour) => {
+  const handleGuardar = (item: any) => {
     if (tipoActual === "vuelo") {
       const vuelo = item as Vuelo
       if (modoEdicion) {

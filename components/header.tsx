@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { ChevronDown, Heart, Globe, Map, User, LogOut } from "lucide-react"
+import { ChevronDown, Heart, Globe, Map, User, LogOut, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -94,7 +94,7 @@ export function Header() {
                       </Button>
                     </Link>
                   )}
-                  {hasRole(2) && (
+                  {hasRole(2) && !hasRole(3) && (
                     <Link href="/proveedores">
                       <Button variant="ghost" size="sm" className="hidden md:inline-flex gap-2">
                         Dashboard Proveedor
@@ -162,11 +162,18 @@ export function Header() {
                       </DropdownMenuItem>
                     )}
                     {hasRole(1) && (
-                      <DropdownMenuItem onClick={() => router.push("/admin")}>
-                        Panel Administrador
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => router.push("/admin")}>
+                          Panel Administrador
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push("/admin/roles")}>
+                          <Shield className="mr-2 h-4 w-4" />
+                          Administrar Roles
+                        </DropdownMenuItem>
+                      </>
                     )}
-                    {hasRole(2) && (
+                    {hasRole(2) && !hasRole(3) && (
                       <DropdownMenuItem onClick={() => router.push("/proveedores")}>
                         Panel Proveedor
                       </DropdownMenuItem>
@@ -209,18 +216,39 @@ export function Header() {
           </DialogHeader>
           <form
             className="space-y-4"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault()
               const formData = new FormData(e.currentTarget)
               const email = formData.get("email") as string
               const password = formData.get("password") as string
-              login(email, password)
-              toast({
-                title: "Inicio de sesión exitoso",
-                description: "Bienvenido de vuelta a ViajesUCAB",
-              })
-              setShowLoginModal(false)
-              router.push("/clientes")
+              
+              try {
+                await login(email, password)
+                
+                // Obtener el usuario actualizado después del login
+                const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null")
+                
+                toast({
+                  title: "Inicio de sesión exitoso",
+                  description: "Bienvenido de vuelta a ViajesUCAB",
+                })
+                setShowLoginModal(false)
+                
+                // Redirigir según rol
+                if (currentUser?.role === 1) {
+                  router.push("/admin")
+                } else if (currentUser?.role === 2) {
+                  router.push("/proveedores")
+                } else {
+                  router.push("/")
+                }
+              } catch (error) {
+                toast({
+                  title: "Error",
+                  description: error instanceof Error ? error.message : "Error al iniciar sesión",
+                  variant: "destructive",
+                })
+              }
             }}
           >
             <div className="space-y-2">

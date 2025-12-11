@@ -29,21 +29,24 @@ export default function LoginPage() {
       // Esperar a que login termine
       await login(email, password)
 
+      // Obtener el usuario actualizado después del login
+      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null")
+
       toast({
         title: "Inicio de sesión exitoso",
-        description: `Bienvenido ${user?.name ?? ""}`,
+        description: `Bienvenido ${currentUser?.name ?? ""}`,
       })
 
       // Redirigir según rol
       if (redirectTo && redirectTo !== "/") {
         router.push(redirectTo)
       } else {
-        if (user?.role === 1) {
+        if (currentUser?.role === 1) {
           router.push("/admin")
-        } else if (user?.role === 2) {
+        } else if (currentUser?.role === 2) {
           router.push("/proveedores")
         } else {
-          router.push("/clientes")
+          router.push("/")
         }
       }
     } catch (error) {

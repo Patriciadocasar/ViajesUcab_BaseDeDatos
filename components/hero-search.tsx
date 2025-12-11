@@ -1,13 +1,12 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Search, Calendar, Users, MapPin, Loader2 } from "lucide-react"
+import { Search, Calendar, MapPin, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -35,7 +34,6 @@ const SERVICE_TYPES = [
   { value: "cruceros", label: "Cruceros" },
   { value: "traslados", label: "Traslados" },
   { value: "hoteles", label: "Hoteles" },
-  { value: "tours", label: "Tours" },
   { value: "restaurantes", label: "Restaurantes" },
 ]
 
@@ -53,9 +51,6 @@ export function HeroSearch() {
   const [filteredDestinations, setFilteredDestinations] = useState<string[]>([])
   const autocompleteRef = useRef<HTMLDivElement>(null)
 
-  const [showPassengersSelector, setShowPassengersSelector] = useState(false)
-  const [adults, setAdults] = useState(2)
-  const [children, setChildren] = useState(0)
 
   useEffect(() => {
     if (destination.length > 0) {
@@ -138,18 +133,12 @@ export function HeroSearch() {
         destination,
         departureDate,
         returnDate,
-        adults: adults.toString(),
-        children: children.toString(),
         flightType,
       })
       router.push(`/resultados?${params.toString()}`)
     }, 1500)
   }
 
-  const getPassengersText = () => {
-    const totalPassengers = adults + children
-    return totalPassengers === 1 ? "1 pasajero" : `${totalPassengers} pasajeros`
-  }
 
   const showFlightTypeSelector = selectedServices.includes("vuelos") || selectedServices.includes("traslados")
 
@@ -213,7 +202,7 @@ export function HeroSearch() {
               </div>
             )}
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <div className="relative" ref={autocompleteRef}>
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
                 <Input
@@ -265,70 +254,6 @@ export function HeroSearch() {
                   min={departureDate || new Date().toISOString().split("T")[0]}
                 />
               </div>
-
-              <Popover open={showPassengersSelector} onOpenChange={setShowPassengersSelector}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="h-12 justify-start text-left font-normal bg-transparent">
-                    <Users className="mr-2 h-5 w-5 text-muted-foreground" />
-                    <span className="truncate">{getPassengersText()}</span>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80" align="start">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Adultos</p>
-                        <p className="text-sm text-muted-foreground">Mayores de 18 años</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8 bg-transparent"
-                          onClick={() => setAdults(Math.max(1, adults - 1))}
-                        >
-                          -
-                        </Button>
-                        <span className="w-8 text-center font-medium">{adults}</span>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8 bg-transparent"
-                          onClick={() => setAdults(Math.min(10, adults + 1))}
-                        >
-                          +
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Niños</p>
-                        <p className="text-sm text-muted-foreground">0-17 años</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8 bg-transparent"
-                          onClick={() => setChildren(Math.max(0, children - 1))}
-                        >
-                          -
-                        </Button>
-                        <span className="w-8 text-center font-medium">{children}</span>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8 bg-transparent"
-                          onClick={() => setChildren(Math.min(10, children + 1))}
-                        >
-                          +
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
             </div>
 
             <Button

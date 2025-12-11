@@ -109,6 +109,10 @@ export function AdminNavigation() {
                     <User className="mr-2 h-4 w-4" />
                     Mi Perfil
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push("/admin/roles")}>
+                    <Shield className="mr-2 h-4 w-4" />
+                    Administrar Roles
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />

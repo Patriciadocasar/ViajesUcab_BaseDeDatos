@@ -112,43 +112,288 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION insertar_aerolinea(
+    Aer_Nombre VARCHAR,
+    Aer_Direccion TEXT,
+    Aer_Telefono NUMERIC,
+    Aer_Correo VARCHAR,
+    Aer_Fecha_Fundacion DATE
+)
+RETURNS JSON AS $$
+BEGIN
+    INSERT INTO Aerolinea(Pro_Nombre, Pro_Direccion, Pro_Telefono, Pro_Correo, A_Fecha_Fundacion)
+    VALUES (Aer_Nombre, Aer_Direccion, Aer_Telefono, Aer_Correo, Aer_Fecha_Fundacion);
 
--- Crear tasa de cambio
-CREATE OR REPLACE FUNCTION crear_tasa_cambio(
-    p_tipo_moneda VARCHAR,
-    p_valor NUMERIC,
-    p_cant_milla NUMERIC,
-    p_fecha_actualizacion DATE,
-    p_fecha_final DATE,
-    p_lugar_cod INTEGER
+    RETURN json_build_object(
+        'status', 'success',
+        'message', 'Aerolinea insertada correctamente'
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION consultar_aerolinea(
+    Aer_ID INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado RECORD;
+BEGIN
+    -- Buscar la aerolínea
+    SELECT *
+    INTO resultado
+    FROM Aerolinea
+    WHERE Pro_COD = Aer_ID;
+
+    -- Si no existe
+    IF resultado IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Aerolínea no encontrada'
+        );
+    END IF;
+
+    -- Si existe
+    RETURN json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'Pro_COD', resultado.Pro_COD,
+            'Pro_Nombre', resultado.Pro_Nombre,
+            'Pro_Direccion', resultado.Pro_Direccion,
+            'Pro_Telefono', resultado.Pro_Telefono,
+            'Pro_Correo', resultado.Pro_Correo,
+            'A_Fecha_Fundacion', resultado.A_Fecha_Fundacion
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION actualizar_aerolinea(
+    Aer_ID INTEGER,
+    Aer_Nombre VARCHAR,
+    Aer_Direccion TEXT,
+    Aer_Telefono NUMERIC,
+    Aer_Correo VARCHAR,
+    Aer_Fecha_Fundacion DATE
 )
 RETURNS JSON AS $$
 DECLARE
     resultado JSON;
-    nueva_tasa_id INTEGER;
 BEGIN
-    INSERT INTO Tasa_de_Cambio (
-        TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD
-    )
-    VALUES (
-        p_tipo_moneda, p_valor, p_cant_milla, p_fecha_actualizacion, p_fecha_final, p_lugar_cod
-    )
-    RETURNING TC_COD INTO nueva_tasa_id;
+    UPDATE Aerolinea
+    SET 
+        Pro_Nombre = Aer_Nombre,
+        Pro_Direccion = Aer_Direccion,
+        Pro_Telefono = Aer_Telefono,
+        Pro_Correo = Aer_Correo,
+        A_Fecha_Fundacion = Aer_Fecha_Fundacion
+    WHERE Pro_COD = Aer_ID;
 
-    resultado := json_build_object(
-        'status', 'success',
-        'message', 'Tasa de cambio creada correctamente',
-        'TC_COD', nueva_tasa_id
-    );
+    IF NOT FOUND THEN
+        resultado := json_build_object(
+            'status', 'error',
+            'message', 'No se encontró la aerolínea con el ID proporcionado'
+        );
+    ELSE
+        resultado := json_build_object(
+            'status', 'success',
+            'message', 'Aerolínea actualizada correctamente',
+            'Pro_COD', Aer_ID
+        );
+    END IF;
+
     RETURN resultado;
 
 EXCEPTION
     WHEN OTHERS THEN
-        resultado := json_build_object('status','error','message',SQLERRM);
-        RETURN resultado;
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION eliminar_aerolinea(
+    Aer_ID INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+BEGIN
+    DELETE FROM Aerolinea
+    WHERE Pro_COD = Aer_ID;
+
+    IF NOT FOUND THEN
+        resultado := json_build_object(
+            'status', 'error',
+            'message', 'No se encontró la aerolínea con el ID proporcionado'
+        );
+    ELSE
+        resultado := json_build_object(
+            'status', 'success',
+            'message', 'Aerolínea eliminada correctamente',
+            'Pro_COD', Aer_ID
+        );
+    END IF;
+
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION crear_rol(
+    p_tipo VARCHAR
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+    nuevo_id INTEGER;
+BEGIN
+    INSERT INTO Rol (Rol_tipo)
+    VALUES (p_tipo)
+    RETURNING Rol_COD INTO nuevo_id;
+
+    resultado := json_build_object(
+        'status', 'success',
+        'message', 'Rol creado correctamente',
+        'Rol_COD', nuevo_id
+    );
+
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status','error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION consultar_roles()
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+BEGIN
+    SELECT json_agg(row_to_json(r))
+    INTO resultado
+    FROM Rol r;
+
+    IF resultado IS NULL THEN
+        resultado := json_build_object(
+            'status','success',
+            'message','No hay roles registrados',
+            'data', '[]'
+        );
+    ELSE
+        resultado := json_build_object(
+            'status','success',
+            'message','Listado de roles',
+            'data', resultado
+        );
+    END IF;
+
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status','error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION actualizar_rol(
+    p_cod INTEGER,
+    p_tipo VARCHAR
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+BEGIN
+    UPDATE Rol
+    SET Rol_tipo = p_tipo
+    WHERE Rol_COD = p_cod;
+
+    IF NOT FOUND THEN
+        resultado := json_build_object(
+            'status','error',
+            'message','No se encontró el rol con el ID proporcionado'
+        );
+    ELSE
+        resultado := json_build_object(
+            'status','success',
+            'message','Rol actualizado correctamente',
+            'Rol_COD', p_cod
+        );
+    END IF;
+
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status','error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION eliminar_rol(
+    p_cod INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+BEGIN
+    DELETE FROM Rol WHERE Rol_COD = p_cod;
+
+    IF NOT FOUND THEN
+        resultado := json_build_object(
+            'status','error',
+            'message','No se encontró el rol con el ID proporcionado'
+        );
+    ELSE
+        resultado := json_build_object(
+            'status','success',
+            'message','Rol eliminado correctamente',
+            'Rol_COD', p_cod
+        );
+    END IF;
+
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status','error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
 
 -- Obtener todas las tasas de cambio
 CREATE OR REPLACE FUNCTION obtener_tasas_cambio()
@@ -173,83 +418,6 @@ BEGIN
             'status','success',
             'message','Listado de tasas de cambio',
             'data', resultado
-        );
-    END IF;
-
-    RETURN resultado;
-
-EXCEPTION
-    WHEN OTHERS THEN
-        resultado := json_build_object('status','error','message',SQLERRM);
-        RETURN resultado;
-END;
-$$ LANGUAGE plpgsql;
-
-
--- Actualizar tasa de cambio
-CREATE OR REPLACE FUNCTION actualizar_tasa_cambio(
-    p_cod INTEGER,
-    p_tipo_moneda VARCHAR,
-    p_valor NUMERIC,
-    p_cant_milla NUMERIC,
-    p_fecha_actualizacion DATE,
-    p_fecha_final DATE,
-    p_lugar_cod INTEGER
-)
-RETURNS JSON AS $$
-DECLARE
-    resultado JSON;
-BEGIN
-    UPDATE Tasa_de_Cambio
-    SET TC_Tipo_Moneda = p_tipo_moneda,
-        TC_Valor = p_valor,
-        TC_Cant_Milla = p_cant_milla,
-        TC_Fecha_Actualizacion = p_fecha_actualizacion,
-        TC_Fecha_Final = p_fecha_final,
-        Lugar_Lug_COD = p_lugar_cod
-    WHERE TC_COD = p_cod;
-
-    IF NOT FOUND THEN
-        resultado := json_build_object(
-            'status','error',
-            'message','No se encontró la tasa con el ID proporcionado'
-        );
-    ELSE
-        resultado := json_build_object(
-            'status','success',
-            'message','Tasa de cambio actualizada correctamente',
-            'TC_COD', p_cod
-        );
-    END IF;
-
-    RETURN resultado;
-
-EXCEPTION
-    WHEN OTHERS THEN
-        resultado := json_build_object('status','error','message',SQLERRM);
-        RETURN resultado;
-END;
-$$ LANGUAGE plpgsql;
-
-
--- Eliminar tasa de cambio
-CREATE OR REPLACE FUNCTION eliminar_tasa_cambio(p_cod INTEGER)
-RETURNS JSON AS $$
-DECLARE
-    resultado JSON;
-BEGIN
-    DELETE FROM Tasa_de_Cambio WHERE TC_COD = p_cod;
-
-    IF NOT FOUND THEN
-        resultado := json_build_object(
-            'status','error',
-            'message','No se encontró la tasa con el ID proporcionado'
-        );
-    ELSE
-        resultado := json_build_object(
-            'status','success',
-            'message','Tasa de cambio eliminada correctamente',
-            'TC_COD', p_cod
         );
     END IF;
 
