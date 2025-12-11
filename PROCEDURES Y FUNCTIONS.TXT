@@ -111,3 +111,153 @@ EXCEPTION
         RETURN resultado;
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- Crear tasa de cambio
+CREATE OR REPLACE FUNCTION crear_tasa_cambio(
+    p_tipo_moneda VARCHAR,
+    p_valor NUMERIC,
+    p_cant_milla NUMERIC,
+    p_fecha_actualizacion DATE,
+    p_fecha_final DATE,
+    p_lugar_cod INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+    nueva_tasa_id INTEGER;
+BEGIN
+    INSERT INTO Tasa_de_Cambio (
+        TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD
+    )
+    VALUES (
+        p_tipo_moneda, p_valor, p_cant_milla, p_fecha_actualizacion, p_fecha_final, p_lugar_cod
+    )
+    RETURNING TC_COD INTO nueva_tasa_id;
+
+    resultado := json_build_object(
+        'status', 'success',
+        'message', 'Tasa de cambio creada correctamente',
+        'TC_COD', nueva_tasa_id
+    );
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        resultado := json_build_object('status','error','message',SQLERRM);
+        RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Obtener todas las tasas de cambio
+CREATE OR REPLACE FUNCTION obtener_tasas_cambio()
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+BEGIN
+    SELECT json_agg(row_to_json(t))
+    INTO resultado
+    FROM (
+        SELECT * FROM Tasa_de_Cambio
+    ) t;
+
+    IF resultado IS NULL THEN
+        resultado := json_build_object(
+            'status','success',
+            'message','No hay tasas registradas',
+            'data', '[]'
+        );
+    ELSE
+        resultado := json_build_object(
+            'status','success',
+            'message','Listado de tasas de cambio',
+            'data', resultado
+        );
+    END IF;
+
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        resultado := json_build_object('status','error','message',SQLERRM);
+        RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Actualizar tasa de cambio
+CREATE OR REPLACE FUNCTION actualizar_tasa_cambio(
+    p_cod INTEGER,
+    p_tipo_moneda VARCHAR,
+    p_valor NUMERIC,
+    p_cant_milla NUMERIC,
+    p_fecha_actualizacion DATE,
+    p_fecha_final DATE,
+    p_lugar_cod INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+BEGIN
+    UPDATE Tasa_de_Cambio
+    SET TC_Tipo_Moneda = p_tipo_moneda,
+        TC_Valor = p_valor,
+        TC_Cant_Milla = p_cant_milla,
+        TC_Fecha_Actualizacion = p_fecha_actualizacion,
+        TC_Fecha_Final = p_fecha_final,
+        Lugar_Lug_COD = p_lugar_cod
+    WHERE TC_COD = p_cod;
+
+    IF NOT FOUND THEN
+        resultado := json_build_object(
+            'status','error',
+            'message','No se encontró la tasa con el ID proporcionado'
+        );
+    ELSE
+        resultado := json_build_object(
+            'status','success',
+            'message','Tasa de cambio actualizada correctamente',
+            'TC_COD', p_cod
+        );
+    END IF;
+
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        resultado := json_build_object('status','error','message',SQLERRM);
+        RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Eliminar tasa de cambio
+CREATE OR REPLACE FUNCTION eliminar_tasa_cambio(p_cod INTEGER)
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+BEGIN
+    DELETE FROM Tasa_de_Cambio WHERE TC_COD = p_cod;
+
+    IF NOT FOUND THEN
+        resultado := json_build_object(
+            'status','error',
+            'message','No se encontró la tasa con el ID proporcionado'
+        );
+    ELSE
+        resultado := json_build_object(
+            'status','success',
+            'message','Tasa de cambio eliminada correctamente',
+            'TC_COD', p_cod
+        );
+    END IF;
+
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        resultado := json_build_object('status','error','message',SQLERRM);
+        RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;

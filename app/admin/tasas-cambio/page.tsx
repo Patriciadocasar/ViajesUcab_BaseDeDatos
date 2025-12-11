@@ -1,103 +1,151 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, TrendingDown, ArrowLeft } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 import MonedaDialog from "@/components/MonedaDialog"
-import HistorialDialog from "@/components/HistorialDialog"
 import { useUser } from "@/lib/user-context"
 
-type Moneda = {
-  id: string
-  codigo: string
-  nombre: string
-  tasaActual: number
-  tasaAnterior: number
-  ultimaActualizacion: string
-}
-
-type HistorialTasa = {
-  fecha: string
-  tasa: number
-  transaccionId?: string
-}
-
-const monedasIniciales: Moneda[] = [
-  {
-    id: "1",
-    codigo: "USD",
-    nombre: "Dólar Estadounidense",
-    tasaActual: 36.5,
-    tasaAnterior: 36.2,
-    ultimaActualizacion: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    codigo: "EUR",
-    nombre: "Euro",
-    tasaActual: 39.8,
-    tasaAnterior: 39.5,
-    ultimaActualizacion: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    codigo: "COP",
-    nombre: "Peso Colombiano",
-    tasaActual: 0.0092,
-    tasaAnterior: 0.0091,
-    ultimaActualizacion: new Date().toISOString(),
-  },
-  {
-    id: "4",
-    codigo: "ARS",
-    nombre: "Peso Argentino",
-    tasaActual: 0.037,
-    tasaAnterior: 0.038,
-    ultimaActualizacion: new Date().toISOString(),
-  },
-]
-
-const historialEjemplo: HistorialTasa[] = [
-  { fecha: "2025-03-01", tasa: 35.8 },
-  { fecha: "2025-03-05", tasa: 36.0, transaccionId: "TXN-001" },
-  { fecha: "2025-03-10", tasa: 36.2, transaccionId: "TXN-002" },
-  { fecha: "2025-03-15", tasa: 36.3 },
-  { fecha: "2025-03-20", tasa: 36.5, transaccionId: "TXN-003" },
-]
 
 export default function TasasCambioPage() {
   const router = useRouter()
   const { isAuthenticated } = useUser()
-  const [monedas] = useState<Moneda[]>(monedasIniciales)
+  const [monedas, setMonedas] = useState<any[]>([])
+  const { toast } = useToast()
+
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [historialOpen, setHistorialOpen] = useState(false)
-  const [monedaSeleccionada, setMonedaSeleccionada] = useState<Moneda | null>(null)
+  //const [historialOpen, setHistorialOpen] = useState(false)
+  //const [monedaSeleccionada, setMonedaSeleccionada] = useState<Moneda | null>(null)
+
+  // 🔹 Cargar tasas desde el backend
+  useEffect(() => {
+    const fetchTasas = async () => {
+      try {
+        const res = await fetch("/api/tasas-cambio")
+        const data = await res.json()
+  
+        if (data.status === "success") {
+          // Guardamos los datos crudos, sin mapear
+          setMonedas(data.data)
+          console.log("Tasas cargadas crudas:", data.data)
+        }
+      } catch (error) {
+        console.error("Error al cargar tasas:", error)
+      }
+    }
+    fetchTasas()
+  }, [])
+  // 🔹 Crear nueva tasa
+  /*const handleAgregarMoneda = async (moneda: any) => {
+    try {
+      const res = await fetch("/api/tasas-cambio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(moneda),
+      })
+      const data = await res.json()
+      if (data.status === "success" || data.tc_cod) {
+        setMonedas((prev) => [...prev, data])
+        toast({
+          title: "Moneda agregada",
+          description: `La moneda ${moneda.TC_Tipo_Moneda} fue registrada correctamente.`
+        })
+      } else {
+        toast({
+          title: "Error al agregar",
+          description: data.message || "No se pudo registrar la moneda.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error al crear tasa:", error)
+      toast({
+        title: "Error de servidor",
+        description: "Ocurrió un problema al registrar la moneda.",
+        variant: "destructive",
+      })
+    }
+    setDialogOpen(false)
+  }
+  // Eliminar tasa
+  const handleEliminarMoneda = async (id: number) => {
+    try {
+      const res = await fetch("/api/tasas-cambio", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tc_cod: id }),
+      })
+      const data = await res.json()
+      if (data.status === "success") {
+        setMonedas((prev) => prev.filter((m) => m.tc_cod !== id))
+        toast({
+          title: "Moneda eliminada",
+          description: `La tasa con código ${id} fue eliminada correctamente.`,
+        })
+      } else {
+        toast({
+          title: "Error al eliminar",
+          description: data.message || "No se pudo eliminar la moneda.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error al eliminar tasa:", error)
+      toast({
+        title: "Error de servidor",
+        description: "Ocurrió un problema al eliminar la moneda.",
+        variant: "destructive",
+      })
+    }
+  }
+
+// Editar tasa
+const handleEditarMoneda = async (moneda: any) => {
+  try {
+    const res = await fetch("/api/tasas-cambio", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(moneda),
+    })
+    const data = await res.json()
+    if (data.status === "success") {
+      setMonedas((prev) =>
+        prev.map((m) => (m.tc_cod === moneda.tc_cod ? data.data : m))
+      )
+      toast({
+        title: "Moneda actualizada",
+        description: `La moneda ${moneda.TC_Tipo_Moneda} fue editada correctamente.`,
+      })
+    } else {
+      toast({
+        title: "Error al editar",
+        description: data.message || "No se pudo actualizar la moneda.",
+        variant: "destructive",
+      })
+    }
+  } catch (error) {
+    console.error("Error al editar tasa:", error)
+    toast({
+      title: "Error de servidor",
+      description: "Ocurrió un problema al editar la moneda.",
+      variant: "destructive",
+    })
+  }
+}*/
+
+  /*const handleVerHistorial = (moneda: Moneda) => {
+    setMonedaSeleccionada(moneda)
+    setHistorialOpen(true)
+  }*/
 
   const bolivar = {
     codigo: "VES",
     nombre: "Bolívar Venezolano",
     descripcion: "Moneda base del sistema",
-  }
-
-  const handleAgregarMoneda = (moneda: Omit<Moneda, "id">) => {
-    setDialogOpen(false)
-  }
-
-  const handleEliminarMoneda = (id: string) => {
-    // No action needed for client view
-  }
-
-  const handleVerHistorial = (moneda: Moneda) => {
-    setMonedaSeleccionada(moneda)
-    setHistorialOpen(true)
-  }
-
-  const calcularCambio = (actual: number, anterior: number) => {
-    const cambio = ((actual - anterior) / anterior) * 100
-    return cambio.toFixed(2)
   }
 
   return (
@@ -119,68 +167,73 @@ export default function TasasCambioPage() {
         </Button>
       </div>
 
-            <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="text-2xl">🇻🇪</span>
-                  {bolivar.nombre} ({bolivar.codigo})
-                </CardTitle>
-                <CardDescription>{bolivar.descripcion}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Todas las tasas están expresadas en Bolívares. Última actualización:{" "}
-                  {new Date().toLocaleString("es-ES")}
-                </p>
-              </CardContent>
-            </Card>
+      <div className="space-y-6">
+        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span className="text-2xl">🇻🇪</span>
+              {bolivar.nombre} ({bolivar.codigo})
+            </CardTitle>
+            <CardDescription>{bolivar.descripcion}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Todas las tasas están expresadas en Bolívares. Última actualización:{" "}
+              {new Date().toLocaleString("es-ES")}
+            </p>
+          </CardContent>
+        </Card>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {monedas.map((moneda) => {
-                const cambio = calcularCambio(moneda.tasaActual, moneda.tasaAnterior)
-                const esPositivo = Number(cambio) > 0
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {monedas.map((moneda) => {
+            return (
+              <Card key={moneda.tc_cod} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-xl">{moneda.tc_tipo_moneda} / VES</CardTitle>
+                      <CardDescription>
+                        Valor: Bs. {typeof moneda.tc_valor === "number" ? moneda.tc_valor.toFixed(2) : "—"}
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-xs text-muted-foreground">
+                    Actualizado: {moneda.tc_fecha_actualizacion
+                      ? new Date(moneda.tc_fecha_actualizacion).toLocaleDateString("es-ES")
+                      : "Sin fecha"}
+                  </div>
+                  {/*<div className="flex gap-2">
+                    <Button size="sm" onClick={() => handleEditarMoneda(moneda)}>Editar</Button>
+                    <Button size="sm" variant="destructive" onClick={() => handleEliminarMoneda(moneda.tc_cod)}>Eliminar</Button>
+                  </div>*/}
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
 
-                return (
-                  <Card key={moneda.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-xl">{moneda.codigo} / VES</CardTitle>
-                          <CardDescription>{moneda.nombre}</CardDescription>
-                        </div>
-                        <Badge variant={esPositivo ? "default" : "secondary"} className="gap-1">
-                          {esPositivo ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                          {cambio}%
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <p className="text-3xl font-bold text-foreground">Bs. {moneda.tasaActual.toFixed(4)}</p>
-                        <p className="text-sm text-muted-foreground">Anterior: Bs. {moneda.tasaAnterior.toFixed(4)}</p>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Actualizado: {new Date(moneda.ultimaActualizacion).toLocaleString("es-ES")}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-
-            {monedas.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">No hay tasas de cambio disponibles en este momento.</p>
-              </div>
-            )}
+        {monedas.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No hay tasas de cambio disponibles en este momento.</p>
+          </div>
+        )}
       </div>
-      <MonedaDialog open={dialogOpen} onOpenChange={setDialogOpen} onGuardar={handleAgregarMoneda} />
-      <HistorialDialog
+
+      {/*<MonedaDialog
+  open={dialogOpen}
+  onOpenChange={setDialogOpen}
+  onGuardar={handleAgregarMoneda}   // 👈 asegúrate de que esté aquí
+/>*/}
+
+      {/*<MonedaDialog open={dialogOpen} onOpenChange={setDialogOpen} onGuardar={handleAgregarMoneda} />
+      {/*<HistorialDialog
         open={historialOpen}
         onOpenChange={setHistorialOpen}
         moneda={monedaSeleccionada}
-        historial={historialEjemplo}
-      />
+        historial={[]} // aquí luego puedes cargar historial real desde backend
+      />*/}
     </div>
   )
 }

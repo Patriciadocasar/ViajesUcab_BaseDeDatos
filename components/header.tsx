@@ -27,6 +27,7 @@ import { NotificationsDropdown } from "@/components/notifications-dropdown"
 export function Header() {
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showRegisterModal, setShowRegisterModal] = useState(false)
+  const [isRegistering, setIsRegistering] = useState(false)
   const { currency, setCurrency } = useCurrency()
   const { totalItems: wishlistItems } = useWishlist()
   const { user, isAuthenticated, login, logout, hasRole } = useUser()
@@ -78,7 +79,7 @@ export function Header() {
               {/* Mostrar navegación según rol */}
               {isAuthenticated && user && (
                 <>
-                  {hasRole(["cliente", "admin"]) && (
+                  {hasRole([3, 1]) && (
                     <Link href="/clientes/itinerario">
                       <Button variant="ghost" size="sm" className="hidden md:inline-flex gap-2">
                         <Map className="h-4 w-4" />
@@ -86,14 +87,14 @@ export function Header() {
                       </Button>
                     </Link>
                   )}
-                  {hasRole("admin") && (
+                  {hasRole(1) && (
                     <Link href="/admin">
                       <Button variant="ghost" size="sm" className="hidden md:inline-flex gap-2">
                         Dashboard Admin
                       </Button>
                     </Link>
                   )}
-                  {hasRole("proveedor") && (
+                  {hasRole(2) && (
                     <Link href="/proveedores">
                       <Button variant="ghost" size="sm" className="hidden md:inline-flex gap-2">
                         Dashboard Proveedor
@@ -103,7 +104,7 @@ export function Header() {
                 </>
               )}
 
-              {hasRole(["cliente", "admin"]) && (
+              {hasRole([3, 1]) && (
                 <>
                   <NotificationsDropdown />
                   <Link href="/clientes/wishlist">
@@ -154,18 +155,18 @@ export function Header() {
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
                     <DropdownMenuSeparator />
-                    {hasRole(["cliente", "admin"]) && (
+                    {hasRole([3, 1]) && (
                       <DropdownMenuItem onClick={() => router.push("/clientes/perfil")}>
                         <User className="mr-2 h-4 w-4" />
                         Mi Perfil
                       </DropdownMenuItem>
                     )}
-                    {hasRole("admin") && (
+                    {hasRole(1) && (
                       <DropdownMenuItem onClick={() => router.push("/admin")}>
                         Panel Administrador
                       </DropdownMenuItem>
                     )}
-                    {hasRole("proveedor") && (
+                    {hasRole(2) && (
                       <DropdownMenuItem onClick={() => router.push("/proveedores")}>
                         Panel Proveedor
                       </DropdownMenuItem>
@@ -213,7 +214,7 @@ export function Header() {
               const formData = new FormData(e.currentTarget)
               const email = formData.get("email") as string
               const password = formData.get("password") as string
-              login(email, password, "cliente")
+              login(email, password)
               toast({
                 title: "Inicio de sesión exitoso",
                 description: "Bienvenido de vuelta a ViajesUCAB",
@@ -257,17 +258,15 @@ export function Header() {
           </DialogHeader>
           <form
             className="space-y-4"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault()
+              setIsRegistering(true)
               const formData = new FormData(e.currentTarget)
-              const name = formData.get("name") as string
+              const primerNombre = formData.get("primerNombre") as string
+              const primerApellido = formData.get("primerApellido") as string
               const email = formData.get("email") as string
               const password = formData.get("password") as string
               const confirmPassword = formData.get("confirmPassword") as string
-              const phone = formData.get("phone") as string
-              const address = formData.get("address") as string
-              const venezuelanId = formData.get("venezuelanId") as string
-              const passport = formData.get("passport") as string
 
               if (password !== confirmPassword) {
                 toast({
@@ -275,44 +274,66 @@ export function Header() {
                   description: "Las contraseñas no coinciden",
                   variant: "destructive",
                 })
+                setIsRegistering(false)
                 return
               }
 
-              login(email, password, "cliente", name, phone, address, {
-                venezuelanId: venezuelanId || undefined,
-                passport: passport || undefined,
-              })
-              toast({
-                title: "Cuenta creada exitosamente",
-                description: "¡Bienvenido a ViajesUCAB! Ya puedes comenzar a buscar ofertas.",
-              })
-              setShowRegisterModal(false)
-              router.push("/clientes")
+              try {
+                const payload = {
+                  U_Primer_Nombre: primerNombre,
+                  U_Primer_Apellido: primerApellido,
+                  U_Correo: email,
+                  U_Contrasena: password,
+                  U_Rol_ID: 3,
+                }
+
+                const res = await fetch("/api/register", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+                })
+
+                const data = await res.json()
+
+                if (data.status === "success") {
+                  // Guardar usuario en contexto
+                  login(email, password)
+
+                  toast({
+                    title: "Cuenta creada exitosamente",
+                    description: "¡Bienvenido a ViajesUCAB! Ya puedes comenzar a buscar ofertas.",
+                  })
+                  setShowRegisterModal(false)
+                  router.push("/clientes")
+                } else {
+                  toast({
+                    title: "Error",
+                    description: data.message || "No se pudo crear la cuenta",
+                    variant: "destructive",
+                  })
+                }
+              } catch (error) {
+                toast({
+                  title: "Error",
+                  description: "Error de conexión con el servidor",
+                  variant: "destructive",
+                })
+              } finally {
+                setIsRegistering(false)
+              }
             }}
           >
             <div className="space-y-2">
-              <Label htmlFor="name">Nombre completo</Label>
-              <Input id="name" name="name" type="text" placeholder="Juan Pérez" required />
+              <Label htmlFor="primerNombre">Primer Nombre</Label>
+              <Input id="primerNombre" name="primerNombre" type="text" placeholder="Juan" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="primerApellido">Primer Apellido</Label>
+              <Input id="primerApellido" name="primerApellido" type="text" placeholder="Pérez" required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="register-email">Correo electrónico</Label>
               <Input id="register-email" name="email" type="email" placeholder="tu@email.com" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Teléfono</Label>
-              <Input id="phone" name="phone" type="tel" placeholder="+58 412-555-0100" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Dirección</Label>
-              <Input id="address" name="address" type="text" placeholder="Caracas, Venezuela" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="venezuelanId">Cédula de Identidad (opcional)</Label>
-              <Input id="venezuelanId" name="venezuelanId" type="text" placeholder="V-12345678" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="passport">Pasaporte (opcional)</Label>
-              <Input id="passport" name="passport" type="text" placeholder="P12345678" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="register-password">Contraseña</Label>
@@ -336,8 +357,8 @@ export function Header() {
                 minLength={8}
               />
             </div>
-            <Button type="submit" className="w-full">
-              Crear Cuenta
+            <Button type="submit" className="w-full" disabled={isRegistering}>
+              {isRegistering ? "Creando cuenta..." : "Crear Cuenta"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               ¿Ya tienes cuenta?{" "}
