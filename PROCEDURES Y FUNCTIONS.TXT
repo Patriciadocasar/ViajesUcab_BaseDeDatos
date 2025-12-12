@@ -673,3 +673,41 @@ EXCEPTION
         );
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION obtener_direcciones_filtro()
+RETURNS JSON
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    RETURN (
+        SELECT json_build_object(
+            'direcciones',
+            json_agg(
+                json_build_object(
+                    'lug_cod', Lug_COD,
+                    'direccion', direccion
+                )
+                ORDER BY direccion
+            )
+        )
+        FROM (
+            -- Países
+            SELECT p.Lug_COD,
+                   p.Lug_Nombre AS direccion
+            FROM Lugar p
+            WHERE p.Lug_Tipo = 'Pais'
+
+            UNION ALL
+
+            -- Regiones con su país
+            SELECT r.Lug_COD,
+                   r.Lug_Nombre || ', ' || p.Lug_Nombre AS direccion
+            FROM Lugar r
+            JOIN Lugar p ON r.Lugar_Lug_COD = p.Lug_COD
+            WHERE p.Lug_Tipo = 'Pais'
+              AND r.Lug_Tipo = 'Region'
+        ) sub
+    );
+END;
+$$;

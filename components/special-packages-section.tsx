@@ -188,7 +188,9 @@ export function SpecialPackagesSection() {
               {quinceaneraPackages.map((pkg) => {
                 const convertedPrice = convertPrice(pkg.price)
                 const convertedOriginal = convertPrice(pkg.originalPrice)
-
+                const formatter = new Intl.NumberFormat("es-VE", {
+                  minimumFractionDigits: 0,
+                });
                 return (
                   <Card
                     key={pkg.id}
@@ -245,11 +247,12 @@ export function SpecialPackagesSection() {
                         <div className="flex items-baseline gap-2">
                           <span className="text-sm text-muted-foreground line-through">
                             {convertedOriginal.symbol}
-                            {convertedOriginal.value.toLocaleString()}
+                            {formatter.format(convertedOriginal.value)}
+
                           </span>
                           <span className="text-2xl font-bold text-primary">
                             {convertedPrice.symbol}
-                            {convertedPrice.value.toLocaleString()}
+                            {formatter.format(convertedPrice.value)}
                           </span>
                         </div>
                       </div>

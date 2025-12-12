@@ -623,6 +623,10 @@ export function ExploreServices() {
             const convertedOriginal = convertPrice(option.originalPrice)
             const convertedPrice = convertPrice(option.price)
             const isExpanded = expandedPackage === option.id
+            const formatter = new Intl.NumberFormat("es-VE", {
+              minimumFractionDigits: 0,
+            });
+            
 
             return (
               <Card
@@ -881,11 +885,11 @@ export function ExploreServices() {
                     <div className="flex items-baseline gap-2">
                       <span className="text-xs text-muted-foreground line-through">
                         {convertedOriginal.symbol}
-                        {convertedOriginal.value.toLocaleString()}
+                        {formatter.format(convertedOriginal.value)}
                       </span>
                       <span className="text-xl font-bold text-primary">
-                        {convertedPrice.symbol}
-                        {convertedPrice.value.toLocaleString()}
+                        {convertedPrice.symbol} 
+                        {formatter.format(convertedPrice.value)}
                       </span>
                     </div>
                   </div>

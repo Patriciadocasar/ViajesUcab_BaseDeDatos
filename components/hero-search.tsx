@@ -37,9 +37,18 @@ const SERVICE_TYPES = [
   { value: "restaurantes", label: "Restaurantes" },
 ]
 
+type Destination = {
+  codigo: number;
+  direccion: string;
+};
+
 export function HeroSearch() {
   const [selectedServices, setSelectedServices] = useState<string[]>(["hoteles"])
   const [destination, setDestination] = useState("")
+  // destinos traídos desde la base de datos
+  const [popularDestinations, setPopularDestinations] = useState<Destination[]>([]);
+  const [filteredDestinations, setFilteredDestinations] = useState<Destination[]>([]);
+  const [destinationsLoading, setDestinationsLoading] = useState(false)
   const [departureDate, setDepartureDate] = useState("")
   const [returnDate, setReturnDate] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -48,11 +57,11 @@ export function HeroSearch() {
   const router = useRouter()
 
   const [showAutocomplete, setShowAutocomplete] = useState(false)
-  const [filteredDestinations, setFilteredDestinations] = useState<string[]>([])
+  //const [filteredDestinations, setFilteredDestinations] = useState<string[]>([])
   const autocompleteRef = useRef<HTMLDivElement>(null)
 
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (destination.length > 0) {
       const filtered = POPULAR_DESTINATIONS.filter((dest) => dest.toLowerCase().includes(destination.toLowerCase()))
       setFilteredDestinations(filtered)
@@ -60,7 +69,55 @@ export function HeroSearch() {
     } else {
       setShowAutocomplete(false)
     }
-  }, [destination])
+  }, [destination])*/
+
+  useEffect(() => {
+    let mounted = true;
+    setDestinationsLoading(true);
+
+    fetch("/api/filtros/destinos")
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (!mounted) return;
+        // Guardamos objetos con { codigo, direccion }
+        const list = data.direcciones.direcciones.map((d: any) => ({
+          codigo: d.lug_cod,
+          direccion: d.direccion,
+        }));
+        setPopularDestinations(list);
+        console.log("Destinos cargados:", list);
+      })
+      .catch((err) => {
+        toast({
+          title: "Error al cargar destinos",
+          description: `Error al cargar destinos: ${err.message}`,
+          variant: "destructive",
+        });
+        setPopularDestinations([]);
+      })
+      .finally(() => {
+        if (mounted) setDestinationsLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (destination.length > 0) {
+      const filtered = popularDestinations.filter((dest) =>
+        dest.direccion.toLowerCase().includes(destination.toLowerCase())
+      );
+      setFilteredDestinations(filtered);
+      setShowAutocomplete(filtered.length > 0);
+    } else {
+      setShowAutocomplete(false);
+    }
+  }, [destination, popularDestinations]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -219,12 +276,12 @@ export function HeroSearch() {
                         key={index}
                         className="w-full text-left px-4 py-2 hover:bg-muted transition-colors text-sm cursor-pointer"
                         onClick={() => {
-                          setDestination(dest)
+                          setDestination(dest.direccion)
                           setShowAutocomplete(false)
                         }}
                       >
                         <MapPin className="inline h-4 w-4 mr-2 text-muted-foreground" />
-                        {dest}
+                        {dest.direccion}
                       </button>
                     ))}
                   </div>
