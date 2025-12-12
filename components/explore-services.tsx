@@ -592,7 +592,7 @@ export function ExploreServices() {
           <p className="text-lg text-muted-foreground">Descubre las mejores opciones para tu próximo viaje</p>
           <div className="mt-6">
             <Link href="/itinerario">
-              <Button size="lg" variant="outline" className="gap-2 bg-transparent">
+              <Button size="lg" variant="outline" className="gap-2 bg-transparent cursor-pointer">
                 <Map className="h-5 w-5" />
                 Crear Tu Propio Itinerario
               </Button>
@@ -609,7 +609,7 @@ export function ExploreServices() {
                 variant={selectedFilter === filter.id ? "default" : "outline"}
                 size="lg"
                 onClick={() => setSelectedFilter(filter.id)}
-                className={cn("transition-all duration-300", selectedFilter === filter.id && "shadow-lg scale-105")}
+                className={cn("transition-all duration-300 cursor-pointer", selectedFilter === filter.id && "shadow-lg scale-105")}
               >
                 <Icon className="h-4 w-4 mr-2" />
                 {filter.label}
@@ -653,7 +653,7 @@ export function ExploreServices() {
                       e.stopPropagation()
                       toggleFavorite(option)
                     }}
-                    className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-all hover:scale-110"
+                    className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-all hover:scale-110 cursor-pointer"
                   >
                     <Heart
                       className={cn(
@@ -892,7 +892,7 @@ export function ExploreServices() {
                 </CardContent>
                 <CardFooter className="p-4 pt-0">
                   <Button
-                    className="w-full"
+                    className="w-full cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation()
                       handleViewDetail(option)

@@ -81,7 +81,7 @@ export function Header() {
                 <>
                   {hasRole([3, 1]) && (
                     <Link href="/clientes/itinerario">
-                      <Button variant="ghost" size="sm" className="hidden md:inline-flex gap-2">
+                      <Button variant="ghost" size="sm" className="hidden md:inline-flex gap-2 cursor-pointer">
                         <Map className="h-4 w-4" />
                         Crear Itinerario
                       </Button>
@@ -89,14 +89,14 @@ export function Header() {
                   )}
                   {hasRole(1) && (
                     <Link href="/admin">
-                      <Button variant="ghost" size="sm" className="hidden md:inline-flex gap-2">
+                      <Button variant="ghost" size="sm" className="hidden md:inline-flex gap-2 cursor-pointer">
                         Dashboard Admin
                       </Button>
                     </Link>
                   )}
                   {hasRole(2) && !hasRole(3) && (
                     <Link href="/proveedores">
-                      <Button variant="ghost" size="sm" className="hidden md:inline-flex gap-2">
+                      <Button variant="ghost" size="sm" className="hidden md:inline-flex gap-2 cursor-pointer">
                         Dashboard Proveedor
                       </Button>
                     </Link>
@@ -108,7 +108,7 @@ export function Header() {
                 <>
                   <NotificationsDropdown />
                   <Link href="/clientes/wishlist">
-                    <Button variant="ghost" size="icon" className="relative">
+                    <Button variant="ghost" size="icon" className="relative cursor-pointer">
                       <Heart className="h-5 w-5" />
                       {wishlistItems > 0 && (
                         <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
@@ -123,23 +123,23 @@ export function Header() {
               {/* Currency Selector */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="hidden sm:inline-flex gap-1">
+                  <Button variant="ghost" size="sm" className="hidden sm:inline-flex gap-1 cursor-pointer">
                     <Globe className="h-4 w-4" />
                     {currency}
                     <ChevronDown className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleCurrencyChange("USD")}>USD - Dólar</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleCurrencyChange("BS")}>BS - Bolívar</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleCurrencyChange("EUR")}>EUR - Euro</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleCurrencyChange("USD")} className="cursor-pointer">USD - Dólar</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleCurrencyChange("BS")} className="cursor-pointer">BS - Bolívar</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleCurrencyChange("EUR")} className="cursor-pointer">EUR - Euro</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
               {isAuthenticated && user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="gap-2">
+                    <Button variant="ghost" size="sm" className="gap-2 cursor-pointer">
                       <Avatar className="h-6 w-6">
                         <AvatarFallback className="text-xs bg-primary text-primary-foreground">
                           {getInitials(user.name)}
@@ -190,14 +190,14 @@ export function Header() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="hidden sm:inline-flex"
+                    className="hidden sm:inline-flex cursor-pointer"
                     onClick={() => setShowLoginModal(true)}
                   >
                     Iniciar Sesión
                   </Button>
                   <Button
                     size="sm"
-                    className="bg-primary hover:bg-primary/90"
+                    className="bg-primary hover:bg-primary/90 cursor-pointer"
                     onClick={() => setShowRegisterModal(true)}
                   >
                     Registrarse
@@ -259,14 +259,14 @@ export function Header() {
               <Label htmlFor="login-password">Contraseña</Label>
               <Input id="login-password" name="password" type="password" placeholder="••••••••" required />
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full cursor-pointer">
               Iniciar Sesión
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               ¿No tienes cuenta?{" "}
               <button
                 type="button"
-                className="text-primary hover:underline"
+                className="text-primary hover:underline cursor-pointer"
                 onClick={() => {
                   setShowLoginModal(false)
                   setShowRegisterModal(true)
@@ -385,14 +385,14 @@ export function Header() {
                 minLength={8}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isRegistering}>
+            <Button type="submit" className="w-full cursor-pointer" disabled={isRegistering}>
               {isRegistering ? "Creando cuenta..." : "Crear Cuenta"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               ¿Ya tienes cuenta?{" "}
               <button
                 type="button"
-                className="text-primary hover:underline"
+                className="text-primary hover:underline cursor-pointer"
                 onClick={() => {
                   setShowRegisterModal(false)
                   setShowLoginModal(true)

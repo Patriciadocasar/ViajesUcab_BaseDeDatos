@@ -217,7 +217,7 @@ export function HeroSearch() {
                     {filteredDestinations.map((dest, index) => (
                       <button
                         key={index}
-                        className="w-full text-left px-4 py-2 hover:bg-muted transition-colors text-sm"
+                        className="w-full text-left px-4 py-2 hover:bg-muted transition-colors text-sm cursor-pointer"
                         onClick={() => {
                           setDestination(dest)
                           setShowAutocomplete(false)
@@ -258,7 +258,7 @@ export function HeroSearch() {
 
             <Button
               size="lg"
-              className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90"
+              className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90 cursor-pointer"
               onClick={handleSearch}
               disabled={isLoading}
             >

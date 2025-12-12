@@ -230,7 +230,7 @@ export function FeaturedOffers() {
                         e.stopPropagation()
                         toggleFavorite(offer)
                       }}
-                      className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-all hover:scale-110"
+                      className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-all hover:scale-110 cursor-pointer"
                     >
                       <Heart
                         className={cn(
@@ -268,7 +268,7 @@ export function FeaturedOffers() {
                   </CardContent>
                   <CardFooter className="p-4 pt-0 flex gap-2">
                     <Button
-                      className="flex-1 bg-primary hover:bg-primary/90 transition-colors"
+                      className="flex-1 bg-primary hover:bg-primary/90 transition-colors cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation()
                         handleViewOffer(offer)
@@ -287,7 +287,7 @@ export function FeaturedOffers() {
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 hidden lg:flex bg-background shadow-lg hover:scale-110 transition-transform"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 hidden lg:flex bg-background shadow-lg hover:scale-110 transition-transform cursor-pointer"
                 onClick={prevPage}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -295,7 +295,7 @@ export function FeaturedOffers() {
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 hidden lg:flex bg-background shadow-lg hover:scale-110 transition-transform"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 hidden lg:flex bg-background shadow-lg hover:scale-110 transition-transform cursor-pointer"
                 onClick={nextPage}
               >
                 <ChevronRight className="h-4 w-4" />
@@ -306,7 +306,7 @@ export function FeaturedOffers() {
 
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-4 mt-8">
-            <Button variant="outline" size="icon" onClick={prevPage} className="lg:hidden bg-transparent">
+            <Button variant="outline" size="icon" onClick={prevPage} className="lg:hidden bg-transparent cursor-pointer">
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <div className="flex gap-2">
@@ -315,14 +315,14 @@ export function FeaturedOffers() {
                   key={index}
                   onClick={() => setCurrentPage(index)}
                   className={cn(
-                    "h-2 rounded-full transition-all",
+                    "h-2 rounded-full transition-all cursor-pointer",
                     currentPage === index ? "w-8 bg-primary" : "w-2 bg-muted-foreground/30",
                   )}
                   aria-label={`Ir a página ${index + 1}`}
                 />
               ))}
             </div>
-            <Button variant="outline" size="icon" onClick={nextPage} className="lg:hidden bg-transparent">
+            <Button variant="outline" size="icon" onClick={nextPage} className="lg:hidden bg-transparent cursor-pointer">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

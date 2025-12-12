@@ -350,7 +350,7 @@ export function RestaurantsSection({ onSelectRestaurant }: RestaurantsSectionPro
               key={city}
               variant={selectedCity === city ? "default" : "outline"}
               onClick={() => setSelectedCity(city)}
-              className="capitalize"
+              className="capitalize cursor-pointer"
             >
               {city === "todos" ? "Todas las ciudades" : city}
             </Button>
@@ -401,7 +401,7 @@ export function RestaurantsSection({ onSelectRestaurant }: RestaurantsSectionPro
                 </div>
               </CardContent>
               <CardFooter className="p-6 pt-0">
-                <Button className="w-full" onClick={() => onSelectRestaurant(restaurant)}>
+                <Button className="w-full cursor-pointer" onClick={() => onSelectRestaurant(restaurant)}>
                   Ver Detalle
                 </Button>
               </CardFooter>
