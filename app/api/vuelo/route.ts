@@ -12,6 +12,7 @@ export async function GET() {
         V.Vue_Fecha_Hora_Salida,
         V.Vue_Fecha_Hora_Llegada,
         V.Vue_Cant_Millas,
+        V.Vue_Costo,
         
         -- ORIGEN
         (

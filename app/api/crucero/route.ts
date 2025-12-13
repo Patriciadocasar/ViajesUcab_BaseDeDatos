@@ -13,6 +13,7 @@ export async function GET() {
         C.Cru_Fecha_Hora_Salida,
         C.Cru_Fecha_Hora_Lllegada,
         C.Cru_Cant_Millas,
+        C.Cru_Costo,
         
         -- ORIGEN (puerto de salida)
         (

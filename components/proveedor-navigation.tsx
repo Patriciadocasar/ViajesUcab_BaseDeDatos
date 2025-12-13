@@ -3,13 +3,8 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { 
-  LayoutDashboard, 
   Plane, 
-  MapPin, 
-  Tag, 
-  TrendingUp,
-  LogOut,
-  User
+  LogOut
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useUser } from "@/lib/user-context"
@@ -25,11 +20,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useToast } from "@/hooks/use-toast"
 
 const navItems = [
-  { href: "/proveedores", label: "Dashboard", icon: LayoutDashboard },
   { href: "/proveedores/flota", label: "Flota", icon: Plane },
-  { href: "/proveedores/destinos", label: "Destinos", icon: MapPin },
-  { href: "/proveedores/promociones", label: "Promociones", icon: Tag },
-  { href: "/proveedores/reportes", label: "Reportes", icon: TrendingUp },
 ]
 
 export function ProveedorNavigation() {
