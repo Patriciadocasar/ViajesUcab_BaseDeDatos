@@ -131,91 +131,6 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION insertar_aerolinea(
-    Aer_Nombre VARCHAR,
-    Aer_Direccion TEXT,
-    Aer_Telefono NUMERIC,
-    Aer_Correo VARCHAR,
-    Aer_Fecha_Fundacion DATE,
-    Lugar_ID INTEGER
-)
-RETURNS JSON AS $$
-BEGIN
-    INSERT INTO Aerolinea(
-        Pro_Nombre, 
-        Pro_Direccion, 
-        Pro_Telefono, 
-        Pro_Correo, 
-        A_Fecha_Fundacion,
-        Lugar_Lug_COD
-    )
-    VALUES (
-        Aer_Nombre, 
-        Aer_Direccion, 
-        Aer_Telefono, 
-        Aer_Correo, 
-        Aer_Fecha_Fundacion,
-        Lugar_ID
-    );
-
-    RETURN json_build_object(
-        'status', 'success',
-        'message', 'Aerolinea insertada correctamente'
-    );
-
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN json_build_object(
-            'status', 'error',
-            'message', SQLERRM
-        );
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION consultar_aerolinea(
-    Aer_ID INTEGER
-)
-RETURNS JSON AS $$
-DECLARE
-    resultado RECORD;
-BEGIN
-    -- Buscar la aerolínea
-    SELECT *
-    INTO resultado
-    FROM Aerolinea
-    WHERE Pro_COD = Aer_ID;
-
-    -- Si no existe
-    IF resultado IS NULL THEN
-        RETURN json_build_object(
-            'status', 'error',
-            'message', 'Aerolínea no encontrada'
-        );
-    END IF;
-
-    -- Si existe
-    RETURN json_build_object(
-        'status', 'success',
-        'data', json_build_object(
-            'Pro_COD', resultado.Pro_COD,
-            'Pro_Nombre', resultado.Pro_Nombre,
-            'Pro_Direccion', resultado.Pro_Direccion,
-            'Pro_Telefono', resultado.Pro_Telefono,
-            'Pro_Correo', resultado.Pro_Correo,
-            'A_Fecha_Fundacion', resultado.A_Fecha_Fundacion
-        )
-    );
-
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN json_build_object(
-            'status', 'error',
-            'message', SQLERRM
-        );
-END;
-$$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION actualizar_aerolinea(
     Aer_ID INTEGER,
     Aer_Nombre VARCHAR,
@@ -693,40 +608,92 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
-
-CREATE OR REPLACE FUNCTION obtener_direcciones_filtro()
-RETURNS JSON
-LANGUAGE plpgsql AS
-$$
+CREATE OR REPLACE FUNCTION mostrar_vuelo_json(
+    id INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado RECORD;
 BEGIN
-    RETURN (
-        SELECT json_build_object(
-            'direcciones',
-            json_agg(
-                json_build_object(
-                    'lug_cod', Lug_COD,
-                    'direccion', direccion
-                )
-                ORDER BY direccion
+    -- Obtener los datos del vuelo
+    SELECT 
+        V.vue_cod,
+        V.avion_avi_cod,
+        V.vue_huella_carbono,
+        V.vue_fecha_hora_salida,
+        V.vue_fecha_hora_llegada,
+        V.vue_cant_millas,
+        V.vue_costo,
+
+        -- ORIGEN
+        (
+            SELECT L.lug_nombre
+            FROM Ruta R, Terminal T, Lugar L
+            WHERE R.vuelo_vue_cod = id
+            AND T.ter_cod = R.terminal_ter_cod
+            AND L.lug_cod = T.lugar_lug_cod
+        ) AS origen,
+
+        -- DESTINO
+        (
+            SELECT L.lug_nombre
+            FROM Ruta R, Terminal T, Lugar L
+            WHERE R.vuelo_vue_cod = id
+            AND T.ter_cod = R.terminal_ter_cod
+            AND L.lug_cod = T.lugar_lug_cod2
+        ) AS destino,
+
+        -- NOMBRE DEL VUELO
+        (
+            'Vuelo ' ||
+            (SELECT L.lug_nombre
+             FROM Ruta R, Terminal T, Lugar L
+             WHERE R.vuelo_vue_cod = id
+             AND T.ter_cod = R.terminal_ter_cod
+             AND L.lug_cod = T.lugar_lug_cod
             )
+            || '-' ||
+            (SELECT L.lug_nombre
+             FROM Ruta R, Terminal T, Lugar L
+             WHERE R.vuelo_vue_cod = id
+             AND T.ter_cod = R.terminal_ter_cod
+             AND L.lug_cod = T.lugar_lug_cod2
+            )
+        ) AS nombre_vuelo
+    INTO resultado
+    FROM Vuelo V
+    WHERE V.vue_cod = id;
+
+    -- Si no existe
+    IF resultado IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Vuelo no encontrado'
+        );
+    END IF;
+
+    -- Si existe, devolver JSON
+    RETURN json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'Vue_COD', resultado.vue_cod,
+            'Avion_Avi_COD', resultado.avion_avi_cod,
+            'Vue_Huella_Carbono', resultado.vue_huella_carbono,
+            'Vue_Fecha_Hora_Salida', resultado.vue_fecha_hora_salida,
+            'Vue_Fecha_Hora_Llegada', resultado.vue_fecha_hora_llegada,
+            'Vue_Cant_Millas', resultado.vue_cant_millas,
+            'Vue_Costo', resultado.vue_costo,
+            'Origen', resultado.origen,
+            'Destino', resultado.destino,
+            'Nombre_Vuelo', resultado.nombre_vuelo
         )
-        FROM (
-            -- Países
-            SELECT p.Lug_COD,
-                   p.Lug_Nombre AS direccion
-            FROM Lugar p
-            WHERE p.Lug_Tipo = 'Pais'
-
-            UNION ALL
-
-            -- Regiones con su país
-            SELECT r.Lug_COD,
-                   r.Lug_Nombre || ', ' || p.Lug_Nombre AS direccion
-            FROM Lugar r
-            JOIN Lugar p ON r.Lugar_Lug_COD = p.Lug_COD
-            WHERE p.Lug_Tipo = 'Pais'
-              AND r.Lug_Tipo = 'Region'
-        ) sub
     );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
 END;
-$$;
+$$ LANGUAGE plpgsql;

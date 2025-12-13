@@ -11,7 +11,8 @@ import {
   Shield, 
   MessageSquare,
   LogOut,
-  User
+  User,
+  Users
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useUser } from "@/lib/user-context"
@@ -28,6 +29,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/usuarios", label: "Usuarios", icon: Users },
   { href: "/admin/promociones", label: "Promociones", icon: Tag },
   { href: "/admin/tasas-cambio", label: "Tasas de Cambio", icon: DollarSign },
   { href: "/admin/inventario", label: "Inventario", icon: Package },
@@ -108,6 +110,10 @@ export function AdminNavigation() {
                   <DropdownMenuItem onClick={() => router.push("/admin/roles")}>
                     <Shield className="mr-2 h-4 w-4" />
                     Administrar Roles
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push("/admin/usuarios")}>
+                    <Users className="mr-2 h-4 w-4" />
+                    Gestionar Usuarios
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-destructive">

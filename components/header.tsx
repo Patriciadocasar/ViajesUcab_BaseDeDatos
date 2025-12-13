@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { ChevronDown, Heart, Globe, Map, User, LogOut, Shield } from "lucide-react"
+import { ChevronDown, Heart, Globe, Map, User, LogOut, Shield, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -170,6 +170,10 @@ export function Header() {
                         <DropdownMenuItem onClick={() => router.push("/admin/roles")}>
                           <Shield className="mr-2 h-4 w-4" />
                           Administrar Roles
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push("/admin/usuarios")}>
+                          <Users className="mr-2 h-4 w-4" />
+                          Gestionar Usuarios
                         </DropdownMenuItem>
                       </>
                     )}

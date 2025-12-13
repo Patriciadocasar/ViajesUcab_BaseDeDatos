@@ -48,7 +48,8 @@ CREATE TABLE Crucero (
     Cru_Huella_Carbono NUMERIC(3) NOT NULL,
     Cru_Fecha_Hora_Salida TIMESTAMP NOT NULL,
     Cru_Fecha_Hora_Lllegada TIMESTAMP NOT NULL,
-    Cru_Cant_Millas NUMERIC(4) NOT NULL
+    Cru_Cant_Millas NUMERIC(4) NOT NULL,
+    Cru_Costo NUMERIC(8,2) NOT NULL
 );
 
 CREATE TABLE Cuota (
@@ -277,7 +278,7 @@ CREATE TABLE Aerolinea (
     Pro_COD SERIAL PRIMARY KEY,
     Pro_Nombre VARCHAR(60) NOT NULL,
     Pro_Direccion TEXT NOT NULL,
-    Pro_Telefono NUMERIC(11) NOT NULL,
+    Pro_Telefono NUMERIC(16) NOT NULL,
     Pro_Correo VARCHAR(60) NOT NULL,
     A_Fecha_Fundacion DATE NOT NULL,
     Lugar_Lug_COD INTEGER
@@ -395,7 +396,8 @@ CREATE TABLE Tasa_de_Cambio (
     TC_COD SERIAL PRIMARY KEY,
     TC_Tipo_Moneda VARCHAR(60) NOT NULL,
     TC_Valor NUMERIC (8,2) NOT NULL,
-    TC_Cant_Milla NUMERIC (8,2) NOT NULL, 
+    TC_Valor_Dolar NUMERIC (8,2) NOT NULL,
+    TC_Cant_Milla NUMERIC (8,2) NOT NULL,
     TC_Fecha_Actualizacion DATE NOT NULL,
     TC_Fecha_Final DATE NOT NULL,
     Lugar_Lug_COD INTEGER
@@ -417,12 +419,13 @@ CREATE TABLE Tipo_Documento (
 
 CREATE TABLE Transporte_Terrestre (
     TT_COD SERIAL PRIMARY KEY,
-    TT_Nombre VARCHAR (80) NOT NULL, 
+    TT_Nombre VARCHAR (80) NOT NULL,
     Vehiculo_Veh_COD INTEGER,
     TT_Huella_Carbono NUMERIC(4,2) NOT NULL,
     TT_Fecha_Hora_Salida TIMESTAMP NOT NULL,
     TT_Fecha_Hora_Llegada TIMESTAMP NOT NULL,
-    TT_Cant_Millas NUMERIC(4) NOT NULL
+    TT_Cant_Millas NUMERIC(4) NOT NULL,
+    TT_Costo NUMERIC(8,2) NOT NULL
 );
 
 CREATE TABLE Usuario (
@@ -470,7 +473,8 @@ CREATE TABLE Vuelo (
     Vue_Huella_Carbono NUMERIC(4,2) NOT NULL,
     Vue_Fecha_Hora_Salida TIMESTAMP NOT NULL,
     Vue_Fecha_Hora_Llegada TIMESTAMP NOT NULL,
-    Vue_Cant_Millas NUMERIC(4) NOT NULL
+    Vue_Cant_Millas NUMERIC(4) NOT NULL,
+    Vue_Costo NUMERIC(8,2) NOT NULL
 );
 
 CREATE TABLE Wishlist (

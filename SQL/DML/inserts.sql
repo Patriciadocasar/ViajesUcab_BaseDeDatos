@@ -3817,78 +3817,83 @@ VALUES ('Outback Flavors','Queen Street, Brisbane',4,11,'Comida típica australi
 
 
 -- Moneda: EUR (Francia → Lugar_Lug_COD = 6)
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('EUR', 380.20, 13.00, TO_DATE('05 10 2025','DD MM YYYY'), TO_DATE('10 10 2025','DD MM YYYY'), 6);
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
+VALUES ('EUR', 380.20, 1.10, 13.00, TO_DATE('05 10 2025','DD MM YYYY'), TO_DATE('10 10 2025','DD MM YYYY'), 6);
 
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('EUR', 385.50, 12.00, TO_DATE('15 10 2025','DD MM YYYY'), TO_DATE('20 10 2025','DD MM YYYY'), 6);
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
+VALUES ('EUR', 385.50, 1.10, 12.00, TO_DATE('15 10 2025','DD MM YYYY'), TO_DATE('20 10 2025','DD MM YYYY'), 6);
 
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('EUR', 390.00, 15.00, TO_DATE('25 10 2025','DD MM YYYY'), TO_DATE('30 10 2025','DD MM YYYY'), 6);
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
+VALUES ('EUR', 390.00, 1.10, 15.00, TO_DATE('25 10 2025','DD MM YYYY'), TO_DATE('30 10 2025','DD MM YYYY'), 6);
 
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('EUR', 395.40, 16.00, TO_DATE('05 11 2025','DD MM YYYY'), TO_DATE('10 11 2025','DD MM YYYY'), 6);
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
+VALUES ('EUR', 395.40, 1.10, 16.00, TO_DATE('05 11 2025','DD MM YYYY'), TO_DATE('10 11 2025','DD MM YYYY'), 6);
 
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('EUR', 397.80, 14.00, TO_DATE('20 11 2025','DD MM YYYY'), TO_DATE('25 11 2025','DD MM YYYY'), 6);
-
--- Moneda: BRL (Brasil → Lugar_Lug_COD = 7)
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('BRL', 360.50, 10.00, TO_DATE('06 10 2025','DD MM YYYY'), TO_DATE('11 10 2025','DD MM YYYY'), 7);
-
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('BRL', 364.80, 12.00, TO_DATE('16 10 2025','DD MM YYYY'), TO_DATE('21 10 2025','DD MM YYYY'), 7);
-
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('BRL', 375.20, 14.00, TO_DATE('26 10 2025','DD MM YYYY'), TO_DATE('31 10 2025','DD MM YYYY'), 7);
-
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('BRL', 377.60, 16.00, TO_DATE('10 11 2025','DD MM YYYY'), TO_DATE('15 11 2025','DD MM YYYY'), 7);
-
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('BRL', 380.00, 18.00, TO_DATE('25 11 2025','DD MM YYYY'), TO_DATE('30 11 2025','DD MM YYYY'), 7);
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
+VALUES ('EUR', 397.80, 1.10, 14.00, TO_DATE('20 11 2025','DD MM YYYY'), TO_DATE('25 11 2025','DD MM YYYY'), 6);
 
 -- Moneda: VES (Bolívar)
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, 
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
 TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('VES', 100.00, 10.00, TO_DATE('07 10 2025','DD MM YYYY'), TO_DATE('12 10 2025','DD MM YYYY'), 8);
+VALUES ('VES', 100.00, 50.00, 10.00, TO_DATE('07 10 2025','DD MM YYYY'), TO_DATE('12 10 2025','DD MM YYYY'), 8);
 
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, 
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
 TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('VES', 105.05, 11.00, TO_DATE('17 10 2025','DD MM YYYY'), TO_DATE('22 10 2025','DD MM YYYY'), 8);
+VALUES ('VES', 105.05, 52.50, 11.00, TO_DATE('17 10 2025','DD MM YYYY'), TO_DATE('22 10 2025','DD MM YYYY'), 8);
 
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, 
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
 TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('VES', 140.10, 12.00, TO_DATE('27 10 2025','DD MM YYYY'), TO_DATE('01 11 2025','DD MM YYYY'), 8);
+VALUES ('VES', 140.10, 70.00, 12.00, TO_DATE('27 10 2025','DD MM YYYY'), TO_DATE('01 11 2025','DD MM YYYY'), 8);
 
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, 
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
 TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('VES', 120.15, 13.00, TO_DATE('12 11 2025','DD MM YYYY'), TO_DATE('17 11 2025','DD MM YYYY'), 8);
+VALUES ('VES', 120.15, 60.00, 13.00, TO_DATE('12 11 2025','DD MM YYYY'), TO_DATE('17 11 2025','DD MM YYYY'), 8);
 
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, 
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
 TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('VES', 125.20, 14.00, TO_DATE('27 11 2025','DD MM YYYY'), TO_DATE('02 12 2025','DD MM YYYY'), 8);
+VALUES ('VES', 125.20, 62.50, 14.00, TO_DATE('27 11 2025','DD MM YYYY'), TO_DATE('02 12 2025','DD MM YYYY'), 8);
 
 -- Moneda: Milla vs VES
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, 
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
 TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('Milla', 0.50, 1.00, TO_DATE('01 10 2025','DD MM YYYY'), TO_DATE('05 10 2025','DD MM YYYY'), 8);
+VALUES ('Milla', 0.50, 0.50, 1.00, TO_DATE('01 10 2025','DD MM YYYY'), TO_DATE('05 10 2025','DD MM YYYY'), 8);
 
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, 
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
 TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('Milla', 0.75, 1.50, TO_DATE('10 10 2025','DD MM YYYY'), TO_DATE('15 10 2025','DD MM YYYY'), 8);
+VALUES ('Milla', 0.75, 0.75, 1.50, TO_DATE('10 10 2025','DD MM YYYY'), TO_DATE('15 10 2025','DD MM YYYY'), 8);
 
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, 
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
 TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('Milla', 1.00, 2.00, TO_DATE('20 10 2025','DD MM YYYY'), TO_DATE('25 10 2025','DD MM YYYY'), 8);
+VALUES ('Milla', 1.00, 1.00, 2.00, TO_DATE('20 10 2025','DD MM YYYY'), TO_DATE('25 10 2025','DD MM YYYY'), 8);
 
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, 
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
 TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('Milla', 1.25, 2.50, TO_DATE('05 11 2025','DD MM YYYY'), TO_DATE('10 11 2025','DD MM YYYY'), 8);
+VALUES ('Milla', 1.25, 1.25, 2.50, TO_DATE('05 11 2025','DD MM YYYY'), TO_DATE('10 11 2025','DD MM YYYY'), 8);
 
-INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Cant_Milla, 
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
 TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
-VALUES ('Milla', 1.50, 3.00, TO_DATE('25 11 2025','DD MM YYYY'), TO_DATE('30 11 2025','DD MM YYYY'), 8);
+VALUES ('Milla', 1.50, 1.50, 3.00, TO_DATE('25 11 2025','DD MM YYYY'), TO_DATE('30 11 2025','DD MM YYYY'), 8);
+
+-- Moneda: USD (Dólar)
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
+TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
+VALUES ('USD', 50.00, 1.00, 10.00, TO_DATE('01 10 2025','DD MM YYYY'), TO_DATE('05 10 2025','DD MM YYYY'), 8);
+
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
+TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
+VALUES ('USD', 52.50, 1.00, 10.00, TO_DATE('10 10 2025','DD MM YYYY'), TO_DATE('15 10 2025','DD MM YYYY'), 8);
+
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
+TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
+VALUES ('USD', 55.00, 1.00, 11.00, TO_DATE('20 10 2025','DD MM YYYY'), TO_DATE('25 10 2025','DD MM YYYY'), 8);
+
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
+TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
+VALUES ('USD', 60.00, 1.00, 12.00, TO_DATE('01 11 2025','DD MM YYYY'), TO_DATE('05 11 2025','DD MM YYYY'), 8);
+
+INSERT INTO Tasa_de_Cambio (TC_Tipo_Moneda, TC_Valor, TC_Valor_Dolar, TC_Cant_Milla, 
+TC_Fecha_Actualizacion, TC_Fecha_Final, Lugar_Lug_COD)
+VALUES ('USD', 62.50, 1.00, 13.00, TO_DATE('15 11 2025','DD MM YYYY'), TO_DATE('20 11 2025','DD MM YYYY'), 8);
 
 
 
@@ -3927,127 +3932,127 @@ VALUES ('Puerto Sídney-Tokio', 'Marítimo', 'George Street, Sídney', 11, 9);
 
 
 -- Crucero 1 → Barco 1
-INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas)
-VALUES ('Crucero Caribeño', 1, 120, TO_TIMESTAMP('2025-12-15 10:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-20 08:00:00','YYYY-MM-DD HH24:MI:SS'), 850);
+INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas, Cru_Costo)
+VALUES ('Crucero Caribeño', 1, 120, TO_TIMESTAMP('2025-12-15 10:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-20 08:00:00','YYYY-MM-DD HH24:MI:SS'), 850, 1200.00);
 
 -- Crucero 2 → Barco 2
-INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas)
-VALUES ('Crucero Amazónico', 2, 95, TO_TIMESTAMP('2025-12-18 09:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-22 17:00:00','YYYY-MM-DD HH24:MI:SS'), 600);
+INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas, Cru_Costo)
+VALUES ('Crucero Amazónico', 2, 95, TO_TIMESTAMP('2025-12-18 09:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-22 17:00:00','YYYY-MM-DD HH24:MI:SS'), 600, 950.00);
 
 -- Crucero 3 → Barco 3
-INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas)
-VALUES ('Crucero Mediterráneo', 3, 140, TO_TIMESTAMP('2025-12-20 12:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-27 08:00:00','YYYY-MM-DD HH24:MI:SS'), 1100);
+INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas, Cru_Costo)
+VALUES ('Crucero Mediterráneo', 3, 140, TO_TIMESTAMP('2025-12-20 12:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-27 08:00:00','YYYY-MM-DD HH24:MI:SS'), 1100, 1850.00);
 
 -- Crucero 4 → Barco 4
-INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas)
-VALUES ('Crucero Pacífico', 4, 160, TO_TIMESTAMP('2025-12-22 14:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-28 09:00:00','YYYY-MM-DD HH24:MI:SS'), 950);
+INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas, Cru_Costo)
+VALUES ('Crucero Pacífico', 4, 160, TO_TIMESTAMP('2025-12-22 14:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-28 09:00:00','YYYY-MM-DD HH24:MI:SS'), 950, 1600.00);
 
 -- Crucero 5 → Barco 5
-INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas)
-VALUES ('Crucero Atlántico', 5, 180, TO_TIMESTAMP('2025-12-25 08:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-31 20:00:00','YYYY-MM-DD HH24:MI:SS'), 1200);
+INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas, Cru_Costo)
+VALUES ('Crucero Atlántico', 5, 180, TO_TIMESTAMP('2025-12-25 08:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-31 20:00:00','YYYY-MM-DD HH24:MI:SS'), 1200, 2100.00);
 
 -- Crucero 6 → Barco 6
-INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas)
-VALUES ('Crucero Austral', 6, 130, TO_TIMESTAMP('2025-12-28 07:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-01-02 18:00:00','YYYY-MM-DD HH24:MI:SS'), 700);
+INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas, Cru_Costo)
+VALUES ('Crucero Austral', 6, 130, TO_TIMESTAMP('2025-12-28 07:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-01-02 18:00:00','YYYY-MM-DD HH24:MI:SS'), 700, 1100.00);
 
 -- Crucero 7 → Barco 7
-INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas)
-VALUES ('Crucero Polar', 7, 150, TO_TIMESTAMP('2025-12-30 11:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-01-05 09:00:00','YYYY-MM-DD HH24:MI:SS'), 900);
+INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas, Cru_Costo)
+VALUES ('Crucero Polar', 7, 150, TO_TIMESTAMP('2025-12-30 11:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-01-05 09:00:00','YYYY-MM-DD HH24:MI:SS'), 900, 1550.00);
 
 -- Crucero 8 → Barco 8
-INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas)
-VALUES ('Crucero Oriental', 8, 100, TO_TIMESTAMP('2026-01-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-01-07 16:00:00','YYYY-MM-DD HH24:MI:SS'), 650);
+INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas, Cru_Costo)
+VALUES ('Crucero Oriental', 8, 100, TO_TIMESTAMP('2026-01-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-01-07 16:00:00','YYYY-MM-DD HH24:MI:SS'), 650, 1050.00);
 
 -- Crucero 9 → Barco 9
-INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas)
-VALUES ('Crucero Occidental', 9, 170, TO_TIMESTAMP('2026-01-05 09:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-01-10 20:00:00','YYYY-MM-DD HH24:MI:SS'), 800);
+INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas, Cru_Costo)
+VALUES ('Crucero Occidental', 9, 170, TO_TIMESTAMP('2026-01-05 09:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-01-10 20:00:00','YYYY-MM-DD HH24:MI:SS'), 800, 1350.00);
 
 -- Crucero 10 → Barco 10
-INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas)
-VALUES ('Crucero Horizonte', 10, 155, TO_TIMESTAMP('2026-01-08 13:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-01-14 10:00:00','YYYY-MM-DD HH24:MI:SS'), 1000);
+INSERT INTO Crucero (Cru_nombre, Barco_Bar_COD, Cru_Huella_Carbono, Cru_Fecha_Hora_Salida, Cru_Fecha_Hora_Lllegada, Cru_Cant_Millas, Cru_Costo)
+VALUES ('Crucero Horizonte', 10, 155, TO_TIMESTAMP('2026-01-08 13:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-01-14 10:00:00','YYYY-MM-DD HH24:MI:SS'), 1000, 1700.00);
 
 
 -- Transporte 1 → Vehículo 1
-INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas)
-VALUES ('Ruta Caracas-Valencia', 1, 45, TO_TIMESTAMP('2025-12-15 07:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-15 10:00:00','YYYY-MM-DD HH24:MI:SS'), 120);
+INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas, TT_Costo)
+VALUES ('Ruta Caracas-Valencia', 1, 45, TO_TIMESTAMP('2025-12-15 07:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-15 10:00:00','YYYY-MM-DD HH24:MI:SS'), 120, 45.00);
 
 -- Transporte 2 → Vehículo 2
-INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas)
-VALUES ('Ruta Maracay-Caracas', 2, 30, TO_TIMESTAMP('2025-12-16 08:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-16 09:30:00','YYYY-MM-DD HH24:MI:SS'), 90);
+INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas, TT_Costo)
+VALUES ('Ruta Maracay-Caracas', 2, 30, TO_TIMESTAMP('2025-12-16 08:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-16 09:30:00','YYYY-MM-DD HH24:MI:SS'), 90, 35.00);
 
 -- Transporte 3 → Vehículo 3
-INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas)
-VALUES ('Ruta Río-São Paulo', 3, 60, TO_TIMESTAMP('2025-12-17 06:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-17 14:00:00','YYYY-MM-DD HH24:MI:SS'), 400);
+INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas, TT_Costo)
+VALUES ('Ruta Río-São Paulo', 3, 60, TO_TIMESTAMP('2025-12-17 06:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-17 14:00:00','YYYY-MM-DD HH24:MI:SS'), 400, 120.00);
 
 -- Transporte 4 → Vehículo 4
-INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas)
-VALUES ('Ruta París-Lyon', 4, 55, TO_TIMESTAMP('2025-12-18 09:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-18 13:00:00','YYYY-MM-DD HH24:MI:SS'), 250);
+INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas, TT_Costo)
+VALUES ('Ruta París-Lyon', 4, 55, TO_TIMESTAMP('2025-12-18 09:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-18 13:00:00','YYYY-MM-DD HH24:MI:SS'), 250, 85.00);
 
 -- Transporte 5 → Vehículo 5
-INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas)
-VALUES ('Ruta Tokio-Osaka', 5, 70, TO_TIMESTAMP('2025-12-19 07:30:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-19 11:30:00','YYYY-MM-DD HH24:MI:SS'), 320);
+INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas, TT_Costo)
+VALUES ('Ruta Tokio-Osaka', 5, 70, TO_TIMESTAMP('2025-12-19 07:30:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-19 11:30:00','YYYY-MM-DD HH24:MI:SS'), 320, 95.00);
 
 -- Transporte 6 → Vehículo 6
-INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas)
-VALUES ('Ruta Johannesburgo-Pretoria', 6, 40, TO_TIMESTAMP('2025-12-20 08:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-20 09:30:00','YYYY-MM-DD HH24:MI:SS'), 100);
+INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas, TT_Costo)
+VALUES ('Ruta Johannesburgo-Pretoria', 6, 40, TO_TIMESTAMP('2025-12-20 08:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-20 09:30:00','YYYY-MM-DD HH24:MI:SS'), 100, 40.00);
 
 -- Transporte 7 → Vehículo 7
-INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas)
-VALUES ('Ruta Sídney-Brisbane', 7, 65, TO_TIMESTAMP('2025-12-21 06:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-21 12:00:00','YYYY-MM-DD HH24:MI:SS'), 350);
+INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas, TT_Costo)
+VALUES ('Ruta Sídney-Brisbane', 7, 65, TO_TIMESTAMP('2025-12-21 06:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-21 12:00:00','YYYY-MM-DD HH24:MI:SS'), 350, 105.00);
 
 -- Transporte 8 → Vehículo 8
-INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas)
-VALUES ('Ruta Valencia-Maracay', 8, 35, TO_TIMESTAMP('2025-12-22 07:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-22 08:30:00','YYYY-MM-DD HH24:MI:SS'), 85);
+INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas, TT_Costo)
+VALUES ('Ruta Valencia-Maracay', 8, 35, TO_TIMESTAMP('2025-12-22 07:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-22 08:30:00','YYYY-MM-DD HH24:MI:SS'), 85, 32.00);
 
 -- Transporte 9 → Vehículo 9
-INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas)
-VALUES ('Ruta Marsella-París', 9, 75, TO_TIMESTAMP('2025-12-23 05:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-23 11:00:00','YYYY-MM-DD HH24:MI:SS'), 500);
+INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas, TT_Costo)
+VALUES ('Ruta Marsella-París', 9, 75, TO_TIMESTAMP('2025-12-23 05:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-23 11:00:00','YYYY-MM-DD HH24:MI:SS'), 500, 140.00);
 
 -- Transporte 10 → Vehículo 10
-INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas)
-VALUES ('Ruta Osaka-Kioto', 10, 25, TO_TIMESTAMP('2025-12-24 09:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-24 10:30:00','YYYY-MM-DD HH24:MI:SS'), 75);
+INSERT INTO Transporte_Terrestre (TT_Nombre, Vehiculo_Veh_COD, TT_Huella_Carbono, TT_Fecha_Hora_Salida, TT_Fecha_Hora_Llegada, TT_Cant_Millas, TT_Costo)
+VALUES ('Ruta Osaka-Kioto', 10, 25, TO_TIMESTAMP('2025-12-24 09:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-24 10:30:00','YYYY-MM-DD HH24:MI:SS'), 75, 28.00);
 
 
 
 -- Vuelo 1 → Avión 1
-INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas)
-VALUES (1, 1.20, TO_TIMESTAMP('2025-12-15 08:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-15 16:00:00','YYYY-MM-DD HH24:MI:SS'), 4500);
+INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas, Vue_Costo)
+VALUES (1, 1.20, TO_TIMESTAMP('2025-12-15 08:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-15 16:00:00','YYYY-MM-DD HH24:MI:SS'), 4500, 850.00);
 
 -- Vuelo 2 → Avión 2
-INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas)
-VALUES (2, 1.10, TO_TIMESTAMP('2025-12-16 09:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-16 17:00:00','YYYY-MM-DD HH24:MI:SS'), 4200);
+INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas, Vue_Costo)
+VALUES (2, 1.10, TO_TIMESTAMP('2025-12-16 09:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-16 17:00:00','YYYY-MM-DD HH24:MI:SS'), 4200, 780.00);
 
 -- Vuelo 3 → Avión 3
-INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas)
-VALUES (3, 0.95, TO_TIMESTAMP('2025-12-17 07:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-17 13:00:00','YYYY-MM-DD HH24:MI:SS'), 3800);
+INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas, Vue_Costo)
+VALUES (3, 0.95, TO_TIMESTAMP('2025-12-17 07:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-17 13:00:00','YYYY-MM-DD HH24:MI:SS'), 3800, 650.00);
 
 -- Vuelo 4 → Avión 4
-INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas)
-VALUES (4, 1.50, TO_TIMESTAMP('2025-12-18 10:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-19 06:00:00','YYYY-MM-DD HH24:MI:SS'), 9500);
+INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas, Vue_Costo)
+VALUES (4, 1.50, TO_TIMESTAMP('2025-12-18 10:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-19 06:00:00','YYYY-MM-DD HH24:MI:SS'), 9500, 1450.00);
 
 -- Vuelo 5 → Avión 5
-INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas)
-VALUES (5, 1.30, TO_TIMESTAMP('2025-12-19 12:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-20 05:00:00','YYYY-MM-DD HH24:MI:SS'), 7200);
+INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas, Vue_Costo)
+VALUES (5, 1.30, TO_TIMESTAMP('2025-12-19 12:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-20 05:00:00','YYYY-MM-DD HH24:MI:SS'), 7200, 1150.00);
 
 -- Vuelo 6 → Avión 6
-INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas)
-VALUES (6, 1.70, TO_TIMESTAMP('2025-12-20 14:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-21 12:00:00','YYYY-MM-DD HH24:MI:SS'), 9800);
+INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas, Vue_Costo)
+VALUES (6, 1.70, TO_TIMESTAMP('2025-12-20 14:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-21 12:00:00','YYYY-MM-DD HH24:MI:SS'), 9800, 1500.00);
 
 -- Vuelo 7 → Avión 7
-INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas)
-VALUES (7, 1.40, TO_TIMESTAMP('2025-12-21 09:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-21 18:00:00','YYYY-MM-DD HH24:MI:SS'), 9700);
+INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas, Vue_Costo)
+VALUES (7, 1.40, TO_TIMESTAMP('2025-12-21 09:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-21 18:00:00','YYYY-MM-DD HH24:MI:SS'), 9700, 1480.00);
 
 -- Vuelo 8 → Avión 8
-INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas)
-VALUES (8, 1.25, TO_TIMESTAMP('2025-12-22 07:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-22 20:00:00','YYYY-MM-DD HH24:MI:SS'), 8900);
+INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas, Vue_Costo)
+VALUES (8, 1.25, TO_TIMESTAMP('2025-12-22 07:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-22 20:00:00','YYYY-MM-DD HH24:MI:SS'), 8900, 1350.00);
 
 -- Vuelo 9 → Avión 9
-INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas)
-VALUES (9, 1.60, TO_TIMESTAMP('2025-12-23 06:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-23 22:00:00','YYYY-MM-DD HH24:MI:SS'), 9400);
+INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas, Vue_Costo)
+VALUES (9, 1.60, TO_TIMESTAMP('2025-12-23 06:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-23 22:00:00','YYYY-MM-DD HH24:MI:SS'), 9400, 1420.00);
 
 -- Vuelo 10 → Avión 10
-INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas)
-VALUES (10, 1.55, TO_TIMESTAMP('2025-12-24 08:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-24 20:00:00','YYYY-MM-DD HH24:MI:SS'), 9100);
+INSERT INTO Vuelo (Avion_Avi_COD, Vue_Huella_Carbono, Vue_Fecha_Hora_Salida, Vue_Fecha_Hora_Llegada, Vue_Cant_Millas, Vue_Costo)
+VALUES (10, 1.55, TO_TIMESTAMP('2025-12-24 08:00:00','YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2025-12-24 20:00:00','YYYY-MM-DD HH24:MI:SS'), 9100, 1380.00);
 
 
 
@@ -4683,6 +4688,7 @@ VALUES (8, 1650.00, 7, 6, NULL, 8, NULL, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_
 
 
 
+
 -- Ruta 1 → Vuelo desde Terminal 1
 INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
                   Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
@@ -4752,6 +4758,147 @@ INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, T
 VALUES (4, NULL, NULL, 10,
         TO_TIMESTAMP('2025-12-15 08:00:00','YYYY-MM-DD HH24:MI:SS'),
         TO_TIMESTAMP('2025-12-15 12:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 11 → Vuelo 5 desde Terminal 1
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (5, NULL, NULL, 1,
+        TO_TIMESTAMP('2025-12-19 12:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-20 05:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 12 → Vuelo 6 desde Terminal 2
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (6, NULL, NULL, 2,
+        TO_TIMESTAMP('2025-12-20 14:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-21 12:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 13 → Vuelo 7 desde Terminal 3
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (7, NULL, NULL, 3,
+        TO_TIMESTAMP('2025-12-21 09:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-21 18:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 14 → Vuelo 8 desde Terminal 4
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (8, NULL, NULL, 4,
+        TO_TIMESTAMP('2025-12-22 07:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-22 20:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 15 → Vuelo 9 desde Terminal 5
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (9, NULL, NULL, 5,
+        TO_TIMESTAMP('2025-12-23 06:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-23 22:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 16 → Vuelo 10 desde Terminal 6
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (10, NULL, NULL, 6,
+        TO_TIMESTAMP('2025-12-24 08:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-24 20:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 17 → Crucero 4 desde Terminal 7
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, 4, NULL, 7,
+        TO_TIMESTAMP('2025-12-22 14:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-28 09:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 18 → Crucero 5 desde Terminal 8
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, 5, NULL, 8,
+        TO_TIMESTAMP('2025-12-25 08:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-31 20:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 19 → Crucero 6 desde Terminal 9
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, 6, NULL, 9,
+        TO_TIMESTAMP('2025-12-28 07:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2026-01-02 18:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 20 → Crucero 7 desde Terminal 10
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, 7, NULL, 10,
+        TO_TIMESTAMP('2025-12-30 11:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2026-01-05 09:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 21 → Crucero 8 desde Terminal 1
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, 8, NULL, 1,
+        TO_TIMESTAMP('2026-01-02 10:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2026-01-07 16:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 22 → Crucero 9 desde Terminal 2
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, 9, NULL, 2,
+        TO_TIMESTAMP('2026-01-05 09:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2026-01-10 20:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 23 → Crucero 10 desde Terminal 3
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, 10, NULL, 3,
+        TO_TIMESTAMP('2026-01-08 13:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2026-01-14 10:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 24 → Transporte Terrestre 4 desde Terminal 4
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, NULL, 4, 4,
+        TO_TIMESTAMP('2025-12-18 09:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-18 13:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 25 → Transporte Terrestre 5 desde Terminal 5
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, NULL, 5, 5,
+        TO_TIMESTAMP('2025-12-19 07:30:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-19 11:30:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 26 → Transporte Terrestre 6 desde Terminal 6
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, NULL, 6, 6,
+        TO_TIMESTAMP('2025-12-20 08:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-20 09:30:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 27 → Transporte Terrestre 7 desde Terminal 7
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, NULL, 7, 7,
+        TO_TIMESTAMP('2025-12-21 06:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-21 12:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 28 → Transporte Terrestre 8 desde Terminal 8
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, NULL, 8, 8,
+        TO_TIMESTAMP('2025-12-22 07:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-22 08:30:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 29 → Transporte Terrestre 9 desde Terminal 9
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, NULL, 9, 9,
+        TO_TIMESTAMP('2025-12-23 05:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-23 11:00:00','YYYY-MM-DD HH24:MI:SS'));
+
+-- Ruta 30 → Transporte Terrestre 10 desde Terminal 10
+INSERT INTO Ruta (Vuelo_Vue_COD, Crucero_Cru_COD, Transporte_Terrestre_TT_COD, Terminal_Ter_COD,
+                  Rut_Fecha_Hora_Salida, Rut_Fecha_Hora_Llegada)
+VALUES (NULL, NULL, 10, 10,
+        TO_TIMESTAMP('2025-12-24 09:00:00','YYYY-MM-DD HH24:MI:SS'),
+        TO_TIMESTAMP('2025-12-24 10:30:00','YYYY-MM-DD HH24:MI:SS'));
+
 
 
 

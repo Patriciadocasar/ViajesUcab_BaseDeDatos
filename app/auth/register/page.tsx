@@ -46,11 +46,11 @@ export default function RegisterPage() {
 
     try {
       const payload = {
-        U_Primer_Nombre: formData.primerNombre,
-        U_Primer_Apellido: formData.primerApellido,
         U_Correo: formData.email,
         U_Contrasena: formData.password,
-        U_Rol_ID: formData.role,
+        U_Primer_Nombre: formData.primerNombre,
+        U_Primer_Apellido: formData.primerApellido,
+        role: formData.role, // Se usa 'role' y luego se mapea en el backend
 
         // Datos de Cliente
         C_Primer_Nombre: formData.primerNombre,
@@ -61,6 +61,9 @@ export default function RegisterPage() {
         C_Estado_Civil: formData.estadoCivil,
         C_Lugar_ID: formData.lugarId || null,
       }
+
+      console.log("=== Enviando registro ===");
+      console.log("Payload:", payload);
 
       const res = await fetch("/api/auth/register", {
         method: "POST",

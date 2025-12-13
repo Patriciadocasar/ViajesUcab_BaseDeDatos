@@ -71,6 +71,12 @@ export default function AdminDashboard() {
             <CardDescription>Gestión del sistema</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
+            <Link href="/admin/usuarios">
+              <Button variant="outline" className="w-full justify-start">
+                <Users className="mr-2 h-4 w-4" />
+                Gestionar Usuarios
+              </Button>
+            </Link>
             <Link href="/admin/promociones">
               <Button variant="outline" className="w-full justify-start">
                 Gestión de Promociones
