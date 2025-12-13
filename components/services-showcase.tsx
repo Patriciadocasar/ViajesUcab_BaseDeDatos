@@ -414,7 +414,7 @@ export function ServicesShowcase() {
                     ) : (
                       <span className="text-sm text-muted-foreground">Consultar precio</span>
                     )}
-                    <Button size="sm">Ver Detalles</Button>
+                    <Button size="sm" className="text-xs px-3 py-1 h-8">+ Agregar</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -475,7 +475,7 @@ export function ServicesShowcase() {
                     ) : (
                       <span className="text-sm text-muted-foreground">Consultar precio</span>
                     )}
-                    <Button size="sm">Ver Detalles</Button>
+                    <Button size="sm" className="text-xs px-3 py-1 h-8">+ Agregar</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -536,7 +536,7 @@ export function ServicesShowcase() {
                     ) : (
                       <span className="text-sm text-muted-foreground">Consultar precio</span>
                     )}
-                    <Button size="sm">Ver Detalles</Button>
+                    <Button size="sm" className="text-xs px-3 py-1 h-8">+ Agregar</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -587,7 +587,7 @@ export function ServicesShowcase() {
                     ) : (
                       <span className="text-sm text-muted-foreground">Consultar precio</span>
                     )}
-                    <Button size="sm">Ver Detalles</Button>
+                    <Button size="sm" className="text-xs px-3 py-1 h-8">+ Agregar</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -638,7 +638,7 @@ export function ServicesShowcase() {
                     ) : (
                       <span className="text-sm text-muted-foreground">Consultar precio</span>
                     )}
-                    <Button size="sm">Ver Detalles</Button>
+                    <Button size="sm" className="text-xs px-3 py-1 h-8">+ Agregar</Button>
                   </div>
                 </CardContent>
               </Card>

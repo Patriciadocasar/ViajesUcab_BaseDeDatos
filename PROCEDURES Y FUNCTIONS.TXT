@@ -131,6 +131,51 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
+
+
+
+CREATE OR REPLACE FUNCTION consultar_aerolinea(
+    Aer_ID INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado RECORD;
+BEGIN
+    SELECT *
+    INTO resultado
+    FROM Aerolinea
+    WHERE Pro_COD = Aer_ID;
+
+    IF resultado IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Aerolínea no encontrada'
+        );
+    END IF;
+
+    RETURN json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'Pro_COD', resultado.Pro_COD,
+            'Pro_Nombre', resultado.Pro_Nombre,
+            'Pro_Direccion', resultado.Pro_Direccion,
+            'Pro_Telefono', resultado.Pro_Telefono,
+            'Pro_Correo', resultado.Pro_Correo,
+            'A_Fecha_Fundacion', resultado.A_Fecha_Fundacion,
+            'Lugar_Lug_COD', resultado.Lugar_Lug_COD
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+
 CREATE OR REPLACE FUNCTION actualizar_aerolinea(
     Aer_ID INTEGER,
     Aer_Nombre VARCHAR,
@@ -566,47 +611,65 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION consultar_hotel(
-    ID INTEGER
-)
-RETURNS JSON AS $$
-DECLARE
-    resultado RECORD;
+
+CREATE OR REPLACE FUNCTION obtener_direcciones_filtro()
+RETURNS JSON
+LANGUAGE plpgsql AS
+$$
 BEGIN
-    -- Buscar el hotel
-    SELECT *
-    INTO resultado
-    FROM Hotel
-    WHERE Pro_COD = ID;
-
-    -- Si no existe
-    IF resultado IS NULL THEN
-        RETURN json_build_object(
-            'status', 'error',
-            'message', 'Hotel no encontrado'
-        );
-    END IF;
-
-    -- Si existe
-    RETURN json_build_object(
-        'status', 'success',
-        'data', json_build_object(
-            'Pro_COD', resultado.Pro_COD,
-            'Pro_Nombre', resultado.Pro_Nombre,
-            'Pro_Direccion', resultado.Pro_Direccion,
-            'Pro_Telefono', resultado.Pro_Telefono,
-            'Pro_Correo', resultado.Pro_Correo
+    RETURN (
+        SELECT json_build_object(
+            'direcciones',
+            json_agg(
+                json_build_object(
+                    'lug_cod', Lug_COD,
+                    'direccion', direccion
+                )
+                ORDER BY direccion
+            )
         )
-    );
+        FROM (
+            -- Países
+            SELECT p.Lug_COD,
+                   p.Lug_Nombre AS direccion
+            FROM Lugar p
+            WHERE p.Lug_Tipo = 'Pais'
 
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN json_build_object(
-            'status', 'error',
-            'message', SQLERRM
-        );
+            UNION ALL
+
+            -- Regiones con su país
+            SELECT r.Lug_COD,
+                   r.Lug_Nombre || ', ' || p.Lug_Nombre AS direccion
+            FROM Lugar r
+            JOIN Lugar p ON r.Lugar_Lug_COD = p.Lug_COD
+            WHERE p.Lug_Tipo = 'Pais'
+              AND r.Lug_Tipo = 'Region'
+        ) sub
+    );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION filtrar_pais_json()
+RETURNS JSON AS $$
+BEGIN
+    RETURN (
+        SELECT json_build_object(
+            'status', 'success',
+            'paises',
+            json_agg(
+                json_build_object(
+                    'direccion', L.lug_nombre,
+                    'lug_cod', L.lug_cod
+                )
+                ORDER BY L.lug_nombre
+            )
+        )
+        FROM Lugar L
+        WHERE L.lug_tipo = 'Pais'
+    );
 END;
 $$ LANGUAGE plpgsql;
+
 
 CREATE OR REPLACE FUNCTION mostrar_vuelo_json(
     id INTEGER
@@ -686,6 +749,393 @@ BEGIN
             'Origen', resultado.origen,
             'Destino', resultado.destino,
             'Nombre_Vuelo', resultado.nombre_vuelo
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+--PARA CRUCERO
+CREATE OR REPLACE FUNCTION mostrar_crucero(
+    id INTEGER
+)
+RETURNS TABLE(
+    Cru_COD INTEGER,
+    Cru_Nombre VARCHAR,
+    Barco_Bar_COD INTEGER,
+    Cru_Huella_Carbono NUMERIC,
+    Cru_Fecha_Hora_Salida TIMESTAMP,
+    Cru_Fecha_Hora_Llegada TIMESTAMP,
+    Cru_Cant_Millas NUMERIC,
+    Cru_Costo NUMERIC,
+    Origen VARCHAR,
+    Destino VARCHAR,
+    Nombre_Viaje_Crucero TEXT
+)
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        C.cru_cod,
+        C.cru_nombre,
+        C.barco_bar_cod,
+        C.cru_huella_carbono,
+        C.cru_fecha_hora_salida,
+        C.cru_fecha_hora_lllegada,   
+        C.cru_cant_millas,
+        C.cru_costo,
+
+        -- ORIGEN
+        (
+            SELECT L.lug_nombre
+            FROM Ruta R, Terminal T, Lugar L
+            WHERE R.crucero_cru_cod = id
+            AND T.ter_cod = R.terminal_ter_cod
+            AND L.lug_cod = T.lugar_lug_cod
+        ) AS origen,
+
+        -- DESTINO
+        (
+            SELECT L.lug_nombre
+            FROM Ruta R, Terminal T, Lugar L
+            WHERE R.crucero_cru_cod = id
+            AND T.ter_cod = R.terminal_ter_cod
+            AND L.lug_cod = T.lugar_lug_cod2
+        ) AS destino,
+
+        -- NOMBRE DEL VIAJE
+        (
+            'Crucero ' ||
+            (SELECT L.lug_nombre
+             FROM Ruta R, Terminal T, Lugar L
+             WHERE R.crucero_cru_cod = id
+             AND T.ter_cod = R.terminal_ter_cod
+             AND L.lug_cod = T.lugar_lug_cod
+            )
+            || '-' ||
+            (SELECT L.lug_nombre
+             FROM Ruta R, Terminal T, Lugar L
+             WHERE R.crucero_cru_cod = id
+             AND T.ter_cod = R.terminal_ter_cod
+             AND L.lug_cod = T.lugar_lug_cod2
+            )
+        ) AS nombre_viaje_crucero
+
+    FROM Crucero C
+    WHERE C.cru_cod = id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--PARA TRANSPORTE TERRESTRE
+CREATE OR REPLACE FUNCTION mostrar_transporte(
+    id INTEGER
+)
+RETURNS TABLE(
+    Tra_COD INTEGER,
+    Vehiculo_Veh_COD INTEGER,
+    Tra_Huella_Carbono NUMERIC,
+    Tra_Fecha_Hora_Salida TIMESTAMP,
+    Tra_Fecha_Hora_Llegada TIMESTAMP,
+    Tra_Costo NUMERIC,
+    Origen VARCHAR,
+    Destino VARCHAR,
+    Nombre_Transporte TEXT
+)
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        T.TT_COD,
+        T.Vehiculo_Veh_COD,
+        T.TT_Huella_Carbono,
+        T.TT_Fecha_Hora_Salida,
+        T.TT_Fecha_Hora_Llegada,
+        T.TT_Costo,
+
+        -- ORIGEN
+        (
+            SELECT L.Lug_Nombre
+            FROM Ruta R
+            JOIN Terminal Te ON Te.Ter_COD = R.Terminal_Ter_COD
+            JOIN Lugar L ON L.Lug_COD = Te.Lugar_Lug_COD
+            WHERE R.Transporte_Terrestre_TT_COD = id
+            ORDER BY R.Rut_Fecha_Hora_Salida
+            LIMIT 1
+        ) AS Origen,
+
+        -- DESTINO
+        (
+            SELECT L.Lug_Nombre
+            FROM Ruta R
+            JOIN Terminal Te ON Te.Ter_COD = R.Terminal_Ter_COD
+            JOIN Lugar L ON L.Lug_COD = Te.Lugar_Lug_COD2
+            WHERE R.Transporte_Terrestre_TT_COD = id
+            ORDER BY R.Rut_Fecha_Hora_Llegada DESC
+            LIMIT 1
+        ) AS Destino,
+
+        -- NOMBRE DEL TRANSPORTE
+        (
+            'Transporte ' ||
+            (
+                SELECT L.Lug_Nombre
+                FROM Ruta R
+                JOIN Terminal Te ON Te.Ter_COD = R.Terminal_Ter_COD
+                JOIN Lugar L ON L.Lug_COD = Te.Lugar_Lug_COD
+                WHERE R.Transporte_Terrestre_TT_COD = id
+                ORDER BY R.Rut_Fecha_Hora_Salida
+                LIMIT 1
+            )
+            || ' - ' ||
+            (
+                SELECT L.Lug_Nombre
+                FROM Ruta R
+                JOIN Terminal Te ON Te.Ter_COD = R.Terminal_Ter_COD
+                JOIN Lugar L ON L.Lug_COD = Te.Lugar_Lug_COD2
+                WHERE R.Transporte_Terrestre_TT_COD = id
+                ORDER BY R.Rut_Fecha_Hora_Llegada DESC
+                LIMIT 1
+            )
+        ) AS Nombre_Transporte
+
+    FROM Transporte_Terrestre T
+    WHERE T.TT_COD = id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--PARA MOSTRAR LOS HOSPEDAJES Y SU HOTEL
+CREATE OR REPLACE FUNCTION mostrar_hospedaje(
+    id INTEGER
+)
+RETURNS TABLE(
+    Hos_COD INTEGER,
+    Hotel_Hot_COD INTEGER,
+    Hos_Fecha_Hora_Inicio TIMESTAMP,
+    Hos_Fecha_Hora_Fin TIMESTAMP,
+    Hot_Cant_Millas NUMERIC,
+    Hos_Costo NUMERIC,
+    Ubicacion VARCHAR,
+    Nombre_Hotel VARCHAR,
+    Nombre_Hospedaje TEXT
+)
+AS $$
+BEGIN
+RETURN QUERY
+    SELECT 
+        Ho.hos_cod,
+        Ho.hotel_pro_cod,
+        Ho.hos_fecha_hora_inicio,
+        Ho.hos_fecha_hora_fin,
+        Ho.hot_cant_millas,
+        Ho.hos_costo,
+
+        -- UBICACIÓN
+        (
+            SELECT 
+                L.lug_nombre || ', ' || H.pro_direccion
+            FROM Hotel H, Lugar L
+            WHERE H.pro_cod = Ho.hotel_pro_cod
+            AND L.lug_cod = H.lugar_lug_cod
+        ) AS ubicacion,
+
+        -- NOMBRE DEL HOTEL
+        (
+            SELECT H.pro_nombre
+            FROM Hotel H
+            WHERE H.pro_cod = Ho.hotel_pro_cod
+        ) AS nombre_hotel,
+
+        -- NOMBRE DEL HOSPEDAJE
+        (
+            'Hospedaje en ' ||
+            (
+                SELECT 
+                    H.pro_nombre
+                FROM Hotel H
+                WHERE H.pro_cod = Ho.hotel_pro_cod
+            )
+        ) AS nombre_hospedaje
+
+    FROM Hospedaje Ho
+    WHERE Ho.hos_cod = id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--PARA MOSTRAR RESTAURANTE 
+CREATE OR REPLACE FUNCTION mostrar_restaurante(
+    id INTEGER
+)
+RETURNS JSON
+AS $$
+DECLARE
+    resultado JSON;
+BEGIN
+    SELECT row_to_json(t)
+    INTO resultado
+    FROM (
+        SELECT 
+            R.rest_cod,
+            R.rest_nombre,
+            R.rest_direccion,
+            R.rest_clasificacion,
+            R.lugar_lug_cod,
+            R.rest_tipo_comida,
+            R.rest_ambiente,
+
+            -- UBICACIÓN COMPLETA
+            (
+                SELECT 
+                    L.lug_nombre || ', ' || R.rest_direccion
+                FROM Lugar L
+                WHERE L.lug_cod = R.lugar_lug_cod
+            ) AS ubicado_en
+
+        FROM Restaurante R
+        WHERE R.rest_cod = id
+    ) t;
+
+    RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;
+
+--PARA MOSTRAR SERVICIO ADICIONAL
+CREATE OR REPLACE FUNCTION mostrar_servicio_adicional(
+    id INTEGER
+)
+RETURNS JSON
+AS $$
+DECLARE
+    resultado JSON;
+BEGIN
+    SELECT row_to_json(t)
+    INTO resultado
+    FROM (
+        SELECT 
+            S.SA_COD,
+            S.SA_Tipo,
+            S.SA_Nombre,
+            S.Operador_Turistico_Pro_COD,
+            S.SA_Descripcion,
+            S.SA_Costo,
+            S.SA_Cant_Milla,
+            S.SA_Fecha_Hora_Inicio,
+            S.SA_Fecha_Hora_Fin,
+
+            -- UBICACIÓN DEL OPERADOR
+            (
+                SELECT 
+                    L.lug_nombre || ', ' || O.pro_direccion
+                FROM Operador_Turistico O, Lugar L
+                WHERE O.pro_cod = S.Operador_Turistico_Pro_COD
+                AND L.lug_cod = O.lugar_lug_cod
+            ) AS ubicacion
+
+        FROM Servicio_Adicional S
+        WHERE S.SA_cod = id
+    ) t;
+
+    RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+--PARA MOSTRAR OPERADOR TURISTICO
+CREATE OR REPLACE FUNCTION consultar_operador_turistico(
+    ID INTEGER
+)
+RETURNS JSON
+AS $$
+DECLARE
+    resultado RECORD;
+BEGIN
+    -- Buscar el operador turístico
+    SELECT *
+    INTO resultado
+    FROM Operador_Turistico
+    WHERE Pro_COD = ID;
+
+    -- Si no existe
+    IF resultado IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Operador turístico no encontrado'
+        );
+    END IF;
+
+    -- Si existe, devolver JSON
+    RETURN json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'Pro_COD', resultado.Pro_COD,
+            'Pro_Nombre', resultado.Pro_Nombre,
+            'Pro_Direccion', resultado.Pro_Direccion,
+            'Pro_Telefono', resultado.Pro_Telefono,
+            'Pro_Correo', resultado.Pro_Correo,
+            'Lugar_Lug_COD', resultado.Lugar_Lug_COD
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+--PARA MOSTRAR USUARIOS 
+CREATE OR REPLACE FUNCTION mostrar_usuario(
+    id INTEGER
+)
+RETURNS JSON
+AS $$
+DECLARE
+    resultado RECORD;
+BEGIN
+    -- Buscar el usuario
+    SELECT *
+    INTO resultado
+    FROM Usuario
+    WHERE Usu_COD = id;
+
+    -- Si no existe
+    IF resultado IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Usuario no encontrado'
+        );
+    END IF;
+
+    -- Si existe, devolver JSON
+    RETURN json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'Usu_COD', resultado.Usu_COD,
+            'Usu_Primer_Nombre', resultado.Usu_Primer_Nombre,
+            'Usu_Primer_Apellido', resultado.Usu_Primer_Apellido,
+            'Usu_Segundo_Nombre', resultado.Usu_Segundo_Nombre,
+            'Usu_Segundo_Apellido', resultado.Usu_Segundo_Apellido,
+            'Usu_Correo', resultado.Usu_Correo,
+            'Usu_Contrasena', resultado.Usu_Contrasena,
+            'Cliente_Cli_COD', resultado.Cliente_Cli_COD,
+            'Compania_Crucero', resultado.Compania_Crucero,
+            'Operador_Turistico', resultado.Operador_Turistico,
+            'Aerolinea', resultado.Aerolinea,
+            'Transporte_Terrestre', resultado.Transporte_Terrestre,
+            'Hotel', resultado.Hotel,
+            'Empleado_Emp_COD', resultado.Empleado_Emp_COD,
+            'Rol_Rol_COD', resultado.Rol_Rol_COD
         )
     );
 
