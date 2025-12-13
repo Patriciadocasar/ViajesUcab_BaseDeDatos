@@ -1,16 +1,23 @@
 --Registrar Usuario
-CREATE OR REPLACE FUNCTION registrar_usuario(
+CREATE OR REPLACE FUNCTION registrar_usuario_cliente(
     U_Correo VARCHAR,
     U_Contrasena VARCHAR,
     U_Primer_Nombre VARCHAR,
     U_Primer_Apellido VARCHAR,
-    U_Rol_ID INTEGER
-)
-RETURNS JSON AS $$
+    U_Rol_ID INTEGER,
+    C_Primer_Nombre VARCHAR,
+    C_Segundo_Nombre VARCHAR,
+    C_Apellido VARCHAR,
+    C_Segundo_Apellido VARCHAR,
+    C_Fecha_Nacimiento DATE,
+    C_Estado_Civil VARCHAR,
+    C_Lugar_ID INTEGER
+) RETURNS JSON AS $$
 DECLARE
     resultado JSON;
     validar_existe VARCHAR(100);
     nuevo_usuario_id INTEGER;
+    nuevo_cliente_id INTEGER;
 BEGIN
     -- Verificar si el correo ya existe
     SELECT Usu_Correo INTO validar_existe
@@ -25,20 +32,32 @@ BEGIN
         RETURN resultado;
     END IF;
 
-    -- Insertar nuevo usuario
-    INSERT INTO Usuario (
-        Usu_Correo, Usu_Contrasena, Usu_Primer_Nombre, Usu_Primer_Apellido, Rol_Rol_COD
+    -- Insertar nuevo cliente primero
+    INSERT INTO Cliente (
+        Cli_Primer_Nombre, Cli_Segundo_Nombre, Cli_Apellido, Cli_Segundo_Apellido,
+        Cli_Fecha_Nacimiento, Cli_Estado_Civil, Cli_Millas_Acum, Lugar_Lug_COD
     )
     VALUES (
-        U_Correo, U_Contrasena, U_Primer_Nombre, U_Primer_Apellido, U_Rol_ID
+        C_Primer_Nombre, C_Segundo_Nombre, C_Apellido, C_Segundo_Apellido,
+        C_Fecha_Nacimiento, C_Estado_Civil, 0, C_Lugar_ID
+    )
+    RETURNING Cli_COD INTO nuevo_cliente_id;
+
+    -- Insertar usuario con referencia al cliente
+    INSERT INTO Usuario (
+        Usu_Correo, Usu_Contrasena, Usu_Primer_Nombre, Usu_Primer_Apellido, Rol_Rol_COD, Cliente_Cli_COD
+    )
+    VALUES (
+        U_Correo, U_Contrasena, U_Primer_Nombre, U_Primer_Apellido, U_Rol_ID, nuevo_cliente_id
     )
     RETURNING Usu_COD INTO nuevo_usuario_id;
 
-    -- Si todo sale bien
+    -- Resultado final
     resultado := json_build_object(
         'status', 'success',
-        'message', 'Usuario registrado correctamente',
-        'usuario_ID', nuevo_usuario_id
+        'message', 'Usuario y cliente registrados correctamente',
+        'usuario_ID', nuevo_usuario_id,
+        'cliente_ID', nuevo_cliente_id
     );
     RETURN resultado;
 

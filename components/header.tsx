@@ -34,7 +34,7 @@ export function Header() {
   const { toast } = useToast()
   const router = useRouter()
   const pathname = usePathname()
-  
+
   // No mostrar header en rutas de admin o proveedores (tienen su propia navegación)
   if (pathname?.startsWith("/admin") || pathname?.startsWith("/proveedores") || pathname?.startsWith("/auth")) {
     return null
@@ -221,19 +221,19 @@ export function Header() {
               const formData = new FormData(e.currentTarget)
               const email = formData.get("email") as string
               const password = formData.get("password") as string
-              
+
               try {
                 await login(email, password)
-                
+
                 // Obtener el usuario actualizado después del login
                 const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null")
-                
+
                 toast({
                   title: "Inicio de sesión exitoso",
                   description: "Bienvenido de vuelta a ViajesUCAB",
                 })
                 setShowLoginModal(false)
-                
+
                 // Redirigir según rol
                 if (currentUser?.role === 1) {
                   router.push("/admin")
@@ -290,11 +290,17 @@ export function Header() {
               e.preventDefault()
               setIsRegistering(true)
               const formData = new FormData(e.currentTarget)
+
               const primerNombre = formData.get("primerNombre") as string
+              const segundoNombre = formData.get("segundoNombre") as string
               const primerApellido = formData.get("primerApellido") as string
+              const segundoApellido = formData.get("segundoApellido") as string
               const email = formData.get("email") as string
               const password = formData.get("password") as string
               const confirmPassword = formData.get("confirmPassword") as string
+              const fechaNacimiento = formData.get("fechaNacimiento") as string
+              const estadoCivil = formData.get("estadoCivil") as string
+              const lugarId = formData.get("lugarId") as string
 
               if (password !== confirmPassword) {
                 toast({
@@ -313,9 +319,18 @@ export function Header() {
                   U_Correo: email,
                   U_Contrasena: password,
                   U_Rol_ID: 3,
+
+                  // Datos de Cliente
+                  C_Primer_Nombre: primerNombre,
+                  C_Segundo_Nombre: segundoNombre || null,
+                  C_Apellido: primerApellido,
+                  C_Segundo_Apellido: segundoApellido || null,
+                  C_Fecha_Nacimiento: fechaNacimiento,
+                  C_Estado_Civil: estadoCivil,
+                  C_Lugar_ID: lugarId || null,
                 }
 
-                const res = await fetch("/api/register", {
+                const res = await fetch("/api/auth/register", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify(payload),
@@ -324,9 +339,7 @@ export function Header() {
                 const data = await res.json()
 
                 if (data.status === "success") {
-                  // Guardar usuario en contexto
                   login(email, password)
-
                   toast({
                     title: "Cuenta creada exitosamente",
                     description: "¡Bienvenido a ViajesUCAB! Ya puedes comenzar a buscar ofertas.",
@@ -351,13 +364,22 @@ export function Header() {
               }
             }}
           >
+            {/* Usuario */}
             <div className="space-y-2">
               <Label htmlFor="primerNombre">Primer Nombre</Label>
               <Input id="primerNombre" name="primerNombre" type="text" placeholder="Juan" required />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="segundoNombre">Segundo Nombre</Label>
+              <Input id="segundoNombre" name="segundoNombre" type="text" placeholder="Carlos" />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="primerApellido">Primer Apellido</Label>
               <Input id="primerApellido" name="primerApellido" type="text" placeholder="Pérez" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="segundoApellido">Segundo Apellido</Label>
+              <Input id="segundoApellido" name="segundoApellido" type="text" placeholder="Gómez" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="register-email">Correo electrónico</Label>
@@ -365,26 +387,33 @@ export function Header() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="register-password">Contraseña</Label>
-              <Input
-                id="register-password"
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                required
-                minLength={8}
-              />
+              <Input id="register-password" name="password" type="password" placeholder="••••••••" required minLength={8} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm-password">Confirmar Contraseña</Label>
-              <Input
-                id="confirm-password"
-                name="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                required
-                minLength={8}
-              />
+              <Input id="confirm-password" name="confirmPassword" type="password" placeholder="••••••••" required minLength={8} />
             </div>
+
+            {/* Cliente */}
+            <div className="space-y-2">
+              <Label htmlFor="fechaNacimiento">Fecha de Nacimiento</Label>
+              <Input id="fechaNacimiento" name="fechaNacimiento" type="date" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="estadoCivil">Estado Civil</Label>
+              <select id="estadoCivil" name="estadoCivil" className="w-full border rounded p-2" required>
+                <option value="">Selecciona tu estado civil</option>
+                <option value="Soltero">Soltero</option>
+                <option value="Casado">Casado</option>
+                <option value="Divorciado">Divorciado</option>
+                <option value="Viudo">Viudo</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lugarId">Lugar</Label>
+              <Input id="lugarId" name="lugarId" type="number" placeholder="ID del lugar (opcional)" />
+            </div>
+
             <Button type="submit" className="w-full cursor-pointer" disabled={isRegistering}>
               {isRegistering ? "Creando cuenta..." : "Crear Cuenta"}
             </Button>
