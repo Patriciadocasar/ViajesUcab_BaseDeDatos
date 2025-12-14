@@ -259,7 +259,7 @@ CREATE TABLE Compania_Crucero (
     Pro_COD SERIAL PRIMARY KEY,
     Pro_Nombre VARCHAR(60) NOT NULL,
     Pro_Direccion TEXT NOT NULL,
-    Pro_Telefono NUMERIC(11) NOT NULL,
+    Pro_Telefono NUMERIC(18) NOT NULL,
     Pro_Correo VARCHAR(60) NOT NULL,
     CC_Fecha_Fundacion DATE NOT NULL,
     Lugar_Lug_COD INTEGER
@@ -269,7 +269,7 @@ CREATE TABLE Operador_Turistico (
     Pro_COD SERIAL PRIMARY KEY,
     Pro_Nombre VARCHAR(60) NOT NULL,
     Pro_Direccion TEXT NOT NULL,
-    Pro_Telefono NUMERIC(11) NOT NULL,
+    Pro_Telefono NUMERIC(18) NOT NULL,
     Pro_Correo VARCHAR(60) NOT NULL,
     Lugar_Lug_COD INTEGER
 );
@@ -278,7 +278,7 @@ CREATE TABLE Aerolinea (
     Pro_COD SERIAL PRIMARY KEY,
     Pro_Nombre VARCHAR(60) NOT NULL,
     Pro_Direccion TEXT NOT NULL,
-    Pro_Telefono NUMERIC(16) NOT NULL,
+    Pro_Telefono NUMERIC(18) NOT NULL,
     Pro_Correo VARCHAR(60) NOT NULL,
     A_Fecha_Fundacion DATE NOT NULL,
     Lugar_Lug_COD INTEGER
@@ -288,7 +288,7 @@ CREATE TABLE Compania_Transporte_Terrestre (
     Pro_COD SERIAL PRIMARY KEY,
     Pro_Nombre VARCHAR(60) NOT NULL,
     Pro_Direccion TEXT NOT NULL,
-    Pro_Telefono NUMERIC(11) NOT NULL,
+    Pro_Telefono NUMERIC(18) NOT NULL,
     Pro_Correo VARCHAR(60) NOT NULL,
     Lugar_Lug_COD INTEGER
 );
@@ -297,7 +297,7 @@ CREATE TABLE Hotel (
     Pro_COD SERIAL PRIMARY KEY,
     Pro_Nombre VARCHAR(60) NOT NULL,
     Pro_Direccion TEXT NOT NULL,
-    Pro_Telefono NUMERIC(11) NOT NULL,
+    Pro_Telefono NUMERIC(18) NOT NULL,
     Pro_Correo VARCHAR(60) NOT NULL,
     Lugar_Lug_COD INTEGER
 );
@@ -335,7 +335,7 @@ CREATE TABLE Resenas (
 CREATE TABLE Reserva (
     Res_COD SERIAL PRIMARY KEY,
     Res_Numero_Reserva NUMERIC(4) NOT NULL,
-    Res_Milla_Obtenida NUMERIC(3) NOT NULL,
+    Res_Milla_Obtenida NUMERIC(30) NOT NULL,
     Res_Fecha_Hora TIMESTAMP NOT NULL,
     Res_Camarote VARCHAR(6),
     Cliente_Cli_COD INTEGER,

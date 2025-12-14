@@ -41,7 +41,7 @@ export default function CompararItinerariosPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 lg:px-8">
-          <Link href="/itinerario">
+          <Link href="/clientes/itinerario">
             <Button variant="ghost" className="mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Volver a Crear Itinerario
@@ -52,7 +52,7 @@ export default function CompararItinerariosPage() {
               <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
               <h2 className="text-2xl font-bold mb-2">No hay itinerarios para comparar</h2>
               <p className="text-muted-foreground mb-6">Crea al menos un itinerario para usar esta función</p>
-              <Link href="/itinerario">
+              <Link href="/clientes/itinerario">
                 <Button>Crear Itinerario</Button>
               </Link>
             </CardContent>
@@ -66,7 +66,7 @@ export default function CompararItinerariosPage() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 lg:px-8">
         <div className="mb-8">
-          <Link href="/itinerario">
+          <Link href="/clientes/itinerario">
             <Button variant="ghost" className="mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Volver a Crear Itinerario

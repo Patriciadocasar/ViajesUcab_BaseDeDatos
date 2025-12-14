@@ -437,13 +437,13 @@ export default function PerfilPage() {
                         <Map className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-lg font-medium mb-2">No hay itinerarios guardados</h3>
                         <p className="text-muted-foreground mb-4">Crea tu primer itinerario personalizado</p>
-                        <Button onClick={() => router.push("/itinerario")}>Crear Itinerario</Button>
+                        <Button onClick={() => router.push("/clientes/itinerario")}>Crear Itinerario</Button>
                       </div>
                     ) : (
                       <div className="space-y-4">
                         {savedItineraries.length >= 2 && (
                           <Button
-                            onClick={() => router.push("/itinerario/comparar")}
+                            onClick={() => router.push("/clientes/itinerario/comparar")}
                             className="w-full gap-2"
                             variant="outline"
                           >

@@ -49,7 +49,7 @@ export default function ConfirmacionPage() {
           ...data,
           customerInfo: {
             ...data.customerInfo,
-            passport: user?.travelDocuments?.passport || data.customerInfo.passport,
+            //passport: user?.travelDocuments?.passport || data.customerInfo.passport,
           },
         })
       } else {

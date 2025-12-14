@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, CreditCard, User, Mail, Phone, MapPin } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { SelectorMetodosPagoMultiple, type MetodoPagoConMonto } from "@/components/selector-metodos-pago-multiple"
 
 export default function PagoItinerarioPage() {
   const params = useParams()
@@ -22,12 +23,14 @@ export default function PagoItinerarioPage() {
   const { toast } = useToast()
 
   const [purchaseData, setPurchaseData] = useState<any>(null)
-  const [formData, setFormData] = useState({
-    cardNumber: "",
-    cardName: "",
-    expiryDate: "",
-    cvv: "",
-  })
+  const [metodosPago, setMetodosPago] = useState<MetodoPagoConMonto[]>([
+    {
+      id: `metodo-${Date.now()}`,
+      tipo: "Tarjeta_Credito",
+      monto: 0,
+      datos: {},
+    },
+  ])
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -42,18 +45,30 @@ export default function PagoItinerarioPage() {
         description: "No se encontró información de compra",
         variant: "destructive",
       })
-      router.push("/perfil?tab=itineraries")
+      router.push("/clientes/perfil?tab=itineraries")
       return
     }
 
-    setPurchaseData(JSON.parse(stored))
+    const parsed = JSON.parse(stored)
+    setPurchaseData(parsed)
+
+    // Inicializar el monto del primer método de pago con el total
+    const total = parsed.itinerary.totalPrice
+    setMetodosPago([
+      {
+        id: `metodo-${Date.now()}`,
+        tipo: "Tarjeta_Credito",
+        monto: total,
+        datos: {},
+      },
+    ])
   }, [isAuthenticated, router, toast])
 
   if (!purchaseData || !user) {
     return null
   }
 
-  const { itinerary, selections } = purchaseData
+  const { itinerary, selections, pasajeros = [], reservaInfo } = purchaseData
 
   const calculateTotalWithSelections = () => {
     const total = itinerary.totalPrice
@@ -76,54 +91,209 @@ export default function PagoItinerarioPage() {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const reservationNumber = `VU${Date.now().toString().slice(-8)}`
-    const milesEarned = Math.floor(totalPrice * 10)
+    // Validar que el total esté completo
+    const totalAsignado = metodosPago.reduce((sum, m) => sum + m.monto, 0)
+    const diferencia = Math.abs(totalPrice - totalAsignado)
 
-    // Convert itinerary items to cart items format
-    const cartItems = itinerary.items.map((item: any) => ({
-      id: Number.parseInt(item.id),
-      title: item.title,
-      location: item.location || item.description,
-      price: item.price,
-      image: "/placeholder.svg",
-      type: item.type === "transport" ? "flight" : item.type === "accommodation" ? "hotel" : "tour",
-      companyName: item.companyName || "ViajesUCAB",
-      dates: {
-        checkIn: item.date,
-        checkOut: item.date,
-      },
-    }))
-
-    addPurchase({
-      id: reservationNumber,
-      reservationNumber,
-      items: cartItems,
-      totalPrice,
-      purchaseDate: new Date().toISOString(),
-      status: "completed",
-      milesEarned,
-    })
-
-    const confirmationData = {
-      reservationNumber,
-      customerInfo: {
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        passport: user.travelDocuments?.passport || "",
-      },
-      items: cartItems,
-      totalPrice,
-      purchaseDate: new Date().toISOString(),
+    if (diferencia > 0.01) {
+      toast({
+        title: "Monto incompleto",
+        description: `Faltan $${(totalPrice - totalAsignado).toFixed(2)} por asignar`,
+        variant: "destructive",
+      })
+      return
     }
 
-    localStorage.setItem("lastPurchase", JSON.stringify(confirmationData))
-    localStorage.removeItem("itineraryPurchase")
+    try {
+      toast({
+        title: "Procesando pago...",
+        description: "Registrando métodos de pago",
+      })
 
-    router.push(`/confirmacion?reservation=${reservationNumber}`)
+      // Paso 1: Registrar todos los métodos de pago
+      const metodosRegistrados: Array<{ metodo_pago_id: number; monto: number }> = []
+
+      for (const metodo of metodosPago) {
+        const registrarMetodoPagoResponse = await fetch("/api/metodo-pago/registrar-universal", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            tipo: metodo.tipo,
+            cliente_id: parseInt(user.clienteId),
+            datos: metodo.datos,
+          }),
+        })
+
+        const metodoPagoResult = await registrarMetodoPagoResponse.json()
+
+        if (metodoPagoResult.status === "error") {
+          toast({
+            title: "Error al registrar método de pago",
+            description: metodoPagoResult.message,
+            variant: "destructive",
+          })
+          return
+        }
+
+        metodosRegistrados.push({
+          metodo_pago_id: metodoPagoResult.data.metodo_pago_id,
+          monto: metodo.monto,
+        })
+
+        console.log(`✅ Método ${metodosRegistrados.length} registrado:`, {
+          tipo: metodo.tipo,
+          id: metodoPagoResult.data.metodo_pago_id,
+          monto: metodo.monto,
+        })
+      }
+
+      console.log("✅ Todos los métodos registrados:", metodosRegistrados)
+
+      // Paso 2: Obtener la información de la reserva del localStorage
+      const storedData = JSON.parse(localStorage.getItem("itineraryPurchase") || "{}")
+      const reserva_id = storedData.reservaInfo?.reserva_id
+
+      if (!reserva_id) {
+        toast({
+          title: "Error",
+          description: "No se encontró información de la reserva",
+          variant: "destructive",
+        })
+        return
+      }
+
+      toast({
+        title: "Procesando pagos...",
+        description: `Procesando ${metodosRegistrados.length} método(s) de pago`,
+      })
+
+      // Paso 3: Procesar cada pago
+      const pagosRealizados = []
+      let millasObtenidas = 0
+
+      for (const metodoRegistrado of metodosRegistrados) {
+        const usaMillas = metodosPago.find((m) => m.tipo === "Milla_MP" && metodosRegistrados.some(mr => mr.metodo_pago_id === metodoRegistrado.metodo_pago_id))
+        
+        console.log(`💳 Procesando pago ${pagosRealizados.length + 1}/${metodosRegistrados.length}:`, {
+          reserva_id: reserva_id,
+          cliente_id: parseInt(user.clienteId),
+          metodo_pago_id: metodoRegistrado.metodo_pago_id,
+          monto_pago: metodoRegistrado.monto,
+        })
+
+        const procesarPagoResponse = await fetch("/api/pago/procesar", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            reserva_id: reserva_id,
+            cliente_id: parseInt(user.clienteId),
+            metodo_pago_id: metodoRegistrado.metodo_pago_id,
+            monto_pago: metodoRegistrado.monto,
+            pago_con_millas: usaMillas ? true : false,
+            cantidad_millas: usaMillas ? Math.floor(metodoRegistrado.monto * 10) : 0, // Ejemplo: 1 dólar = 10 millas
+          }),
+        })
+
+        const pagoResult = await procesarPagoResponse.json()
+
+        if (pagoResult.status === "error") {
+          toast({
+            title: `Error al procesar pago ${pagosRealizados.length + 1}`,
+            description: pagoResult.message,
+            variant: "destructive",
+          })
+          return
+        }
+
+        pagosRealizados.push(pagoResult)
+        millasObtenidas += pagoResult.data.millas_obtenidas || 0
+
+        console.log(`✅ Pago ${pagosRealizados.length} procesado:`, pagoResult)
+      }
+
+      console.log("✅ Todos los pagos procesados:", {
+        total_pagos: pagosRealizados.length,
+        millas_totales: millasObtenidas,
+      })
+
+      const reservationNumber = storedData.reservaInfo.numero_reserva || `VU${Date.now().toString().slice(-8)}`
+
+      // Convert itinerary items to cart items format
+      const cartItems = itinerary.items.map((item: any) => ({
+        id: Number.parseInt(item.id),
+        title: item.title,
+        location: item.location || item.description,
+        price: item.price,
+        image: "/placeholder.svg",
+        type: item.type === "transport" ? "flight" : item.type === "accommodation" ? "hotel" : "tour",
+        companyName: item.companyName || "ViajesUCAB",
+        dates: {
+          checkIn: item.date,
+          checkOut: item.date,
+        },
+      }))
+
+      addPurchase({
+        id: reservationNumber.toString(),
+        reservationNumber: reservationNumber.toString(),
+        items: cartItems,
+        totalPrice,
+        purchaseDate: new Date().toISOString(),
+        status: "completed",
+        milesEarned: millasObtenidas,
+      })
+
+      const confirmationData = {
+        reservationNumber,
+        reservaInfo: storedData.reservaInfo,
+        pasajeros: storedData.pasajeros || [],
+        customerInfo: {
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          address: user.address || "",
+          passport: user.travelDocuments?.passport || "",
+        },
+        metodosPago: metodosPago.map((m, i) => ({
+          tipo: m.tipo,
+          monto: m.monto,
+          metodoPagoId: metodosRegistrados[i]?.metodo_pago_id,
+        })),
+        items: cartItems,
+        totalPrice,
+        purchaseDate: new Date().toISOString(),
+        pagoInfo: {
+          pagos: pagosRealizados,
+          millas_obtenidas: millasObtenidas,
+          total_pagos: pagosRealizados.length,
+        },
+      }
+
+      localStorage.setItem("lastPurchase", JSON.stringify(confirmationData))
+      localStorage.removeItem("itineraryPurchase")
+      localStorage.removeItem("currentItineraryPurchase")
+
+      toast({
+        title: "¡Pago exitoso!",
+        description: `${pagosRealizados.length} método(s) procesado(s). Has ganado ${millasObtenidas} millas`,
+      })
+
+      router.push(`/clientes/confirmacion?reservation=${reservationNumber}`)
+    } catch (error: any) {
+      console.error("Error al procesar pago:", error)
+      toast({
+        title: "Error",
+        description: "No se pudo procesar el pago. Por favor intenta nuevamente.",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -131,7 +301,7 @@ export default function PagoItinerarioPage() {
       <div className="container mx-auto px-4 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="mb-6">
-            <Button variant="ghost" onClick={() => router.push(`/itinerario/comprar/${params.id}`)} className="gap-2">
+            <Button variant="ghost" onClick={() => router.push(`/clientes/itinerario/comprar/${params.id}`)} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
               Volver
             </Button>
@@ -178,64 +348,11 @@ export default function PagoItinerarioPage() {
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CreditCard className="h-5 w-5" />
-                      Información de Pago
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="cardName">Nombre en la tarjeta</Label>
-                      <Input
-                        id="cardName"
-                        name="cardName"
-                        value={formData.cardName}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="cardNumber">Número de tarjeta</Label>
-                      <Input
-                        id="cardNumber"
-                        name="cardNumber"
-                        placeholder="1234 5678 9012 3456"
-                        value={formData.cardNumber}
-                        onChange={handleInputChange}
-                        maxLength={19}
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="expiryDate">Fecha de vencimiento</Label>
-                        <Input
-                          id="expiryDate"
-                          name="expiryDate"
-                          placeholder="MM/AA"
-                          value={formData.expiryDate}
-                          onChange={handleInputChange}
-                          maxLength={5}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="cvv">CVV</Label>
-                        <Input
-                          id="cvv"
-                          name="cvv"
-                          placeholder="123"
-                          value={formData.cvv}
-                          onChange={handleInputChange}
-                          maxLength={4}
-                          required
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <SelectorMetodosPagoMultiple
+                  metodos={metodosPago}
+                  totalRequerido={totalPrice}
+                  onChange={setMetodosPago}
+                />
               </div>
 
               <div className="lg:col-span-1">

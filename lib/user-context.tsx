@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 export interface User {
-  id: string
+  id: string // usuario_ID
+  clienteId: string // cliente_ID - ID real del cliente para reservas
   name: string
   email: string
   role: number // ahora es numérico
@@ -65,6 +66,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     // Mapear respuesta de Postgres a nuestro User
     const loggedUser: User = {
       id: data.usuario_ID.toString(),
+      clienteId: data.cliente_ID ? data.cliente_ID.toString() : data.usuario_ID.toString(), // Usar cliente_ID si existe
       name: `${data.primerNombre} ${data.primerApellido}`,
       email: data.email,
       role: data.rol_ID, // numérico directo

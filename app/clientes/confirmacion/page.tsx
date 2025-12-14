@@ -13,8 +13,34 @@ import type { CartItem } from "@/lib/cart-context"
 import { useUser } from "@/lib/user-context"
 import { useToast } from "@/hooks/use-toast"
 
+interface Pasajero {
+  primerNombre: string
+  segundoNombre?: string
+  primerApellido: string
+  segundoApellido?: string
+  fechaNacimiento: string
+  estadoCivil: string
+}
+
+interface ReservaInfo {
+  reserva_id: number
+  numero_reserva: number
+  subtotal: number
+  total: number
+  millas_obtenidas?: number
+}
+
+interface MetodoPagoUtilizado {
+  tipo: string
+  monto: number
+  metodoPagoId: number
+}
+
 interface PurchaseData {
   reservationNumber: string
+  reservaInfo?: ReservaInfo
+  pasajeros?: Pasajero[]
+  metodosPago?: MetodoPagoUtilizado[]
   customerInfo: {
     name: string
     email: string
@@ -25,6 +51,7 @@ interface PurchaseData {
   items: CartItem[]
   totalPrice: number
   purchaseDate: string
+  pagoInfo?: any
 }
 
 export default function ConfirmacionPage() {
@@ -165,9 +192,90 @@ export default function ConfirmacionPage() {
                     <p className="text-sm text-muted-foreground">Total de Servicios</p>
                     <p className="text-lg font-semibold">{purchaseData.items.length}</p>
                   </div>
+                  {purchaseData.pagoInfo?.millas_obtenidas && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Millas Obtenidas</p>
+                      <p className="text-lg font-semibold text-green-600">
+                        +{purchaseData.pagoInfo.millas_obtenidas} millas
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
+
+            {/* Pasajeros Info */}
+            {purchaseData.pasajeros && purchaseData.pasajeros.length > 0 && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle>Pasajeros Registrados</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {purchaseData.pasajeros.map((pasajero, index) => (
+                      <div key={index} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-semibold">Pasajero {index + 1}</h4>
+                          <span className="text-sm text-muted-foreground">{pasajero.estadoCivil}</span>
+                        </div>
+                        <div className="grid gap-2 md:grid-cols-2">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Nombre Completo</p>
+                            <p className="font-medium">
+                              {pasajero.primerNombre} {pasajero.segundoNombre || ""} {pasajero.primerApellido}{" "}
+                              {pasajero.segundoApellido || ""}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Fecha de Nacimiento</p>
+                            <p className="font-medium">
+                              {new Date(pasajero.fechaNacimiento).toLocaleDateString("es-ES", {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Métodos de Pago Utilizados */}
+            {purchaseData.metodosPago && purchaseData.metodosPago.length > 0 && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle>Métodos de Pago Utilizados</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {purchaseData.metodosPago.map((metodo, index) => (
+                      <div key={index} className="flex items-center justify-between border rounded-lg p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <CreditCard className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{metodo.tipo.replace(/_/g, " ")}</p>
+                            <p className="text-sm text-muted-foreground">ID: {metodo.metodoPagoId}</p>
+                          </div>
+                        </div>
+                        <p className="font-bold text-lg">${metodo.monto.toFixed(2)}</p>
+                      </div>
+                    ))}
+                    <div className="border-t pt-3 flex items-center justify-between">
+                      <span className="font-semibold">Total Pagado:</span>
+                      <span className="font-bold text-xl text-primary">
+                        ${purchaseData.metodosPago.reduce((sum, m) => sum + m.monto, 0).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Tickets and Invoice */}
             <Card className="mt-8">

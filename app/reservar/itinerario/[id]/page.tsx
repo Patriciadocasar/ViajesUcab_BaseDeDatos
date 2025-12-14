@@ -69,7 +69,7 @@ export default function ItineraryBookingPage() {
           description: "No se pudo cargar el itinerario",
           variant: "destructive",
         })
-        router.push("/itinerario")
+        router.push("/clientes/itinerario")
       }
     } else {
       toast({
@@ -77,7 +77,7 @@ export default function ItineraryBookingPage() {
         description: "No se encontró el itinerario",
         variant: "destructive",
       })
-      router.push("/itinerario")
+      router.push("/clientes/itinerario")
     }
   }, [params.id, router, toast])
 
@@ -255,7 +255,7 @@ export default function ItineraryBookingPage() {
                 ))}
 
                 <div className="flex justify-between pt-6">
-                  <Button variant="outline" onClick={() => router.push("/itinerario")}>
+                  <Button variant="outline" onClick={() => router.push("/clientes/itinerario")}>
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Volver
                   </Button>

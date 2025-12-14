@@ -14,6 +14,9 @@ import {
   ArrowLeft,
   ShoppingCart,
   ShoppingBag,
+  Ship,
+  Bus,
+  Utensils,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -23,19 +26,27 @@ import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { useCurrency } from "@/lib/currency-context"
 import { useItinerary } from "@/lib/itinerary-context"
+import { useUser } from "@/lib/user-context"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/lib/cart-context"
 
+// Extender el tipo del contexto
 interface ItineraryItem {
   id: string
-  type: "destination" | "transport" | "accommodation" | "activity"
+  realId?: number // ID real de la base de datos
+  type: "destination" | "transport" | "accommodation" | "activity" | "vuelo" | "crucero" | "traslado" | "hospedaje" | "servicio" | "restaurante" | "paquete"
   title: string
   description: string
   date: string
   price: number
   location?: string
+  millas?: number
+  huellaCarbono?: number
+  companyName?: string
+  selectedSeat?: string
+  selectedCabin?: string
 }
 
 interface SavedItinerary {
@@ -48,47 +59,77 @@ interface SavedItinerary {
   createdAt: string
 }
 
-const DESTINATIONS = [
-  { id: "1", name: "París, Francia", description: "La ciudad del amor", price: 1200, image: "Eiffel Tower" },
-  { id: "2", name: "Roma, Italia", description: "Historia y cultura", price: 1100, image: "Colosseum" },
-  { id: "3", name: "Barcelona, España", description: "Arte y arquitectura", price: 950, image: "Sagrada Familia" },
-  { id: "4", name: "Londres, Reino Unido", description: "Tradición británica", price: 1300, image: "Big Ben" },
-  { id: "5", name: "Ámsterdam, Países Bajos", description: "Canales y cultura", price: 1050, image: "Canal houses" },
-  { id: "6", name: "Tokio, Japón", description: "Modernidad y tradición", price: 1800, image: "Tokyo skyline" },
-]
+// Interfaces para los servicios de la BD
+interface VueloBD {
+  id: number
+  numero: string
+  origen: string
+  destino: string
+  fecha: string
+  fechaLlegada?: string
+  costo: number
+  cantidadMillas?: number
+  huellaCarbono?: number
+}
 
-const TRANSPORT_OPTIONS = [
-  { id: "1", name: "Vuelo Económico", description: "Clase económica", price: 450, duration: "8-12 horas" },
-  { id: "2", name: "Vuelo Business", description: "Clase ejecutiva", price: 1200, duration: "8-12 horas" },
-  { id: "3", name: "Tren de Alta Velocidad", description: "Cómodo y rápido", price: 150, duration: "2-4 horas" },
-  { id: "4", name: "Autobús Turístico", description: "Económico", price: 50, duration: "4-6 horas" },
-  { id: "5", name: "Alquiler de Auto", description: "Libertad total", price: 300, duration: "Por día" },
-  { id: "6", name: "Crucero", description: "Viaje con alojamiento", price: 2500, duration: "7 días" },
-]
+interface CruceroBD {
+  id: number
+  origen: string
+  destino: string
+  fechaSalida: string
+  fechaLlegada: string
+  costo: number
+  cantidadMillas?: number
+  huellaCarbono?: number
+}
 
-const ACCOMMODATION_OPTIONS = [
-  { id: "1", name: "Hotel 5 Estrellas", description: "Lujo y confort", price: 250, rating: 5 },
-  { id: "2", name: "Hotel 4 Estrellas", description: "Excelente calidad", price: 150, rating: 4 },
-  { id: "3", name: "Hotel 3 Estrellas", description: "Buena relación calidad-precio", price: 80, rating: 3 },
-  { id: "4", name: "Apartamento Airbnb", description: "Como en casa", price: 100, rating: 4 },
-  { id: "5", name: "Hostal", description: "Económico y social", price: 35, rating: 3 },
-  { id: "6", name: "Resort Todo Incluido", description: "Sin preocupaciones", price: 350, rating: 5 },
-]
+interface TrasladoBD {
+  id: number
+  origen: string
+  destino: string
+  fechaSalida: string
+  fechaLlegada: string
+  costo: number
+  cantidadMillas?: number
+  huellaCarbono?: number
+}
 
-const ACTIVITIES = [
-  { id: "1", name: "Tour de Ciudad", description: "Conoce los principales atractivos", price: 50, duration: "4 horas" },
-  { id: "2", name: "Museo y Galerías", description: "Arte e historia", price: 30, duration: "3 horas" },
-  {
-    id: "3",
-    name: "Excursión de Día Completo",
-    description: "Aventura fuera de la ciudad",
-    price: 120,
-    duration: "8 horas",
-  },
-  { id: "4", name: "Tour Gastronómico", description: "Sabores locales", price: 80, duration: "3 horas" },
-  { id: "5", name: "Actividad de Aventura", description: "Deportes extremos", price: 150, duration: "5 horas" },
-  { id: "6", name: "Espectáculo Nocturno", description: "Entretenimiento", price: 70, duration: "2 horas" },
-]
+interface HospedajeBD {
+  id: number
+  hotelNombre: string
+  fechaInicio: string
+  fechaFin: string
+  costo: number
+  cantidadMillas?: number
+}
+
+interface ServicioAdicionalBD {
+  id: number
+  nombre: string
+  descripcion: string
+  costo: number
+  tipo: string
+  cantidadMillas?: number
+}
+
+interface RestauranteBD {
+  id: number
+  nombre: string
+  direccion: string
+  clasificacion: string
+  tipoComida: string
+  ambiente: string
+}
+
+interface PaqueteTuristicoBD {
+  id: number
+  nombre: string
+  descripcion: string
+  costo: number
+  costoMillas: number
+  millasOtorga: number
+  tipo: "especial" | "regular"
+}
 
 export default function ItinerarioPage() {
   const [itineraryName, setItineraryName] = useState("")
@@ -96,23 +137,265 @@ export default function ItinerarioPage() {
   const [endDate, setEndDate] = useState("")
   const [items, setItems] = useState<ItineraryItem[]>([])
   const [showAddForm, setShowAddForm] = useState(true)
-  const [selectedType, setSelectedType] = useState<ItineraryItem["type"]>("destination")
+  const [selectedType, setSelectedType] = useState<string>("vuelo")
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
-  
-  // Ensure selectedDate is not in the past
-  useEffect(() => {
-    const today = new Date().toISOString().split("T")[0]
-    if (selectedDate < today) {
-      setSelectedDate(today)
-    }
-  }, [selectedDate])
   const { savedItineraries, addItinerary, deleteItinerary } = useItinerary()
+  const { user } = useUser()
   const { toast } = useToast()
   const { formatPrice } = useCurrency()
   const router = useRouter()
   const { addToCart } = useCart()
 
-  const addPredefinedItem = (option: any, type: ItineraryItem["type"]) => {
+  // Estados para servicios de la BD
+  const [vuelos, setVuelos] = useState<VueloBD[]>([])
+  const [cruceros, setCruceros] = useState<CruceroBD[]>([])
+  const [traslados, setTraslados] = useState<TrasladoBD[]>([])
+  const [hospedajes, setHospedajes] = useState<HospedajeBD[]>([])
+  const [servicios, setServicios] = useState<ServicioAdicionalBD[]>([])
+  const [restaurantes, setRestaurantes] = useState<RestauranteBD[]>([])
+  const [paquetes, setPaquetes] = useState<PaqueteTuristicoBD[]>([])
+  const [isLoadingServices, setIsLoadingServices] = useState(true)
+
+  // Cargar servicios al montar el componente
+  useEffect(() => {
+    cargarServicios()
+  }, [])
+
+  // Funciones de mapeo (similares a services-showcase.tsx)
+  const mapearVuelo = (v: any): VueloBD => {
+    const idRaw = v.vue_cod || v.Vue_COD || v.id
+    const id = idRaw != null && !isNaN(Number(idRaw)) ? Number(idRaw) : 0
+    
+    const origen = v.origen || v.Origen || ""
+    const destino = v.destino || v.Destino || ""
+    const numero = `VU-${id}`
+    
+    const fechaSalida = v.vue_fecha_hora_salida || v.Vue_Fecha_Hora_Salida || v.fecha || ""
+    const fechaLlegada = v.vue_fecha_hora_llegada || v.Vue_Fecha_Hora_Llegada || ""
+    
+    const huellaRaw = v.vue_huella_carbono || v.Vue_Huella_Carbono || "0"
+    const huellaCarbono = parseFloat(huellaRaw) || 0
+    
+    const millasRaw = v.vue_cant_millas || v.Vue_Cant_Millas || "0"
+    const cantidadMillas = parseFloat(millasRaw) || 0
+    
+    const costoRaw = v.vue_costo || v.Vue_Costo || v.costo || "0"
+    const costo = parseFloat(costoRaw) || 0
+    
+    return {
+      id,
+      numero,
+      origen,
+      destino,
+      fecha: fechaSalida,
+      fechaLlegada,
+      costo,
+      cantidadMillas,
+      huellaCarbono,
+    }
+  }
+
+  const mapearCrucero = (c: any): CruceroBD => {
+    const idRaw = c.Cru_COD || c.cru_cod || c.id
+    const id = idRaw != null && !isNaN(Number(idRaw)) ? Number(idRaw) : 0
+    
+    const costoRaw = c.Cru_Costo || c.cru_costo || c.costo || "0"
+    const costo = parseFloat(costoRaw) || 0
+    
+    const millasRaw = c.Cru_Cant_Millas || c.cru_cant_millas || "0"
+    const cantidadMillas = parseFloat(millasRaw) || 0
+    
+    const huellaRaw = c.Cru_Huella_Carbono || c.cru_huella_carbono || "0"
+    const huellaCarbono = parseFloat(huellaRaw) || 0
+    
+    return {
+      id,
+      origen: c.origen || "Origen",
+      destino: c.destino || "Destino",
+      fechaSalida: c.Cru_Fecha_Hora_Salida || c.cru_fecha_hora_salida || new Date().toISOString(),
+      fechaLlegada: c.Cru_Fecha_Hora_Llegada || c.cru_fecha_hora_lllegada || new Date().toISOString(),
+      costo,
+      cantidadMillas,
+      huellaCarbono,
+    }
+  }
+
+  const mapearTraslado = (t: any): TrasladoBD => {
+    const idRaw = t.TT_COD || t.tt_cod || t.id
+    const id = idRaw != null && !isNaN(Number(idRaw)) ? Number(idRaw) : 0
+    
+    const costoRaw = t.TT_Costo || t.tt_costo || t.costo || "0"
+    const costo = parseFloat(costoRaw) || 0
+    
+    const millasRaw = t.TT_Cant_Millas || t.tt_cant_millas || "0"
+    const cantidadMillas = parseFloat(millasRaw) || 0
+    
+    const huellaRaw = t.TT_Huella_Carbono || t.tt_huella_carbono || "0"
+    const huellaCarbono = parseFloat(huellaRaw) || 0
+    
+    return {
+      id,
+      origen: t.origen || "Origen",
+      destino: t.destino || "Destino",
+      fechaSalida: t.TT_Fecha_Hora_Salida || t.tt_fecha_hora_salida || new Date().toISOString(),
+      fechaLlegada: t.TT_Fecha_Hora_Llegada || t.tt_fecha_hora_llegada || new Date().toISOString(),
+      costo,
+      cantidadMillas,
+      huellaCarbono,
+    }
+  }
+
+  const mapearHospedaje = (h: any): HospedajeBD => {
+    const idRaw = h.Hos_COD || h.hos_cod || h.id
+    const id = idRaw != null && !isNaN(Number(idRaw)) ? Number(idRaw) : 0
+    
+    const costoRaw = h.Hos_Costo || h.hos_costo || h.costo || "0"
+    const costo = parseFloat(costoRaw) || 0
+    
+    const millasRaw = h.Hot_Cant_Milla || h.hot_cant_milla || "0"
+    const cantidadMillas = parseFloat(millasRaw) || 0
+    
+    return {
+      id,
+      hotelNombre: h.hotel_nombre || h.hotelNombre || "Hotel",
+      fechaInicio: h.Hos_Fecha_Hora_Inicio || h.hos_fecha_hora_inicio || new Date().toISOString(),
+      fechaFin: h.Hos_Fecha_Hora_Fin || h.hos_fecha_hora_fin || new Date().toISOString(),
+      costo,
+      cantidadMillas,
+    }
+  }
+
+  const mapearServicio = (s: any): ServicioAdicionalBD => {
+    const idRaw = s.sa_cod || s.id
+    const id = idRaw != null && !isNaN(Number(idRaw)) ? Number(idRaw) : 0
+    
+    const costoRaw = s.sa_costo || s.costo || "0"
+    const costo = parseFloat(costoRaw) || 0
+    
+    const millasRaw = s.sa_cant_milla || s.Sa_Cant_Milla || "0"
+    const cantidadMillas = parseFloat(millasRaw) || 0
+    
+    return {
+      id,
+      nombre: s.sa_nombre || s.nombre || "Servicio",
+      descripcion: s.sa_descripcion || s.descripcion || "",
+      costo,
+      tipo: s.sa_tipo || s.tipo || "",
+      cantidadMillas,
+    }
+  }
+
+  const mapearRestaurante = (r: any): RestauranteBD => {
+    const idRaw = r.rest_cod || r.id
+    const id = idRaw != null && !isNaN(Number(idRaw)) ? Number(idRaw) : 0
+    
+    return {
+      id,
+      nombre: r.rest_nombre || r.nombre || "Restaurante",
+      direccion: r.rest_direccion || r.direccion || "",
+      clasificacion: r.rest_clasificacion || r.clasificacion || "",
+      tipoComida: r.rest_tipo_comida || r.tipoComida || "",
+      ambiente: r.rest_ambiente || r.ambiente || "",
+    }
+  }
+
+  const mapearPaquete = (p: any): PaqueteTuristicoBD => {
+    const idRaw = p.pt_cod || p.PT_COD || p.id
+    const id = idRaw != null && !isNaN(Number(idRaw)) ? Number(idRaw) : 0
+    
+    return {
+      id,
+      nombre: p.pt_nombre || p.PT_Nombre || p.nombre || "Paquete",
+      descripcion: p.pt_descripcion || p.PT_Descripcion || p.descripcion || "",
+      costo: parseFloat(p.pt_costo || p.PT_Costo || p.costo || "0"),
+      costoMillas: parseFloat(p.pt_costo_millas || p.PT_Costo_Millas || p.costoMillas || "0"),
+      millasOtorga: parseFloat(p.pt_cant_milla || p.PT_Cant_Milla || p.millasOtorga || "0"),
+      tipo: (p.pt_tipo || p.PT_Tipo || p.tipo || "regular").toLowerCase() as "especial" | "regular",
+    }
+  }
+
+  const cargarServicios = async () => {
+    try {
+      setIsLoadingServices(true)
+      
+      const [vuelosRes, crucerosRes, trasladosRes, hospedajesRes, serviciosRes, restaurantesRes, paquetesRes] = await Promise.all([
+        fetch("/api/vuelo"),
+        fetch("/api/crucero"),
+        fetch("/api/traslado"),
+        fetch("/api/hospedaje"),
+        fetch("/api/servicio-adicional"),
+        fetch("/api/restaurante"),
+        fetch("/api/paquete-turistico?id=0"),
+      ])
+
+      if (vuelosRes.ok) {
+        const data = await vuelosRes.json()
+        if (data.data && Array.isArray(data.data)) {
+          const vuelosMapeados = data.data.map(mapearVuelo)
+          setVuelos(vuelosMapeados)
+        }
+      }
+
+      if (crucerosRes.ok) {
+        const data = await crucerosRes.json()
+        if (data.data && Array.isArray(data.data)) {
+          const crucerosMapeados = data.data.map(mapearCrucero)
+          setCruceros(crucerosMapeados)
+        }
+      }
+
+      if (trasladosRes.ok) {
+        const data = await trasladosRes.json()
+        if (data.data && Array.isArray(data.data)) {
+          const trasladosMapeados = data.data.map(mapearTraslado)
+          setTraslados(trasladosMapeados)
+        }
+      }
+
+      if (hospedajesRes.ok) {
+        const data = await hospedajesRes.json()
+        if (data.data && Array.isArray(data.data)) {
+          const hospedajesMapeados = data.data.map(mapearHospedaje)
+          setHospedajes(hospedajesMapeados)
+        }
+      }
+
+      if (serviciosRes.ok) {
+        const data = await serviciosRes.json()
+        if (data.data && Array.isArray(data.data)) {
+          const serviciosMapeados = data.data.map(mapearServicio)
+          setServicios(serviciosMapeados)
+        }
+      }
+
+      if (restaurantesRes.ok) {
+        const data = await restaurantesRes.json()
+        if (data.data && Array.isArray(data.data)) {
+          const restaurantesMapeados = data.data.map(mapearRestaurante)
+          setRestaurantes(restaurantesMapeados)
+        }
+      }
+
+      if (paquetesRes.ok) {
+        const data = await paquetesRes.json()
+        if (data.data && Array.isArray(data.data)) {
+          const paquetesMapeados = data.data.map(mapearPaquete)
+          setPaquetes(paquetesMapeados)
+        }
+      }
+    } catch (error) {
+      console.error("❌ Error cargando servicios:", error)
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los servicios",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoadingServices(false)
+    }
+  }
+
+  const addPredefinedItem = (option: any, serviceType: string) => {
     if (!selectedDate) {
       toast({
         title: "Fecha requerida",
@@ -122,34 +405,118 @@ export default function ItinerarioPage() {
       return
     }
 
-    // Validate that selected date is not in the past
-    const selectedDateObj = new Date(selectedDate)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    if (selectedDateObj < today) {
-      toast({
-        title: "Fecha inválida",
-        description: "No se pueden seleccionar fechas pasadas",
-        variant: "destructive",
-      })
-      return
-    }
+    let item: ItineraryItem
 
-    const item: ItineraryItem = {
-      id: Date.now().toString(),
-      type,
-      title: option.name,
-      description: option.description,
-      date: selectedDate,
-      price: option.price,
-      location: type === "destination" ? option.name : undefined,
+    // Construir el item según el tipo de servicio
+    // IMPORTANTE: Usar los tipos específicos (vuelo, crucero, etc.) no los genéricos
+    switch (serviceType) {
+      case "vuelo":
+        item = {
+          id: Date.now().toString(),
+          realId: option.id, // ID real de la BD
+          type: "vuelo" as any, // Tipo específico
+          title: `${option.numero}: ${option.origen} → ${option.destino}`,
+          description: `Vuelo de ${option.origen} a ${option.destino}`,
+          date: selectedDate,
+          price: option.costo || 0,
+          location: `${option.origen} - ${option.destino}`,
+          millas: option.cantidadMillas,
+          huellaCarbono: option.huellaCarbono,
+        }
+        break
+
+      case "crucero":
+        item = {
+          id: Date.now().toString(),
+          realId: option.id,
+          type: "crucero" as any, // Tipo específico
+          title: `Crucero: ${option.origen} → ${option.destino}`,
+          description: `Crucero de ${option.origen} a ${option.destino}`,
+          date: selectedDate,
+          price: option.costo || 0,
+          location: `${option.origen} - ${option.destino}`,
+          millas: option.cantidadMillas,
+          huellaCarbono: option.huellaCarbono,
+        }
+        break
+
+      case "traslado":
+        item = {
+          id: Date.now().toString(),
+          realId: option.id,
+          type: "traslado" as any, // Tipo específico
+          title: `Traslado: ${option.origen} → ${option.destino}`,
+          description: `Traslado terrestre de ${option.origen} a ${option.destino}`,
+          date: selectedDate,
+          price: option.costo || 0,
+          location: `${option.origen} - ${option.destino}`,
+          millas: option.cantidadMillas,
+          huellaCarbono: option.huellaCarbono,
+        }
+        break
+
+      case "hospedaje":
+        item = {
+          id: Date.now().toString(),
+          realId: option.id,
+          type: "hospedaje" as any, // Tipo específico
+          title: option.hotelNombre,
+          description: `Hospedaje en ${option.hotelNombre}`,
+          date: selectedDate,
+          price: option.costo || 0,
+          location: option.hotelNombre,
+          millas: option.cantidadMillas,
+        }
+        break
+
+      case "servicio":
+        item = {
+          id: Date.now().toString(),
+          realId: option.id,
+          type: "servicio" as any, // Tipo específico
+          title: option.nombre,
+          description: option.descripcion || `Servicio: ${option.nombre}`,
+          date: selectedDate,
+          price: option.costo || 0,
+          location: option.tipo,
+          millas: option.cantidadMillas,
+        }
+        break
+
+      case "restaurante":
+        item = {
+          id: Date.now().toString(),
+          realId: option.id,
+          type: "restaurante" as any, // Tipo específico
+          title: option.nombre,
+          description: `${option.tipoComida} - ${option.ambiente}`,
+          date: selectedDate,
+          price: 0, // Restaurantes generalmente no tienen precio fijo
+          location: option.direccion,
+        }
+        break
+
+      case "paquete":
+        item = {
+          id: Date.now().toString(),
+          realId: option.id,
+          type: "paquete" as any, // Tipo específico
+          title: option.nombre,
+          description: option.descripcion,
+          date: selectedDate,
+          price: option.costo,
+          millas: option.millasOtorga,
+        }
+        break
+
+      default:
+        return
     }
 
     setItems([...items, item])
     toast({
       title: "Elemento agregado",
-      description: `${option.name} se agregó a tu itinerario`,
+      description: `${item.title} se agregó a tu itinerario`,
     })
   }
 
@@ -161,7 +528,7 @@ export default function ItinerarioPage() {
     })
   }
 
-  const saveItinerary = () => {
+  const saveItinerary = async () => {
     console.log("[v0] saveItinerary called")
     console.log("[v0] itineraryName:", itineraryName)
     console.log("[v0] items:", items)
@@ -184,47 +551,7 @@ export default function ItinerarioPage() {
       return
     }
 
-    // Validate dates if provided
-    if (startDate) {
-      const startDateObj = new Date(startDate)
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      
-      if (startDateObj < today) {
-        toast({
-          title: "Fecha inválida",
-          description: "La fecha de inicio no puede ser en el pasado",
-          variant: "destructive",
-        })
-        return
-      }
-    }
-
-    if (endDate) {
-      const endDateObj = new Date(endDate)
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      
-      if (endDateObj < today) {
-        toast({
-          title: "Fecha inválida",
-          description: "La fecha de fin no puede ser en el pasado",
-          variant: "destructive",
-        })
-        return
-      }
-
-      // Validate end date is after start date
-      if (startDate && new Date(startDate) > endDateObj) {
-        toast({
-          title: "Fecha inválida",
-          description: "La fecha de fin debe ser posterior a la fecha de inicio",
-          variant: "destructive",
-        })
-        return
-      }
-    }
-
+    // Crear el itinerario localmente primero (para la UI)
     const newItinerary = {
       id: Date.now().toString(),
       name: itineraryName,
@@ -278,7 +605,7 @@ export default function ItinerarioPage() {
     addToCart(cartItem)
   }
 
-  const handlePurchaseCurrentItinerary = () => {
+  const handlePurchaseCurrentItinerary = async () => {
     if (items.length === 0) {
       toast({
         title: "Itinerario vacío",
@@ -288,22 +615,69 @@ export default function ItinerarioPage() {
       return
     }
 
+    if (!user) {
+      toast({
+        title: "Inicia sesión",
+        description: "Debes iniciar sesión para comprar un itinerario",
+        variant: "destructive",
+      })
+      router.push("/auth/login")
+      return
+    }
+
+    // Validar que hay servicios agregados
+    if (items.length === 0) {
+      toast({
+        title: "Itinerario vacío",
+        description: "Debes agregar al menos un servicio al itinerario",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validar que hay fechas de inicio y fin
+    if (!startDate || !endDate) {
+      toast({
+        title: "Fechas requeridas",
+        description: "Debes seleccionar fechas de inicio y fin para el itinerario",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validar que la fecha de inicio es antes de la fecha de fin
+    if (new Date(startDate) > new Date(endDate)) {
+      toast({
+        title: "Fechas inválidas",
+        description: "La fecha de inicio debe ser anterior a la fecha de fin",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Crear el itinerario temporal para la UI
     const tempItinerary = {
       id: `temp-${Date.now()}`,
       name: itineraryName || "Itinerario sin nombre",
-      startDate: startDate || undefined,
-      endDate: endDate || undefined,
+      startDate: startDate,
+      endDate: endDate,
       items: [...items],
       totalPrice: items.reduce((sum, item) => sum + item.price, 0),
       createdAt: new Date().toISOString(),
     }
 
+    console.log("🛒 Itinerario para compra:", tempItinerary)
+    console.log("🛒 Items con realId:", items.map(i => ({ title: i.title, realId: i.realId, type: i.type })))
+
+    // Guardar localmente para el flujo de compra
     localStorage.setItem("currentItineraryPurchase", JSON.stringify(tempItinerary))
 
-    router.push(`/reservar/itinerario/${tempItinerary.id}`)
+    // Preparar para la página de compra
+    router.push(`/clientes/itinerario/comprar/${tempItinerary.id}`)
   }
 
   const totalPrice = items.reduce((sum, item) => sum + item.price, 0)
+  const totalMillas = items.reduce((sum, item) => sum + (item.millas || 0), 0)
 
   const getIcon = (type: ItineraryItem["type"]) => {
     switch (type) {
@@ -315,6 +689,22 @@ export default function ItinerarioPage() {
         return <Hotel className="h-5 w-5" />
       case "activity":
         return <Compass className="h-5 w-5" />
+      case "vuelo":
+        return <Plane className="h-5 w-5" />
+      case "crucero":
+        return <Ship className="h-5 w-5" />
+      case "traslado":
+        return <Bus className="h-5 w-5" />
+      case "hospedaje":
+        return <Hotel className="h-5 w-5" />
+      case "servicio":
+        return <Compass className="h-5 w-5" />
+      case "restaurante":
+        return <Utensils className="h-5 w-5" />
+      case "paquete":
+        return <Package className="h-5 w-5" />
+      default:
+        return <MapPin className="h-5 w-5" />
     }
   }
 
@@ -328,6 +718,34 @@ export default function ItinerarioPage() {
         return "Hospedaje"
       case "activity":
         return "Actividad"
+      case "vuelo":
+        return "Vuelo"
+      case "crucero":
+        return "Crucero"
+      case "traslado":
+        return "Traslado"
+      case "hospedaje":
+        return "Hospedaje"
+      case "servicio":
+        return "Servicio"
+      case "restaurante":
+        return "Restaurante"
+      case "paquete":
+        return "Paquete"
+      default:
+        return "Servicio"
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString("es-ES", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    } catch {
+      return dateString
     }
   }
 
@@ -384,7 +802,7 @@ export default function ItinerarioPage() {
                       type="date" 
                       value={endDate} 
                       onChange={(e) => setEndDate(e.target.value)} 
-                      min={startDate || new Date().toISOString().split("T")[0]}
+                      min={startDate || new Date().toISOString().split("T")[0]} 
                     />
                   </div>
                 </div>
@@ -429,123 +847,335 @@ export default function ItinerarioPage() {
                       </p>
                     </div>
 
-                    <Tabs value={selectedType} onValueChange={(v) => setSelectedType(v as ItineraryItem["type"])}>
-                      <TabsList className="grid w-full grid-cols-4">
-                        <TabsTrigger value="destination">Destinos</TabsTrigger>
-                        <TabsTrigger value="transport">Transporte</TabsTrigger>
-                        <TabsTrigger value="accommodation">Hospedaje</TabsTrigger>
-                        <TabsTrigger value="activity">Actividades</TabsTrigger>
-                      </TabsList>
+{isLoadingServices ? (
+                      <div className="py-8 text-center">
+                        <p className="text-muted-foreground">Cargando servicios...</p>
+                      </div>
+                    ) : (
+                      <Tabs value={selectedType} onValueChange={setSelectedType}>
+                        <TabsList className="grid w-full grid-cols-3">
+                          <TabsTrigger value="vuelo">✈️ Vuelos</TabsTrigger>
+                          <TabsTrigger value="hospedaje">🏨 Hospedaje</TabsTrigger>
+                          <TabsTrigger value="servicio">🎯 Servicios</TabsTrigger>
+                        </TabsList>
+                        <div className="mt-2">
+                          <TabsList className="grid w-full grid-cols-4">
+                            <TabsTrigger value="crucero">🚢 Cruceros</TabsTrigger>
+                            <TabsTrigger value="traslado">🚌 Traslados</TabsTrigger>
+                            <TabsTrigger value="restaurante">🍽️ Restaurantes</TabsTrigger>
+                            <TabsTrigger value="paquete">📦 Paquetes</TabsTrigger>
+                          </TabsList>
+                        </div>
 
-                      <TabsContent value="destination" className="space-y-3 mt-4">
-                        {DESTINATIONS.map((dest) => (
-                          <Card key={dest.id} className="hover:border-primary transition-colors">
-                            <CardContent className="pt-4">
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex-1">
-                                  <h4 className="font-semibold">{dest.name}</h4>
-                                  <p className="text-sm text-muted-foreground">{dest.description}</p>
-                                  <p className="text-sm font-semibold text-primary mt-1">
-                                    Desde {formatPrice(dest.price)}
-                                  </p>
-                                </div>
-                                <Button
-                                  size="sm"
-                                  onClick={() => addPredefinedItem(dest, "destination")}
-                                  className="shrink-0"
-                                >
-                                  <Plus className="h-4 w-4 mr-1" />
-                                  Agregar
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </TabsContent>
-
-                      <TabsContent value="transport" className="space-y-3 mt-4">
-                        {TRANSPORT_OPTIONS.map((transport) => (
-                          <Card key={transport.id} className="hover:border-primary transition-colors">
-                            <CardContent className="pt-4">
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex-1">
-                                  <h4 className="font-semibold">{transport.name}</h4>
-                                  <p className="text-sm text-muted-foreground">{transport.description}</p>
-                                  <div className="flex items-center gap-3 mt-1">
-                                    <p className="text-sm font-semibold text-primary">{formatPrice(transport.price)}</p>
-                                    <span className="text-xs text-muted-foreground">• {transport.duration}</span>
+                        {/* Vuelos */}
+                        <TabsContent value="vuelo" className="space-y-3 mt-4">
+                          {vuelos.length === 0 ? (
+                            <p className="text-center text-muted-foreground py-4">No hay vuelos disponibles</p>
+                          ) : (
+                            vuelos.slice(0, 10).map((vuelo) => (
+                              <Card key={vuelo.id} className="hover:border-primary transition-colors">
+                                <CardContent className="pt-4">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Plane className="h-4 w-4 text-primary" />
+                                        <h4 className="font-semibold">{vuelo.numero}</h4>
+                                      </div>
+                                      <p className="text-sm text-muted-foreground">
+                                        {vuelo.origen} → {vuelo.destino}
+                                      </p>
+                                      <div className="flex items-center gap-3 mt-2">
+                                        <p className="text-sm font-semibold text-primary">{formatPrice(vuelo.costo)}</p>
+                                        {vuelo.cantidadMillas && vuelo.cantidadMillas > 0 && (
+                                          <Badge variant="secondary" className="text-xs">
+                                            ✈️ {vuelo.cantidadMillas} millas
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        {formatDate(vuelo.fecha)}
+                                      </p>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => addPredefinedItem(vuelo, "vuelo")}
+                                      className="shrink-0"
+                                    >
+                                      <Plus className="h-4 w-4 mr-1" />
+                                      Agregar
+                                    </Button>
                                   </div>
-                                </div>
-                                <Button
-                                  size="sm"
-                                  onClick={() => addPredefinedItem(transport, "transport")}
-                                  className="shrink-0"
-                                >
-                                  <Plus className="h-4 w-4 mr-1" />
-                                  Agregar
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </TabsContent>
+                                </CardContent>
+                              </Card>
+                            ))
+                          )}
+                        </TabsContent>
 
-                      <TabsContent value="accommodation" className="space-y-3 mt-4">
-                        {ACCOMMODATION_OPTIONS.map((hotel) => (
-                          <Card key={hotel.id} className="hover:border-primary transition-colors">
-                            <CardContent className="pt-4">
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex-1">
-                                  <h4 className="font-semibold">{hotel.name}</h4>
-                                  <p className="text-sm text-muted-foreground">{hotel.description}</p>
-                                  <div className="flex items-center gap-3 mt-1">
-                                    <p className="text-sm font-semibold text-primary">
-                                      {formatPrice(hotel.price)}/noche
-                                    </p>
-                                    <span className="text-xs text-muted-foreground">• {"⭐".repeat(hotel.rating)}</span>
+                        {/* Cruceros */}
+                        <TabsContent value="crucero" className="space-y-3 mt-4">
+                          {cruceros.length === 0 ? (
+                            <p className="text-center text-muted-foreground py-4">No hay cruceros disponibles</p>
+                          ) : (
+                            cruceros.slice(0, 10).map((crucero) => (
+                              <Card key={crucero.id} className="hover:border-primary transition-colors">
+                                <CardContent className="pt-4">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Ship className="h-4 w-4 text-primary" />
+                                        <h4 className="font-semibold">Crucero de Lujo</h4>
+                                      </div>
+                                      <p className="text-sm text-muted-foreground">
+                                        {crucero.origen} → {crucero.destino}
+                                      </p>
+                                      <div className="flex items-center gap-3 mt-2">
+                                        <p className="text-sm font-semibold text-primary">{formatPrice(crucero.costo)}</p>
+                                        {crucero.cantidadMillas && crucero.cantidadMillas > 0 && (
+                                          <Badge variant="secondary" className="text-xs">
+                                            🚢 {crucero.cantidadMillas} millas
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        Salida: {formatDate(crucero.fechaSalida)}
+                                      </p>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => addPredefinedItem(crucero, "crucero")}
+                                      className="shrink-0"
+                                    >
+                                      <Plus className="h-4 w-4 mr-1" />
+                                      Agregar
+                                    </Button>
                                   </div>
-                                </div>
-                                <Button
-                                  size="sm"
-                                  onClick={() => addPredefinedItem(hotel, "accommodation")}
-                                  className="shrink-0"
-                                >
-                                  <Plus className="h-4 w-4 mr-1" />
-                                  Agregar
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </TabsContent>
+                                </CardContent>
+                              </Card>
+                            ))
+                          )}
+                        </TabsContent>
 
-                      <TabsContent value="activity" className="space-y-3 mt-4">
-                        {ACTIVITIES.map((activity) => (
-                          <Card key={activity.id} className="hover:border-primary transition-colors">
-                            <CardContent className="pt-4">
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex-1">
-                                  <h4 className="font-semibold">{activity.name}</h4>
-                                  <p className="text-sm text-muted-foreground">{activity.description}</p>
-                                  <div className="flex items-center gap-3 mt-1">
-                                    <p className="text-sm font-semibold text-primary">{formatPrice(activity.price)}</p>
-                                    <span className="text-xs text-muted-foreground">• {activity.duration}</span>
+                        {/* Traslados */}
+                        <TabsContent value="traslado" className="space-y-3 mt-4">
+                          {traslados.length === 0 ? (
+                            <p className="text-center text-muted-foreground py-4">No hay traslados disponibles</p>
+                          ) : (
+                            traslados.slice(0, 10).map((traslado) => (
+                              <Card key={traslado.id} className="hover:border-primary transition-colors">
+                                <CardContent className="pt-4">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Bus className="h-4 w-4 text-primary" />
+                                        <h4 className="font-semibold">Traslado Terrestre</h4>
+                                      </div>
+                                      <p className="text-sm text-muted-foreground">
+                                        {traslado.origen} → {traslado.destino}
+                                      </p>
+                                      <div className="flex items-center gap-3 mt-2">
+                                        <p className="text-sm font-semibold text-primary">{formatPrice(traslado.costo)}</p>
+                                        {traslado.cantidadMillas && traslado.cantidadMillas > 0 && (
+                                          <Badge variant="secondary" className="text-xs">
+                                            🚌 {traslado.cantidadMillas} millas
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        {formatDate(traslado.fechaSalida)}
+                                      </p>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => addPredefinedItem(traslado, "traslado")}
+                                      className="shrink-0"
+                                    >
+                                      <Plus className="h-4 w-4 mr-1" />
+                                      Agregar
+                                    </Button>
                                   </div>
-                                </div>
-                                <Button
-                                  size="sm"
-                                  onClick={() => addPredefinedItem(activity, "activity")}
-                                  className="shrink-0"
-                                >
-                                  <Plus className="h-4 w-4 mr-1" />
-                                  Agregar
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </TabsContent>
-                    </Tabs>
+                                </CardContent>
+                              </Card>
+                            ))
+                          )}
+                        </TabsContent>
+
+                        {/* Hospedajes */}
+                        <TabsContent value="hospedaje" className="space-y-3 mt-4">
+                          {hospedajes.length === 0 ? (
+                            <p className="text-center text-muted-foreground py-4">No hay hospedajes disponibles</p>
+                          ) : (
+                            hospedajes.slice(0, 10).map((hospedaje) => (
+                              <Card key={hospedaje.id} className="hover:border-primary transition-colors">
+                                <CardContent className="pt-4">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Hotel className="h-4 w-4 text-primary" />
+                                        <h4 className="font-semibold">{hospedaje.hotelNombre}</h4>
+                                      </div>
+                                      <div className="flex items-center gap-3 mt-2">
+                                        <p className="text-sm font-semibold text-primary">{formatPrice(hospedaje.costo)}</p>
+                                        {hospedaje.cantidadMillas && hospedaje.cantidadMillas > 0 && (
+                                          <Badge variant="secondary" className="text-xs">
+                                            🏨 {hospedaje.cantidadMillas} millas
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        {formatDate(hospedaje.fechaInicio)} - {formatDate(hospedaje.fechaFin)}
+                                      </p>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => addPredefinedItem(hospedaje, "hospedaje")}
+                                      className="shrink-0"
+                                    >
+                                      <Plus className="h-4 w-4 mr-1" />
+                                      Agregar
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))
+                          )}
+                        </TabsContent>
+
+                        {/* Servicios Adicionales */}
+                        <TabsContent value="servicio" className="space-y-3 mt-4">
+                          {servicios.length === 0 ? (
+                            <p className="text-center text-muted-foreground py-4">No hay servicios disponibles</p>
+                          ) : (
+                            servicios.slice(0, 10).map((servicio) => (
+                              <Card key={servicio.id} className="hover:border-primary transition-colors">
+                                <CardContent className="pt-4">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Compass className="h-4 w-4 text-primary" />
+                                        <h4 className="font-semibold">{servicio.nombre}</h4>
+                                      </div>
+                                      <p className="text-sm text-muted-foreground line-clamp-2">{servicio.descripcion}</p>
+                                      <div className="flex items-center gap-3 mt-2">
+                                        <p className="text-sm font-semibold text-primary">{formatPrice(servicio.costo)}</p>
+                                        {servicio.cantidadMillas && servicio.cantidadMillas > 0 && (
+                                          <Badge variant="secondary" className="text-xs">
+                                            🎯 {servicio.cantidadMillas} millas
+                                          </Badge>
+                                        )}
+                                        {servicio.tipo && (
+                                          <Badge variant="outline" className="text-xs">
+                                            {servicio.tipo}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => addPredefinedItem(servicio, "servicio")}
+                                      className="shrink-0"
+                                    >
+                                      <Plus className="h-4 w-4 mr-1" />
+                                      Agregar
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))
+                          )}
+                        </TabsContent>
+
+                        {/* Restaurantes */}
+                        <TabsContent value="restaurante" className="space-y-3 mt-4">
+                          {restaurantes.length === 0 ? (
+                            <p className="text-center text-muted-foreground py-4">No hay restaurantes disponibles</p>
+                          ) : (
+                            restaurantes.slice(0, 10).map((restaurante) => (
+                              <Card key={restaurante.id} className="hover:border-primary transition-colors">
+                                <CardContent className="pt-4">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Utensils className="h-4 w-4 text-primary" />
+                                        <h4 className="font-semibold">{restaurante.nombre}</h4>
+                                      </div>
+                                      <p className="text-sm text-muted-foreground">{restaurante.direccion}</p>
+                                      <div className="flex items-center gap-2 mt-2">
+                                        <Badge variant="outline" className="text-xs">{restaurante.tipoComida}</Badge>
+                                        <Badge variant="outline" className="text-xs">{restaurante.ambiente}</Badge>
+                                        {restaurante.clasificacion && (
+                                          <Badge variant="secondary" className="text-xs">
+                                            ⭐ {restaurante.clasificacion}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => addPredefinedItem(restaurante, "restaurante")}
+                                      className="shrink-0"
+                                    >
+                                      <Plus className="h-4 w-4 mr-1" />
+                                      Agregar
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))
+                          )}
+                        </TabsContent>
+
+                        {/* Paquetes Turísticos */}
+                        <TabsContent value="paquete" className="space-y-3 mt-4">
+                          {paquetes.length === 0 ? (
+                            <p className="text-center text-muted-foreground py-4">No hay paquetes turísticos disponibles</p>
+                          ) : (
+                            paquetes.slice(0, 10).map((paquete) => (
+                              <Card key={paquete.id} className="hover:border-primary transition-colors">
+                                <CardContent className="pt-4">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Package className="h-4 w-4 text-primary" />
+                                        <h4 className="font-semibold">{paquete.nombre}</h4>
+                                        {paquete.tipo === "especial" && (
+                                          <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-xs">
+                                            ⭐ Especial
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-sm text-muted-foreground line-clamp-2">{paquete.descripcion}</p>
+                                      <div className="flex items-center gap-2 mt-2">
+                                        <Badge variant="secondary" className="text-xs">
+                                          💰 ${paquete.costo.toFixed(2)}
+                                        </Badge>
+                                        {paquete.millasOtorga > 0 && (
+                                          <Badge variant="outline" className="text-xs text-blue-600">
+                                            ✈️ +{paquete.millasOtorga} millas
+                                          </Badge>
+                                        )}
+                                        {paquete.costoMillas > 0 && (
+                                          <Badge variant="outline" className="text-xs">
+                                            💎 {paquete.costoMillas} millas
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => addPredefinedItem(paquete, "paquete")}
+                                      className="shrink-0"
+                                    >
+                                      <Plus className="h-4 w-4 mr-1" />
+                                      Agregar
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))
+                          )}
+                        </TabsContent>
+                      </Tabs>
+                    )}
                   </div>
                 </CardContent>
               )}
@@ -603,7 +1233,7 @@ export default function ItinerarioPage() {
                             {item.description && (
                               <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
                             )}
-                            <div className="flex items-center gap-4 text-sm">
+                            <div className="flex items-center gap-4 text-sm flex-wrap">
                               <span className="flex items-center gap-1 text-muted-foreground">
                                 <Calendar className="h-4 w-4" />
                                 {new Date(item.date).toLocaleDateString("es-ES", {
@@ -614,6 +1244,16 @@ export default function ItinerarioPage() {
                               </span>
                               {item.price > 0 && (
                                 <span className="font-semibold text-primary">{formatPrice(item.price)}</span>
+                              )}
+                              {item.millas && item.millas > 0 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  ✈️ {item.millas} millas
+                                </Badge>
+                              )}
+                              {item.huellaCarbono && item.huellaCarbono > 0 && (
+                                <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                                  🌱 {item.huellaCarbono.toFixed(2)} kg CO₂
+                                </Badge>
                               )}
                             </div>
                           </div>
@@ -678,7 +1318,7 @@ export default function ItinerarioPage() {
                   <ShoppingBag className="h-4 w-4" />
                   Comprar Itinerario
                 </Button>
-                <Link href="/itinerario/comparar" className="block">
+                <Link href="/clientes/itinerario/comparar" className="block">
                   <Button variant="outline" className="w-full gap-2 bg-transparent">
                     <GitCompare className="h-4 w-4" />
                     Comparar Itinerarios

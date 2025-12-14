@@ -218,6 +218,7 @@ export default function InventarioPage() {
   const [isLoadingRestaurantes, setIsLoadingRestaurantes] = useState(true)
   const [isLoadingOperadoresTuristicos, setIsLoadingOperadoresTuristicos] = useState(true)
   const [isLoadingServiciosAdicionales, setIsLoadingServiciosAdicionales] = useState(true)
+  const [isLoadingPaquetes, setIsLoadingPaquetes] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [tipoActual, setTipoActual] = useState<
     "vuelo" | "crucero" | "tour" | "aerolinea" | "compania-crucero" | "compania-transporte" | "paquete" | "hospedaje" | "operador-turistico" | "servicio-adicional"
@@ -469,6 +470,23 @@ export default function InventarioPage() {
       costo: costo,
       tipo: s.sa_tipo || s.Sa_Tipo || s.SA_TIPO || s.tipo || "",
       cantidadMillas: millas,
+    }
+  }
+
+  const mapearPaqueteTuristico = (p: any, index: number): PaqueteTuristico => {
+    const idRaw = p.pt_cod || p.PT_COD || p.PT_cod || p.id || Object.values(p).find((val: any) => typeof val === 'number' && val > 0)
+    const id = idRaw != null && !isNaN(Number(idRaw)) ? idRaw.toString() : `temp-${index}`
+    
+    console.log("🔍 Mapeando paquete turístico:", p) // Debug
+    
+    return {
+      id: id,
+      nombre: p.pt_nombre || p.PT_Nombre || p.PT_NOMBRE || p.nombre || "",
+      descripcion: p.pt_descripcion || p.PT_Descripcion || p.PT_DESCRIPCION || p.descripcion || "",
+      costo: Number(p.pt_costo || p.PT_Costo || p.PT_COSTO || p.costo || 0),
+      costoMillas: Number(p.pt_costo_millas || p.PT_Costo_Millas || p.PT_COSTO_MILLAS || p.costoMillas || 0),
+      millasOtorga: Number(p.pt_cant_milla || p.PT_Cant_Milla || p.PT_CANT_MILLA || p.millasOtorga || 0),
+      tipo: (p.pt_tipo || p.PT_Tipo || p.PT_TIPO || p.tipo || "regular").toLowerCase() as "especial" | "regular",
     }
   }
 
@@ -965,6 +983,49 @@ export default function InventarioPage() {
     cargarServiciosAdicionales()
   }, [toast])
 
+  // Cargar paquetes turísticos desde la base de datos al montar el componente
+  useEffect(() => {
+    const cargarPaquetesTuristicos = async () => {
+      try {
+        setIsLoadingPaquetes(true)
+        const res = await fetch("/api/paquete-turistico?id=0") // id=0 para obtener todos
+        
+        if (!res.ok) {
+          throw new Error(`Error ${res.status}: ${res.statusText}`)
+        }
+        
+        const data = await res.json()
+        
+        console.log("Respuesta completa de API paquetes turísticos:", data) // Debug
+        
+        if (data.status === "success" && Array.isArray(data.data)) {
+          if (data.data.length > 0) {
+            console.log("Estructura de un paquete turístico:", data.data[0])
+          }
+          
+          const paquetesFormateados = data.data.map((p: any, index: number) => mapearPaqueteTuristico(p, index))
+          // Ordenar por ID numérico de forma ascendente
+          paquetesFormateados.sort((a: PaqueteTuristico, b: PaqueteTuristico) => Number(a.id) - Number(b.id))
+          console.log("Paquetes turísticos formateados:", paquetesFormateados) // Debug
+          setPaquetesTuristicos(paquetesFormateados)
+        } else {
+          console.error("Estructura de respuesta inesperada:", data)
+        }
+      } catch (error: any) {
+        console.error("Error cargando paquetes turísticos:", error)
+        toast({
+          title: "Error",
+          description: "Error al cargar paquetes turísticos",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoadingPaquetes(false)
+      }
+    }
+
+    cargarPaquetesTuristicos()
+  }, [toast])
+
   const calcularPorcentaje = (disponible: number, total: number) => {
     return ((disponible / total) * 100).toFixed(0)
   }
@@ -1074,7 +1135,54 @@ export default function InventarioPage() {
       } else if (tipo === "compania-transporte") {
         setCompaniasTransporte(companiasTransporte.filter((c) => c.id !== id))
       } else if (tipo === "paquete") {
-        setPaquetesTuristicos(paquetesTuristicos.filter((p) => p.id !== id))
+        // Eliminar paquete turístico de la base de datos
+        try {
+          const res = await fetch("/api/paquete-turistico", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: parseInt(id) }),
+          })
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: "Error de conexión con el servidor" }))
+            toast({
+              title: "Error",
+              description: errorData.message || `Error ${res.status}: ${res.statusText}`,
+              variant: "destructive",
+            })
+            return
+          }
+
+          const data = await res.json()
+
+          if (data.status === "success") {
+            // Recargar paquetes desde la base de datos
+            const resGet = await fetch("/api/paquete-turistico?id=0")
+            const dataGet = await resGet.json()
+            
+            if (dataGet.status === "success" && Array.isArray(dataGet.data)) {
+              const paquetesFormateados = dataGet.data.map((p: any, index: number) => mapearPaqueteTuristico(p, index))
+              paquetesFormateados.sort((a: PaqueteTuristico, b: PaqueteTuristico) => Number(a.id) - Number(b.id))
+              setPaquetesTuristicos(paquetesFormateados)
+            }
+            toast({
+              title: "Paquete eliminado",
+              description: "El paquete turístico se ha eliminado exitosamente",
+            })
+          } else {
+            toast({
+              title: "Error",
+              description: data.message || "No se pudo eliminar el paquete",
+              variant: "destructive",
+            })
+          }
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Error de conexión con el servidor",
+            variant: "destructive",
+          })
+        }
       } else if (tipo === "operador-turistico") {
         setOperadoresTuristicos(operadoresTuristicos.filter((o) => o.id !== id))
       } else if (tipo === "servicio-adicional") {
@@ -1255,9 +1363,122 @@ export default function InventarioPage() {
     } else if (tipoActual === "paquete") {
       const paquete = item as PaqueteTuristico
       if (modoEdicion) {
-        setPaquetesTuristicos(paquetesTuristicos.map((p) => (p.id === paquete.id ? paquete : p)))
+        // Actualizar paquete turístico
+        try {
+          const payload = {
+            id: parseInt(paquete.id),
+            nombre: paquete.nombre,
+            descripcion: paquete.descripcion,
+            costo: paquete.costo,
+            costo_millas: paquete.costoMillas,
+            cant_milla: paquete.millasOtorga,
+            tipo: paquete.tipo.charAt(0).toUpperCase() + paquete.tipo.slice(1), // Capitalizar
+          }
+          
+          console.log("=== Enviando PUT a /api/paquete-turistico ===")
+          console.log("Payload a enviar:", payload)
+          
+          const res = await fetch("/api/paquete-turistico", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+
+          const data = await res.json()
+
+          if (data.status === "success") {
+            // Recargar paquetes desde la base de datos
+            const resGet = await fetch("/api/paquete-turistico?id=0")
+            const dataGet = await resGet.json()
+            
+            if (dataGet.status === "success" && Array.isArray(dataGet.data)) {
+              const paquetesFormateados = dataGet.data.map((p: any, index: number) => mapearPaqueteTuristico(p, index))
+              paquetesFormateados.sort((a: PaqueteTuristico, b: PaqueteTuristico) => Number(a.id) - Number(b.id))
+              setPaquetesTuristicos(paquetesFormateados)
+            }
+            toast({
+              title: "Paquete actualizado",
+              description: "El paquete turístico se ha actualizado exitosamente",
+            })
+          } else {
+            toast({
+              title: "Error",
+              description: data.message || "No se pudo actualizar el paquete",
+              variant: "destructive",
+            })
+            return
+          }
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Error de conexión con el servidor",
+            variant: "destructive",
+          })
+          return
+        }
       } else {
-        setPaquetesTuristicos([...paquetesTuristicos, { ...paquete, id: Date.now().toString() }])
+        // Crear nuevo paquete turístico
+        try {
+          const payload = {
+            nombre: paquete.nombre,
+            descripcion: paquete.descripcion,
+            costo: paquete.costo,
+            costo_millas: paquete.costoMillas,
+            cant_milla: paquete.millasOtorga,
+            tipo: paquete.tipo.charAt(0).toUpperCase() + paquete.tipo.slice(1), // Capitalizar
+          }
+          
+          console.log("=== Enviando POST a /api/paquete-turistico ===")
+          console.log("Payload a enviar:", payload)
+          
+          const res = await fetch("/api/paquete-turistico", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: "Error de conexión con el servidor" }))
+            toast({
+              title: "Error",
+              description: errorData.message || `Error ${res.status}: ${res.statusText}`,
+              variant: "destructive",
+            })
+            return
+          }
+
+          const data = await res.json()
+
+          if (data.status === "success") {
+            // Recargar paquetes desde la base de datos
+            const resGet = await fetch("/api/paquete-turistico?id=0")
+            const dataGet = await resGet.json()
+            
+            if (dataGet.status === "success" && Array.isArray(dataGet.data)) {
+              const paquetesFormateados = dataGet.data.map((p: any, index: number) => mapearPaqueteTuristico(p, index))
+              paquetesFormateados.sort((a: PaqueteTuristico, b: PaqueteTuristico) => Number(a.id) - Number(b.id))
+              setPaquetesTuristicos(paquetesFormateados)
+            }
+            toast({
+              title: "Paquete agregado",
+              description: "El paquete turístico se ha guardado exitosamente en la base de datos",
+            })
+          } else {
+            toast({
+              title: "Error",
+              description: data.message || "No se pudo guardar el paquete",
+              variant: "destructive",
+            })
+            return
+          }
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Error de conexión con el servidor",
+            variant: "destructive",
+          })
+          return
+        }
       }
     } else if (tipoActual === "operador-turistico") {
       const operador = item as OperadorTuristico
@@ -1959,7 +2180,13 @@ export default function InventarioPage() {
             </Button>
           </div>
 
-          {paquetesTuristicos.length === 0 ? (
+          {isLoadingPaquetes ? (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Cargando paquetes turísticos...</p>
+              </CardContent>
+            </Card>
+          ) : paquetesTuristicos.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Package className="h-12 w-12 text-muted-foreground mb-4" />

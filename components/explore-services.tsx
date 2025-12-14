@@ -591,7 +591,7 @@ export function ExploreServices() {
           <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">Explora Nuestros Servicios</h2>
           <p className="text-lg text-muted-foreground">Descubre las mejores opciones para tu próximo viaje</p>
           <div className="mt-6">
-            <Link href="/itinerario">
+            <Link href="/clientes/itinerario">
               <Button size="lg" variant="outline" className="gap-2 bg-transparent cursor-pointer">
                 <Map className="h-5 w-5" />
                 Crear Tu Propio Itinerario

@@ -71,6 +71,16 @@ type Restaurante = {
   ambiente: string
 }
 
+type PaqueteTuristico = {
+  id: string
+  nombre: string
+  descripcion: string
+  costo: number
+  costoMillas: number
+  millasOtorga: number
+  tipo: "especial" | "regular"
+}
+
 const flightImages = [
   "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800",
   "https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?w=800",
@@ -108,6 +118,12 @@ const restaurantImages = [
   "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800"
 ]
 
+const packageImages = [
+  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800", // Maletas de viaje
+  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800", // Aventura en montañas
+  "https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=800"  // Playa paradisíaca
+]
+
 export function ServicesShowcase() {
   const [vuelos, setVuelos] = useState<Vuelo[]>([])
   const [cruceros, setCruceros] = useState<Crucero[]>([])
@@ -115,6 +131,7 @@ export function ServicesShowcase() {
   const [hospedajes, setHospedajes] = useState<Hospedaje[]>([])
   const [servicios, setServicios] = useState<ServicioAdicional[]>([])
   const [restaurantes, setRestaurantes] = useState<Restaurante[]>([])
+  const [paquetes, setPaquetes] = useState<PaqueteTuristico[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
 
@@ -264,16 +281,41 @@ export function ServicesShowcase() {
     }
   }
 
+  const mapearPaquete = (p: any, index: number): PaqueteTuristico => {
+    const idRaw = p.pt_cod || p.PT_COD || p.id
+    const id = idRaw != null && !isNaN(Number(idRaw)) ? idRaw.toString() : `temp-paquete-${index}`
+    
+    const costoRaw = p.pt_costo || p.PT_Costo || p.costo || "0"
+    const costo = parseFloat(costoRaw) || 0
+    
+    const costoMillasRaw = p.pt_costo_millas || p.PT_Costo_Millas || p.costoMillas || "0"
+    const costoMillas = parseFloat(costoMillasRaw) || 0
+    
+    const millasRaw = p.pt_cant_milla || p.PT_Cant_Milla || p.millasOtorga || "0"
+    const millasOtorga = parseFloat(millasRaw) || 0
+    
+    return {
+      id: id,
+      nombre: p.pt_nombre || p.PT_Nombre || p.nombre || "Paquete",
+      descripcion: p.pt_descripcion || p.PT_Descripcion || p.descripcion || "",
+      costo: costo,
+      costoMillas: costoMillas,
+      millasOtorga: millasOtorga,
+      tipo: (p.pt_tipo || p.PT_Tipo || p.tipo || "regular").toLowerCase() as "especial" | "regular"
+    }
+  }
+
   const cargarServicios = async () => {
     try {
       // Cargar todos los servicios en paralelo
-      const [vuelosRes, crucerosRes, trasladosRes, hospedajesRes, serviciosRes, restaurantesRes] = await Promise.all([
+      const [vuelosRes, crucerosRes, trasladosRes, hospedajesRes, serviciosRes, restaurantesRes, paquetesRes] = await Promise.all([
         fetch("/api/vuelo"),
         fetch("/api/crucero"),
         fetch("/api/traslado"),
         fetch("/api/hospedaje"),
         fetch("/api/servicio-adicional"),
-        fetch("/api/restaurante")
+        fetch("/api/restaurante"),
+        fetch("/api/paquete-turistico?id=0")
       ])
 
       if (vuelosRes.ok) {
@@ -321,6 +363,14 @@ export function ServicesShowcase() {
         if (data.data && Array.isArray(data.data)) {
           const restaurantesMapeados = data.data.slice(0, 10).map((r, index) => mapearRestaurante(r, index))
           setRestaurantes(restaurantesMapeados)
+        }
+      }
+
+      if (paquetesRes.ok) {
+        const data = await paquetesRes.json()
+        if (data.data && Array.isArray(data.data)) {
+          const paquetesMapeados = data.data.slice(0, 10).map((p, index) => mapearPaquete(p, index))
+          setPaquetes(paquetesMapeados)
         }
       }
 
@@ -638,6 +688,59 @@ export function ServicesShowcase() {
                     ) : (
                       <span className="text-sm text-muted-foreground">Consultar precio</span>
                     )}
+                    <Button size="sm" className="text-xs px-3 py-1 h-8">+ Agregar</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Paquetes Turísticos */}
+      {paquetes.length > 0 && (
+        <section>
+          <div className="mb-10">
+            <h2 className="text-4xl font-bold flex items-center gap-3 mb-2">
+              <MapPin className="h-10 w-10 text-primary" />
+              Paquetes Turísticos
+            </h2>
+            <p className="text-muted-foreground text-lg">Experiencias completas todo incluido</p>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {paquetes.map((paquete, index) => (
+              <Card key={paquete.id} className="overflow-hidden hover:shadow-lg transition-all duration-300">
+                <div className="relative h-52">
+                  <img 
+                    src={packageImages[index % packageImages.length]} 
+                    alt={paquete.nombre}
+                    className="w-full h-full object-cover"
+                  />
+                  {paquete.tipo === "especial" && (
+                    <Badge className="absolute top-3 right-3 bg-gradient-to-r from-yellow-500 to-orange-500">
+                      ⭐ Especial
+                    </Badge>
+                  )}
+                </div>
+                <CardContent className="p-6 space-y-3">
+                  <h3 className="font-bold text-lg">{paquete.nombre}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{paquete.descripcion}</p>
+                  
+                  <div className="flex gap-2 flex-wrap pt-2">
+                    {paquete.millasOtorga > 0 && (
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                        ✈️ +{Number(paquete.millasOtorga).toLocaleString()} millas
+                      </Badge>
+                    )}
+                    {paquete.costoMillas > 0 && (
+                      <Badge variant="outline" className="text-blue-600">
+                        💎 {Number(paquete.costoMillas).toLocaleString()} millas
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center justify-between pt-3 border-t">
+                    <span className="text-2xl font-bold text-primary">${Number(paquete.costo).toFixed(2)}</span>
                     <Button size="sm" className="text-xs px-3 py-1 h-8">+ Agregar</Button>
                   </div>
                 </CardContent>
