@@ -5386,3 +5386,149 @@ VALUES ('Prefiere transporte terrestre con chofer bilingüe', 9, 9);
 INSERT INTO Wishlist (Wis_Descripcion, Cliente_Cli_COD, Itinerario_Iti_COD)
 VALUES ('Desea incluir visita guiada al centro histórico', 10, 10);
 
+
+-- Reserva
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Reserva', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Reserva', 'CREATE');
+
+-- Wishlist
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Wishlist', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Wishlist', 'CREATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Eliminación', 'Wishlist', 'DELETE');
+
+-- Reclamo
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Reclamo', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Reclamo', 'CREATE');
+
+-- Resenas
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Resenas', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Resenas', 'CREATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Actualización', 'Resenas', 'UPDATE');
+
+-- Pago
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Pago', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Pago', 'CREATE');
+
+-- Preferencia
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Preferencia', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Preferencia', 'CREATE');
+
+-- Reserva
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Reserva', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Actualización', 'Reserva', 'UPDATE');
+
+-- Reclamo
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Reclamo', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Actualización', 'Reclamo', 'UPDATE');
+
+-- Itinerario
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Itinerario', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Itinerario', 'CREATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Actualización', 'Itinerario', 'UPDATE');
+
+-- Auditoria
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Auditoria', 'READ');
+
+-- Pago
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Pago', 'READ');
+
+-- Control total sobre tablas principales
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Reserva', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Reserva', 'CREATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Actualización', 'Reserva', 'UPDATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Eliminación', 'Reserva', 'DELETE');
+
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Reclamo', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Reclamo', 'CREATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Actualización', 'Reclamo', 'UPDATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Eliminación', 'Reclamo', 'DELETE');
+
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Resenas', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Resenas', 'CREATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Actualización', 'Resenas', 'UPDATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Eliminación', 'Resenas', 'DELETE');
+
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Pago', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Pago', 'CREATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Actualización', 'Pago', 'UPDATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Eliminación', 'Pago', 'DELETE');
+
+-- Gestión de usuarios y roles
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Usuario', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Usuario', 'CREATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Actualización', 'Usuario', 'UPDATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Eliminación', 'Usuario', 'DELETE');
+
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Rol', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Rol', 'CREATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Actualización', 'Rol', 'UPDATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Eliminación', 'Rol', 'DELETE');
+
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Lectura', 'Privilegio', 'READ');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Inserción', 'Privilegio', 'CREATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Actualización', 'Privilegio', 'UPDATE');
+INSERT INTO Privilegio (Pri_tipo, Pri_Tabla, Pri_Operacion) VALUES ('Eliminación', 'Privilegio', 'DELETE');
+
+
+-- Paquete Turístico exclusivo: Tour de 15 años
+INSERT INTO Paquete_Turistico (
+    PT_Nombre,
+    PT_Descripcion,
+    PT_Costo,
+    PT_Costo_Millas,
+    PT_Cant_Milla,
+    PT_Tipo,
+    Promocion_Promocion_ID
+) VALUES (
+    'Tour de 15 años',
+    'Paquete especial para clientes que cumplen 15 años, incluye hospedaje y actividades temáticas.',
+    1200.00,
+    800.00,
+    200,
+    'Especial',
+    NULL
+);
+
+-- Restricción asociada al paquete Tour de 15 años
+INSERT INTO Restriccion_Paquete (
+    RP_Tipo,
+    RP_Descripción,
+    Paquete_Turistico_PT_COD
+) VALUES (
+    'Edad',
+    'El cliente debe tener exactamente 15 años para acceder a este paquete.',
+    1
+);
+
+
+-- Paquete Turístico exclusivo: Luna de Miel
+INSERT INTO Paquete_Turistico (
+    PT_Nombre,
+    PT_Descripcion,
+    PT_Costo,
+    PT_Costo_Millas,
+    PT_Cant_Milla,
+    PT_Tipo,
+    Promocion_Promocion_ID
+) VALUES (
+    'Luna de Miel',
+    'Paquete diseñado para recién casados, incluye hotel romántico y excursiones privadas.',
+    2500.00,
+    1500.00,
+    400,
+    'Especial',
+    NULL
+);
+
+-- Restricción asociada al paquete Luna de Miel
+INSERT INTO Restriccion_Paquete (
+    RP_Tipo,
+    RP_Descripción,
+    Paquete_Turistico_PT_COD
+) VALUES (
+    'Estado Civil',
+    'El cliente debe tener estado civil CASADO o haber registrado matrimonio recientemente.',
+    2
+);
+
+

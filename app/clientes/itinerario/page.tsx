@@ -10,7 +10,7 @@ import {
   Hotel,
   Compass,
   Package,
-  GitCompare,
+  Heart,
   ArrowLeft,
   ShoppingCart,
   ShoppingBag,
@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useCurrency } from "@/lib/currency-context"
 import { useItinerary } from "@/lib/itinerary-context"
 import { useUser } from "@/lib/user-context"
+import { useWishlist } from "@/lib/wishlist-context"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -145,6 +146,7 @@ export default function ItinerarioPage() {
   const { formatPrice } = useCurrency()
   const router = useRouter()
   const { addToCart } = useCart()
+  const { addToWishlist } = useWishlist()
 
   // Estados para servicios de la BD
   const [vuelos, setVuelos] = useState<VueloBD[]>([])
@@ -305,12 +307,12 @@ export default function ItinerarioPage() {
     
     return {
       id,
-      nombre: p.pt_nombre || p.PT_Nombre || p.nombre || "Paquete",
-      descripcion: p.pt_descripcion || p.PT_Descripcion || p.descripcion || "",
-      costo: parseFloat(p.pt_costo || p.PT_Costo || p.costo || "0"),
-      costoMillas: parseFloat(p.pt_costo_millas || p.PT_Costo_Millas || p.costoMillas || "0"),
-      millasOtorga: parseFloat(p.pt_cant_milla || p.PT_Cant_Milla || p.millasOtorga || "0"),
-      tipo: (p.pt_tipo || p.PT_Tipo || p.tipo || "regular").toLowerCase() as "especial" | "regular",
+      nombre: p.nombre || p.pt_nombre || p.PT_Nombre || "Paquete",
+      descripcion: p.descripcion || p.pt_descripcion || p.PT_Descripcion || "",
+      costo: parseFloat(p.costo || p.pt_costo || p.PT_Costo || "0"),
+      costoMillas: parseFloat(p.costoMillas || p.pt_costo_millas || p.PT_Costo_Millas || "0"),
+      millasOtorga: parseFloat(p.cantidadMillas || p.pt_cant_milla || p.PT_Cant_Milla || p.millasOtorga || "0"),
+      tipo: (p.tipo || p.pt_tipo || p.PT_Tipo || "regular").toLowerCase() as "especial" | "regular",
     }
   }
 
@@ -378,8 +380,10 @@ export default function ItinerarioPage() {
 
       if (paquetesRes.ok) {
         const data = await paquetesRes.json()
-        if (data.data && Array.isArray(data.data)) {
+        console.log("📦 Respuesta paquetes:", data)
+        if (data.status === "success" && data.data && Array.isArray(data.data)) {
           const paquetesMapeados = data.data.map(mapearPaquete)
+          console.log("📦 Paquetes mapeados:", paquetesMapeados)
           setPaquetes(paquetesMapeados)
         }
       }
@@ -676,6 +680,60 @@ export default function ItinerarioPage() {
     router.push(`/clientes/itinerario/comprar/${tempItinerary.id}`)
   }
 
+  const handleAddToWishlist = async () => {
+    if (!user) {
+      toast({
+        title: "Inicia sesión",
+        description: "Debes iniciar sesión para agregar a tu wishlist",
+        variant: "destructive",
+      })
+      router.push("/auth/login")
+      return
+    }
+
+    if (items.length === 0) {
+      toast({
+        title: "Itinerario vacío",
+        description: "Agrega elementos a tu itinerario antes de guardarlo",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Primero guardar el itinerario para obtener un ID
+    const itineraryToSave = {
+      id: `temp-${Date.now()}`,
+      name: itineraryName || "Itinerario sin nombre",
+      startDate: startDate,
+      endDate: endDate,
+      items: [...items],
+      totalPrice: items.reduce((sum, item) => sum + item.price, 0),
+      createdAt: new Date().toISOString(),
+    }
+
+    addItinerary(itineraryToSave)
+
+    // Aquí necesitaríamos el ID real del itinerario desde la BD
+    // Por ahora, usaremos el primer item como referencia
+    const firstItemId = items[0].realId || 0
+
+    if (firstItemId === 0) {
+      toast({
+        title: "Error",
+        description: "No se puede agregar a wishlist sin un itinerario válido",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const descripcion = `${itineraryToSave.name} - ${items.length} servicio(s)`
+    const success = await addToWishlist(firstItemId, descripcion)
+
+    if (success) {
+      console.log("✅ Itinerario agregado a wishlist")
+    }
+  }
+
   const totalPrice = items.reduce((sum, item) => sum + item.price, 0)
   const totalMillas = items.reduce((sum, item) => sum + (item.millas || 0), 0)
 
@@ -872,7 +930,7 @@ export default function ItinerarioPage() {
                           {vuelos.length === 0 ? (
                             <p className="text-center text-muted-foreground py-4">No hay vuelos disponibles</p>
                           ) : (
-                            vuelos.slice(0, 10).map((vuelo) => (
+                            vuelos.map((vuelo) => (
                               <Card key={vuelo.id} className="hover:border-primary transition-colors">
                                 <CardContent className="pt-4">
                                   <div className="flex items-center justify-between gap-3">
@@ -916,7 +974,7 @@ export default function ItinerarioPage() {
                           {cruceros.length === 0 ? (
                             <p className="text-center text-muted-foreground py-4">No hay cruceros disponibles</p>
                           ) : (
-                            cruceros.slice(0, 10).map((crucero) => (
+                            cruceros.map((crucero) => (
                               <Card key={crucero.id} className="hover:border-primary transition-colors">
                                 <CardContent className="pt-4">
                                   <div className="flex items-center justify-between gap-3">
@@ -960,7 +1018,7 @@ export default function ItinerarioPage() {
                           {traslados.length === 0 ? (
                             <p className="text-center text-muted-foreground py-4">No hay traslados disponibles</p>
                           ) : (
-                            traslados.slice(0, 10).map((traslado) => (
+                            traslados.map((traslado) => (
                               <Card key={traslado.id} className="hover:border-primary transition-colors">
                                 <CardContent className="pt-4">
                                   <div className="flex items-center justify-between gap-3">
@@ -1004,7 +1062,7 @@ export default function ItinerarioPage() {
                           {hospedajes.length === 0 ? (
                             <p className="text-center text-muted-foreground py-4">No hay hospedajes disponibles</p>
                           ) : (
-                            hospedajes.slice(0, 10).map((hospedaje) => (
+                            hospedajes.map((hospedaje) => (
                               <Card key={hospedaje.id} className="hover:border-primary transition-colors">
                                 <CardContent className="pt-4">
                                   <div className="flex items-center justify-between gap-3">
@@ -1045,7 +1103,7 @@ export default function ItinerarioPage() {
                           {servicios.length === 0 ? (
                             <p className="text-center text-muted-foreground py-4">No hay servicios disponibles</p>
                           ) : (
-                            servicios.slice(0, 10).map((servicio) => (
+                            servicios.map((servicio) => (
                               <Card key={servicio.id} className="hover:border-primary transition-colors">
                                 <CardContent className="pt-4">
                                   <div className="flex items-center justify-between gap-3">
@@ -1089,7 +1147,7 @@ export default function ItinerarioPage() {
                           {restaurantes.length === 0 ? (
                             <p className="text-center text-muted-foreground py-4">No hay restaurantes disponibles</p>
                           ) : (
-                            restaurantes.slice(0, 10).map((restaurante) => (
+                            restaurantes.map((restaurante) => (
                               <Card key={restaurante.id} className="hover:border-primary transition-colors">
                                 <CardContent className="pt-4">
                                   <div className="flex items-center justify-between gap-3">
@@ -1129,7 +1187,7 @@ export default function ItinerarioPage() {
                           {paquetes.length === 0 ? (
                             <p className="text-center text-muted-foreground py-4">No hay paquetes turísticos disponibles</p>
                           ) : (
-                            paquetes.slice(0, 10).map((paquete) => (
+                            paquetes.map((paquete) => (
                               <Card key={paquete.id} className="hover:border-primary transition-colors">
                                 <CardContent className="pt-4">
                                   <div className="flex items-center justify-between gap-3">
@@ -1318,20 +1376,23 @@ export default function ItinerarioPage() {
                   <ShoppingBag className="h-4 w-4" />
                   Comprar Itinerario
                 </Button>
-                <Link href="/clientes/itinerario/comparar" className="block">
-                  <Button variant="outline" className="w-full gap-2 bg-transparent">
-                    <GitCompare className="h-4 w-4" />
-                    Comparar Itinerarios
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  className="w-full gap-2 bg-transparent"
+                  onClick={handleAddToWishlist}
+                  disabled={items.length === 0}
+                >
+                  <Heart className="h-4 w-4" />
+                  Agregar a wishlist
+                </Button>
               </CardContent>
             </Card>
 
             {savedItineraries.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Itinerarios Guardados</CardTitle>
-                  <CardDescription>Tus itinerarios creados</CardDescription>
+                  <CardTitle className="text-base">Wishlist</CardTitle>
+                  <CardDescription>Tus itinerarios guardados</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {savedItineraries.map((itinerary) => (
@@ -1362,8 +1423,8 @@ export default function ItinerarioPage() {
                             </Button>
                           </div>
                           <Button onClick={() => handlePurchaseItinerary(itinerary)} className="w-full gap-2" size="sm">
-                            <ShoppingCart className="h-4 w-4" />
-                            Agregar al Carrito
+                            <ShoppingBag className="h-4 w-4" />
+                            Comprar
                           </Button>
                         </div>
                       </CardContent>

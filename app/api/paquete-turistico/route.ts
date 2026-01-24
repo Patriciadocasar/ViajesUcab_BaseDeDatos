@@ -10,11 +10,23 @@ export async function POST(req: Request) {
       costo,
       costo_millas,
       cant_milla,
-      tipo
+      tipo,
+      restricciones // Array de restricciones agregadas
     } = await req.json();
 
+    // Si el paquete es especial, debe tener al menos una restricción
+    let restriccion_tipo = null;
+    let restriccion_descripcion = null;
+
+    if (tipo?.toLowerCase() === 'especial' && restricciones && restricciones.length > 0) {
+      // Tomar la primera restricción agregada
+      const primeraRestriccion = restricciones[0];
+      restriccion_tipo = primeraRestriccion.tipo;
+      restriccion_descripcion = primeraRestriccion.descripcion;
+    }
+
     const query = `
-      SELECT insertar_paquete_turistico($1,$2,$3,$4,$5,$6) AS data;
+      SELECT insertar_paquete_turistico($1,$2,$3,$4,$5,$6,$7,$8) AS data;
     `;
 
     const values = [
@@ -23,7 +35,9 @@ export async function POST(req: Request) {
       costo,
       costo_millas,
       cant_milla,
-      tipo
+      tipo,
+      restriccion_tipo,
+      restriccion_descripcion
     ];
 
     const result = await pool.query(query, values);
@@ -42,36 +56,16 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
-    // Si id es 0 o null, obtener todos los paquetes
+    // Si id es 0 o null, obtener todos los paquetes usando función SQL
     if (!id || id === "0") {
-      const query = `
-        SELECT 
-          PT_COD as pt_cod,
-          PT_Nombre as pt_nombre,
-          PT_Descripcion as pt_descripcion,
-          PT_Costo as pt_costo,
-          PT_Costo_Millas as pt_costo_millas,
-          PT_Cant_Milla as pt_cant_milla,
-          PT_Tipo as pt_tipo
-        FROM Paquete_Turistico
-        ORDER BY PT_COD;
-      `;
-
+      const query = `SELECT listar_paquetes_turisticos() AS resultado`;
       const result = await pool.query(query);
-
-      return NextResponse.json({
-        status: "success",
-        data: result.rows
-      });
+      return NextResponse.json(result.rows[0].resultado);
     }
 
     // Si tiene un ID específico, usar la función
-    const query = `
-      SELECT consultar_paquete_turistico($1) AS data;
-    `;
-
+    const query = `SELECT consultar_paquete_turistico($1) AS data`;
     const result = await pool.query(query, [id]);
-
     return NextResponse.json(result.rows[0].data);
 
   } catch (error) {
@@ -90,11 +84,23 @@ export async function PUT(req: Request) {
       costo,
       costo_millas,
       cant_milla,
-      tipo
+      tipo,
+      restricciones // Array de restricciones agregadas
     } = await req.json();
 
+    // Si el paquete es especial, debe tener al menos una restricción
+    let restriccion_tipo = null;
+    let restriccion_descripcion = null;
+
+    if (tipo?.toLowerCase() === 'especial' && restricciones && restricciones.length > 0) {
+      // Tomar la primera restricción agregada
+      const primeraRestriccion = restricciones[0];
+      restriccion_tipo = primeraRestriccion.tipo;
+      restriccion_descripcion = primeraRestriccion.descripcion;
+    }
+
     const query = `
-      SELECT actualizar_paquete_turistico($1,$2,$3,$4,$5,$6,$7) AS data;
+      SELECT actualizar_paquete_turistico($1,$2,$3,$4,$5,$6,$7,$8,$9) AS data;
     `;
 
     const values = [
@@ -104,7 +110,9 @@ export async function PUT(req: Request) {
       costo,
       costo_millas,
       cant_milla,
-      tipo
+      tipo,
+      restriccion_tipo,
+      restriccion_descripcion
     ];
 
     const result = await pool.query(query, values);

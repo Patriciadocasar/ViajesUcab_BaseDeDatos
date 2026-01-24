@@ -1,53 +1,142 @@
-import { pool } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { pool } from "@/lib/db";
 
-// ✅ Consultar todos los reclamos
-export async function GET() {
+// GET - Listar todos los reclamos (para admin)
+export async function GET(request: Request) {
   try {
-    // Primero obtener los nombres de las columnas para debug
-    const columnResult = await pool.query(
-      "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'reclamo' OR table_name = 'Reclamo' ORDER BY ordinal_position"
-    );
-    console.log("Columnas de la tabla Reclamo:", columnResult.rows);
+    console.log("=== GET /api/reclamos ===");
+    console.log("Obteniendo lista de reclamos para administrador...");
 
-    // Consultar todos los datos - usar subconsulta para ordenar antes de agregar
-    let result;
-    try {
-      result = await pool.query(
-        `SELECT json_agg(row_to_json(r)) AS data 
-         FROM (
-           SELECT * FROM Reclamo ORDER BY Rec_COD ASC
-         ) r`
-      );
-    } catch (e: any) {
-      // Si falla, intentar con minúsculas
-      console.log("Intentando con tabla en minúsculas...");
-      result = await pool.query(
-        `SELECT json_agg(row_to_json(r)) AS data 
-         FROM (
-           SELECT * FROM reclamo ORDER BY rec_cod ASC
-         ) r`
+    const query = `
+      SELECT sp_mostrar_reclamos_admin() as resultado
+    `;
+
+    const result = await pool.query(query);
+    const response = result.rows[0].resultado;
+
+    console.log("✅ Resultado:", response);
+
+    if (response.status === "error") {
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    return NextResponse.json(response, { status: 200 });
+  } catch (error: any) {
+    console.error("❌ Error al listar reclamos:", error);
+    return NextResponse.json(
+      {
+        status: "error",
+        message: error.message || "Error interno del servidor",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// POST - Registrar un reclamo
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { itinerario_id, descripcion } = body;
+
+    console.log("=== POST /api/reclamos ===");
+    console.log("Datos recibidos:", { itinerario_id, descripcion });
+
+    // Validar datos requeridos
+    if (!itinerario_id || !descripcion) {
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "itinerario_id y descripcion son requeridos",
+        },
+        { status: 400 }
       );
     }
 
-    const data = result.rows[0]?.data || [];
-    console.log("Datos devueltos por la consulta (primer elemento):", data && data.length > 0 ? JSON.stringify(data[0], null, 2) : "No hay datos");
+    // Validar que el itinerario_id no sea un timestamp temporal del frontend
+    const MAX_INTEGER = 2147483647; // Límite de INTEGER en PostgreSQL
+    if (itinerario_id > MAX_INTEGER) {
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "Este itinerario aún no está sincronizado con la base de datos. Por favor espera unos momentos y recarga la página.",
+        },
+        { status: 400 }
+      );
+    }
 
+    // Llamar al procedimiento almacenado
+    const query = `
+      SELECT sp_registrar_reclamo_json($1::INTEGER, $2::TEXT) as resultado
+    `;
+
+    console.log("🔍 Registrando reclamo...");
+    const result = await pool.query(query, [itinerario_id, descripcion]);
+
+    const response = result.rows[0].resultado;
+    console.log("✅ Resultado:", response);
+
+    if (response.status === "error") {
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    return NextResponse.json(response, { status: 201 });
+  } catch (error: any) {
+    console.error("❌ Error al registrar reclamo:", error);
     return NextResponse.json(
       {
-        status: "success",
-        message: "Listado de reclamos",
-        data: data
-      },
-      { status: 200 }
-    );
-  } catch (error: any) {
-    console.error("Error en GET /api/reclamos:", error);
-    return NextResponse.json(
-      { 
-        status: "error", 
+        status: "error",
         message: error.message || "Error interno del servidor",
-        details: process.env.NODE_ENV === "development" ? error.stack : undefined
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT - Actualizar estado de un reclamo a "Listo"
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { registro_id, fecha_fin } = body;
+
+    console.log("=== PUT /api/reclamos ===");
+    console.log("Datos recibidos:", { registro_id, fecha_fin });
+
+    // Validar datos requeridos
+    if (!registro_id) {
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "registro_id es requerido",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Llamar al procedimiento almacenado
+    const query = fecha_fin
+      ? `SELECT sp_actualizar_estado_reclamo_json($1::INTEGER, $2::DATE) as resultado`
+      : `SELECT sp_actualizar_estado_reclamo_json($1::INTEGER) as resultado`;
+
+    const params = fecha_fin ? [registro_id, fecha_fin] : [registro_id];
+
+    console.log("🔍 Actualizando estado del reclamo...");
+    const result = await pool.query(query, params);
+
+    const response = result.rows[0].resultado;
+    console.log("✅ Resultado:", response);
+
+    if (response.status === "error") {
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    return NextResponse.json(response, { status: 200 });
+  } catch (error: any) {
+    console.error("❌ Error al actualizar estado del reclamo:", error);
+    return NextResponse.json(
+      {
+        status: "error",
+        message: error.message || "Error interno del servidor",
       },
       { status: 500 }
     );

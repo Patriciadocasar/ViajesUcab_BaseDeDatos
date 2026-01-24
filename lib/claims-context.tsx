@@ -17,6 +17,12 @@ export interface Claim {
   fechaCreacion: string
   reservaRelacionada?: string
   respuestaAdmin?: string
+  // Campos adicionales de la BD
+  registroId?: number
+  clienteNombre?: string
+  costoItinerario?: number
+  fechaInicio?: string
+  fechaFin?: string
 }
 
 interface ClaimsContextType {

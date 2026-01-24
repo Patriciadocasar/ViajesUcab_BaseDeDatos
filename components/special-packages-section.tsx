@@ -1,360 +1,167 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Image from "next/image"
-import { Heart, Cake, MapPin, Calendar, Users } from "lucide-react"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Package as PackageIcon } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCurrency } from "@/lib/currency-context"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 
-const specialPackages = [
-  {
-    id: "quince-1",
-    type: "quinceanera",
-    title: "Tour de 15 Años Mágico",
-    destination: "Orlando, Florida",
-    image: "/disney-castle-magic-kingdom.jpg",
-    duration: "7 días / 6 noches",
-    groupSize: "Hasta 20 personas",
-    price: 4500,
-    originalPrice: 6000,
-    discount: 25,
-    description: "Celebra tus 15 años en el lugar más mágico del mundo con parques temáticos y experiencias únicas.",
-    includes: [
-      "Vuelos internacionales para la quinceañera y acompañantes",
-      "6 noches en hotel 4 estrellas",
-      "Entradas a 4 parques temáticos",
-      "Sesión fotográfica profesional en el castillo",
-      "Cena de gala en restaurante temático",
-      "Coordinador de eventos bilingüe",
-      "Transporte privado durante toda la estadía",
-    ],
-    highlights: ["Magic Kingdom", "Universal Studios", "Sesión de fotos profesional", "Cena de gala"],
-  },
-  {
-    id: "quince-2",
-    type: "quinceanera",
-    title: "Tour de 15 Años Caribeño",
-    destination: "Cancún y Riviera Maya",
-    image: "/cancun-beach-resort.png",
-    duration: "5 días / 4 noches",
-    groupSize: "Hasta 15 personas",
-    price: 3200,
-    originalPrice: 4500,
-    discount: 29,
-    description: "Celebración inolvidable en las playas más hermosas del Caribe con actividades exclusivas.",
-    includes: [
-      "Vuelos internacionales",
-      "4 noches en resort todo incluido",
-      "Sesión fotográfica en playa y cenote",
-      "Excursión a Chichén Itzá",
-      "Fiesta privada en la playa",
-      "Spa day para la quinceañera",
-      "Coordinador de eventos",
-    ],
-    highlights: ["Playa privada", "Cenotes", "Ruinas mayas", "Fiesta en la playa"],
-  },
-  {
-    id: "quince-3",
-    type: "quinceanera",
-    title: "Tour de 15 Años Europeo",
-    destination: "París y Londres",
-    image: "/big-ben-london.jpg",
-    duration: "10 días / 9 noches",
-    groupSize: "Hasta 12 personas",
-    price: 6800,
-    originalPrice: 9000,
-    discount: 24,
-    description: "Vive la experiencia europea de tus sueños visitando las ciudades más románticas del mundo.",
-    includes: [
-      "Vuelos internacionales",
-      "9 noches en hoteles boutique",
-      "Sesión fotográfica en Torre Eiffel y Big Ben",
-      "Tours guiados en ambas ciudades",
-      "Cena en crucero por el Sena",
-      "Entradas a museos principales",
-      "Tren Eurostar París-Londres",
-      "Coordinador bilingüe",
-    ],
-    highlights: ["Torre Eiffel", "Louvre", "Big Ben", "Crucero por el Sena"],
-  },
-  {
-    id: "honeymoon-1",
-    type: "honeymoon",
-    title: "Luna de Miel en Maldivas",
-    destination: "Maldivas",
-    image: "/maldives-water-villa.jpg",
-    duration: "8 días / 7 noches",
-    groupSize: "2 personas",
-    price: 8500,
-    originalPrice: 12000,
-    discount: 29,
-    description: "Paraíso tropical con villas sobre el agua, playas de arena blanca y experiencias románticas únicas.",
-    includes: [
-      "Vuelos internacionales en clase business",
-      "7 noches en villa sobre el agua",
-      "Pensión completa con bebidas premium",
-      "Cena romántica privada en la playa",
-      "Spa de parejas",
-      "Excursión de snorkel",
-      "Traslados en hidroavión",
-      "Decoración especial de luna de miel",
-    ],
-    highlights: ["Villa sobre el agua", "Cena privada", "Spa de parejas", "Snorkel"],
-  },
-  {
-    id: "honeymoon-2",
-    type: "honeymoon",
-    title: "Luna de Miel en Santorini",
-    destination: "Santorini, Grecia",
-    image: "/santorini-oia-sunset.jpg",
-    duration: "7 días / 6 noches",
-    groupSize: "2 personas",
-    price: 5200,
-    originalPrice: 7500,
-    discount: 31,
-    description: "Romance mediterráneo con vistas espectaculares, atardeceres inolvidables y gastronomía excepcional.",
-    includes: [
-      "Vuelos internacionales",
-      "6 noches en hotel boutique con vista al mar",
-      "Desayuno y cena incluidos",
-      "Tour privado por la isla",
-      "Crucero al atardecer",
-      "Sesión fotográfica profesional",
-      "Cena romántica con vista a la caldera",
-      "Masaje de parejas",
-    ],
-    highlights: ["Atardeceres en Oia", "Crucero privado", "Gastronomía griega", "Vistas a la caldera"],
-  },
-  {
-    id: "honeymoon-3",
-    type: "honeymoon",
-    title: "Luna de Miel en Bali",
-    destination: "Bali, Indonesia",
-    image: "/balinese-temple.png",
-    duration: "10 días / 9 noches",
-    groupSize: "2 personas",
-    price: 6200,
-    originalPrice: 8800,
-    discount: 30,
-    description: "Isla de los dioses con templos místicos, arrozales en terrazas y playas paradisíacas.",
-    includes: [
-      "Vuelos internacionales",
-      "9 noches en resorts de lujo (3 ubicaciones diferentes)",
-      "Desayuno diario",
-      "Tour por templos y arrozales",
-      "Clase de cocina balinesa",
-      "Spa tradicional balinés",
-      "Cena romántica en acantilado",
-      "Conductor privado durante toda la estadía",
-    ],
-    highlights: ["Templos sagrados", "Arrozales de Tegallalang", "Playas de Uluwatu", "Spa balinés"],
-  },
-]
+type PaqueteBD = {
+  id: number
+  nombre: string
+  descripcion: string
+  costo: number
+  costoMillas?: number
+  cantidadMillas?: number
+  tipo: string
+}
 
 export function SpecialPackagesSection() {
-  const { convertPrice } = useCurrency()
+  const { formatPrice } = useCurrency()
   const router = useRouter()
+  const { toast } = useToast()
+  const [paquetes, setPaquetes] = useState<PaqueteBD[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const quinceaneraPackages = specialPackages.filter((p) => p.type === "quinceanera")
-  const honeymoonPackages = specialPackages.filter((p) => p.type === "honeymoon")
+  useEffect(() => {
+    const cargarPaquetes = async () => {
+      try {
+        const res = await fetch("/api/paquete-turistico?id=0")
+        if (res.ok) {
+          const data = await res.json()
+          console.log("📦 Paquetes BD en home:", data)
+          if (data.status === "success" && Array.isArray(data.data)) {
+            console.log("✅ Paquetes cargados:", data.data.length)
+            setPaquetes(data.data)
+          }
+        }
+      } catch (error) {
+        console.error("❌ Error cargando paquetes:", error)
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los paquetes turísticos",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    cargarPaquetes()
+  }, [toast])
 
-  const handleViewPackage = (packageId: string) => {
-    router.push(`/paquete-especial/${packageId}`)
+  const handleViewPackage = (packageId: number) => {
+    router.push(`/clientes/itinerario`)
+  }
+
+  if (isLoading) {
+    return (
+      <section className="py-16 lg:py-24 bg-background">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">Paquetes Turísticos</h2>
+            <p className="text-lg text-muted-foreground">Explora nuestros mejores paquetes de viaje</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Card key={i} className="animate-pulse overflow-hidden">
+                <div className="h-48 w-full bg-gray-200" />
+                <CardContent className="p-6 space-y-4">
+                  <div className="h-6 bg-gray-200 rounded w-3/4" />
+                  <div className="h-4 bg-gray-200 rounded w-1/2" />
+                  <div className="h-4 bg-gray-200 rounded w-full" />
+                  <div className="h-4 bg-gray-200 rounded w-5/6" />
+                  <div className="h-10 bg-gray-200 rounded w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (paquetes.length === 0) {
+    return (
+      <section className="py-16 lg:py-24 bg-background">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">Paquetes Turísticos</h2>
+            <p className="text-lg text-muted-foreground">No hay paquetes disponibles en este momento</p>
+          </div>
+        </div>
+      </section>
+    )
   }
 
   return (
     <section className="py-16 lg:py-24 bg-background">
       <div className="container mx-auto px-4 lg:px-8">
         <div className="mb-12 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">Paquetes Especiales</h2>
-          <p className="text-lg text-muted-foreground">Momentos únicos que merecen experiencias inolvidables</p>
+          <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">Paquetes Turísticos</h2>
+          <p className="text-lg text-muted-foreground">Descubre nuestros mejores paquetes de viaje</p>
         </div>
 
-        <div className="space-y-16">
-          <div>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-full bg-pink-100 dark:bg-pink-950/20 flex items-center justify-center">
-                <Cake className="h-6 w-6 text-pink-600" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold">Tours de 15 Años</h3>
-                <p className="text-muted-foreground">Celebra este momento especial con un viaje inolvidable</p>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {paquetes.map((pkg) => {
+            const esEspecial = pkg.tipo?.toLowerCase() === "especial"
+            
+            return (
+              <Card
+                key={pkg.id}
+                className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                onClick={() => handleViewPackage(pkg.id)}
+              >
+                <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <PackageIcon className="h-20 w-20 text-blue-500 dark:text-blue-300 opacity-50" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  
+                  {esEspecial && (
+                    <Badge className="absolute top-3 right-3 bg-gradient-to-r from-yellow-500 to-orange-500">
+                      ⭐ Especial
+                    </Badge>
+                  )}
+                  
+                  <div className="absolute bottom-3 left-3 flex items-center gap-2 text-white">
+                    <PackageIcon className="h-5 w-5" />
+                    <span className="text-sm font-semibold">{pkg.nombre}</span>
+                  </div>
+                </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {quinceaneraPackages.map((pkg) => {
-                const convertedPrice = convertPrice(pkg.price)
-                const convertedOriginal = convertPrice(pkg.originalPrice)
-                const formatter = new Intl.NumberFormat("es-VE", {
-                  minimumFractionDigits: 0,
-                });
-                return (
-                  <Card
-                    key={pkg.id}
-                    className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
-                    onClick={() => handleViewPackage(pkg.id)}
-                  >
-                    <div className="relative h-48 w-full overflow-hidden">
-                      <Image
-                        src={pkg.image}
-                        alt={pkg.title}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                      <Badge className="absolute top-3 right-3 bg-pink-600">-{pkg.discount}%</Badge>
-                      <div className="absolute bottom-3 left-3 flex items-center gap-2 text-white">
-                        <Cake className="h-5 w-5" />
-                        <span className="text-sm font-semibold">Tour de 15</span>
-                      </div>
-                    </div>
-                    <CardContent className="p-6">
-                      <h4 className="font-bold text-xl mb-2">{pkg.title}</h4>
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4" />
-                          <span>{pkg.destination}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          <span>{pkg.duration}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Users className="h-4 w-4" />
-                          <span>{pkg.groupSize}</span>
-                        </div>
-                      </div>
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold mb-2 line-clamp-1">{pkg.nombre}</h3>
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                    {pkg.descripcion}
+                  </p>
 
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{pkg.description}</p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <Badge variant="secondary" className="text-xs">
+                      💰 {formatPrice(pkg.costo)}
+                    </Badge>
+                    {pkg.cantidadMillas && pkg.cantidadMillas > 0 && (
+                      <Badge variant="outline" className="text-xs text-blue-600">
+                        ✈️ +{pkg.cantidadMillas} millas
+                      </Badge>
+                    )}
+                    {pkg.costoMillas && pkg.costoMillas > 0 && (
+                      <Badge variant="outline" className="text-xs">
+                        💎 {pkg.costoMillas} millas
+                      </Badge>
+                    )}
+                  </div>
 
-                      <div className="mb-4">
-                        <p className="text-xs font-medium mb-2">Incluye:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {pkg.highlights.map((highlight, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">
-                              {highlight}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="border-t pt-4">
-                        <p className="text-xs text-muted-foreground mb-1">Desde</p>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-sm text-muted-foreground line-through">
-                            {convertedOriginal.symbol}
-                            {formatter.format(convertedOriginal.value)}
-
-                          </span>
-                          <span className="text-2xl font-bold text-primary">
-                            {convertedPrice.symbol}
-                            {formatter.format(convertedPrice.value)}
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="p-6 pt-0">
-                      <Button className="w-full">Ver detalles completos</Button>
-                    </CardFooter>
-                  </Card>
-                )
-              })}
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-full bg-red-100 dark:bg-red-950/20 flex items-center justify-center">
-                <Heart className="h-6 w-6 text-red-600" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold">Lunas de Miel</h3>
-                <p className="text-muted-foreground">Comienza tu vida juntos con el viaje perfecto</p>
-              </div>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {honeymoonPackages.map((pkg) => {
-                const convertedPrice = convertPrice(pkg.price)
-                const convertedOriginal = convertPrice(pkg.originalPrice)
-
-                return (
-                  <Card
-                    key={pkg.id}
-                    className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
-                    onClick={() => handleViewPackage(pkg.id)}
-                  >
-                    <div className="relative h-48 w-full overflow-hidden">
-                      <Image
-                        src={pkg.image}
-                        alt={pkg.title}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                      <Badge className="absolute top-3 right-3 bg-red-600">-{pkg.discount}%</Badge>
-                      <div className="absolute bottom-3 left-3 flex items-center gap-2 text-white">
-                        <Heart className="h-5 w-5" />
-                        <span className="text-sm font-semibold">Luna de miel</span>
-                      </div>
-                    </div>
-                    <CardContent className="p-6">
-                      <h4 className="font-bold text-xl mb-2">{pkg.title}</h4>
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4" />
-                          <span>{pkg.destination}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          <span>{pkg.duration}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Users className="h-4 w-4" />
-                          <span>{pkg.groupSize}</span>
-                        </div>
-                      </div>
-
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{pkg.description}</p>
-
-                      <div className="mb-4">
-                        <p className="text-xs font-medium mb-2">Incluye:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {pkg.highlights.map((highlight, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">
-                              {highlight}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="border-t pt-4">
-                        <p className="text-xs text-muted-foreground mb-1">Desde</p>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-sm text-muted-foreground line-through">
-                            {convertedOriginal.symbol}
-                            {convertedOriginal.value.toLocaleString()}
-                          </span>
-                          <span className="text-2xl font-bold text-primary">
-                            {convertedPrice.symbol}
-                            {convertedPrice.value.toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="p-6 pt-0">
-                      <Button className="w-full">Ver detalles completos</Button>
-                    </CardFooter>
-                  </Card>
-                )
-              })}
-            </div>
-          </div>
+                  <Button className="w-full" onClick={() => handleViewPackage(pkg.id)}>
+                    Ver detalles
+                  </Button>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       </div>
     </section>

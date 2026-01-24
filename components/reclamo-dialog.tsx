@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar, FileText, AlertCircle, MessageSquare, Send } from "lucide-react"
@@ -29,43 +28,97 @@ export function ReclamoDialog({ open, onOpenChange, reclamo }: ReclamoDialogProp
   const { hasRole } = useUser()
   const { updateClaim } = useClaims()
   const { toast } = useToast()
-  const [respuesta, setRespuesta] = useState("")
+  const [nuevoEstado, setNuevoEstado] = useState<ClaimStatus>("pendiente")
   const isAdmin = hasRole(1)
-
-  if (!reclamo) return null
-
-  const estadoConfig = estadosConfig[reclamo.estado]
-  const [nuevoEstado, setNuevoEstado] = useState<ClaimStatus>(reclamo.estado)
 
   useEffect(() => {
     if (reclamo) {
       setNuevoEstado(reclamo.estado)
-      setRespuesta(reclamo.respuestaAdmin || "")
     }
   }, [reclamo])
 
-  const handleResponder = () => {
-    if (!respuesta.trim()) {
+  if (!reclamo) return null
+
+  const estadoConfig = estadosConfig[reclamo.estado]
+
+  const handleCambiarEstado = async () => {
+    if (nuevoEstado === reclamo.estado) {
       toast({
-        title: "Error",
-        description: "Por favor escribe una respuesta",
+        title: "Sin cambios",
+        description: "El estado no ha cambiado",
         variant: "destructive",
       })
       return
     }
 
-    updateClaim(reclamo.id, {
-      respuestaAdmin: respuesta,
-      estado: nuevoEstado,
-    })
+    // Si se cambió el estado a "Listo", actualizar en la BD
+    if (nuevoEstado === "listo" && reclamo.estado === "pendiente") {
+      try {
+        // Actualizar estado en la BD usando el endpoint PUT
+        const registroId = (reclamo as any).registroId
+        
+        if (!registroId) {
+          toast({
+            title: "Error",
+            description: "No se puede actualizar: falta el ID del registro",
+            variant: "destructive",
+          })
+          return
+        }
 
-    toast({
-      title: "Respuesta enviada",
-      description: "La respuesta ha sido guardada exitosamente",
-    })
+        const response = await fetch("/api/reclamos", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            registro_id: registroId,
+            fecha_fin: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+          }),
+        })
 
-    setRespuesta("")
-    onOpenChange(false)
+        const result = await response.json()
+
+        if (result.status === "success") {
+          toast({
+            title: "Estado actualizado",
+            description: "El reclamo ha sido marcado como Listo",
+          })
+          
+          // También actualizar en el contexto local si existe
+          updateClaim(reclamo.id, {
+            estado: nuevoEstado,
+          })
+
+          onOpenChange(false)
+        } else {
+          toast({
+            title: "Error",
+            description: result.message || "No se pudo actualizar el estado",
+            variant: "destructive",
+          })
+        }
+      } catch (error: any) {
+        console.error("Error actualizando estado:", error)
+        toast({
+          title: "Error",
+          description: error.message || "Error al actualizar el estado",
+          variant: "destructive",
+        })
+      }
+    } else {
+      // Solo guardar estado sin cambiar en BD (contexto local)
+      updateClaim(reclamo.id, {
+        estado: nuevoEstado,
+      })
+
+      toast({
+        title: "Estado actualizado",
+        description: "El estado ha sido actualizado",
+      })
+
+      onOpenChange(false)
+    }
   }
 
   return (
@@ -134,30 +187,13 @@ export function ReclamoDialog({ open, onOpenChange, reclamo }: ReclamoDialogProp
             </div>
           </div>
 
-          {reclamo.respuestaAdmin && (
-            <>
-              <Separator />
-              <div>
-                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  Respuesta del Administrador
-                </h4>
-                <div className="pl-6">
-                  <p className="text-sm text-muted-foreground leading-relaxed bg-muted p-3 rounded-lg">
-                    {reclamo.respuestaAdmin}
-                  </p>
-                </div>
-              </div>
-            </>
-          )}
-
           {isAdmin && (
             <>
               <Separator />
               <div>
                 <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
-                  Responder al Reclamo
+                  Gestionar Reclamo
                 </h4>
                 <div className="space-y-4 pl-6">
                   <div className="space-y-2">
@@ -172,19 +208,9 @@ export function ReclamoDialog({ open, onOpenChange, reclamo }: ReclamoDialogProp
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="respuesta">Respuesta</Label>
-                    <Textarea
-                      id="respuesta"
-                      placeholder="Escribe tu respuesta al cliente..."
-                      rows={4}
-                      value={respuesta}
-                      onChange={(e) => setRespuesta(e.target.value)}
-                    />
-                  </div>
-                  <Button onClick={handleResponder} className="w-full">
+                  <Button onClick={handleCambiarEstado} className="w-full">
                     <Send className="h-4 w-4 mr-2" />
-                    Enviar Respuesta
+                    Actualizar Estado
                   </Button>
                 </div>
               </div>

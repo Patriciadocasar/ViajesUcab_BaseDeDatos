@@ -1,107 +1,167 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode, useEffect, useCallback, useRef } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { useUser } from "./user-context"
 import { useToast } from "@/hooks/use-toast"
 
 export interface WishlistItem {
-  id: number
-  title: string
-  location: string
-  price: number
-  image: string
-  type: "hotel" | "flight" | "cruise" | "tour" | "package" | "restaurant"
-  addedAt: string
-  originalPrice?: number
+  wishlist_id: string
+  itinerario_id: string
+  descripcion: string
+  fecha_agregado: string
+  costo_total: number
+  fecha_inicio: string
+  fecha_fin: string
 }
 
 interface WishlistContextType {
-  items: WishlistItem[]
-  addToWishlist: (item: WishlistItem) => void
-  removeFromWishlist: (id: number) => void
-  isInWishlist: (id: number) => boolean
-  totalItems: number
+  wishlist: WishlistItem[]
+  isLoading: boolean
+  addToWishlist: (itinerario_id: number, descripcion?: string) => Promise<boolean>
+  removeFromWishlist: (wishlist_id: string) => Promise<boolean>
+  refreshWishlist: () => Promise<void>
+  isInWishlist: (itinerario_id: number) => boolean
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined)
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<WishlistItem[]>([])
+  const [wishlist, setWishlist] = useState<WishlistItem[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const { user, isAuthenticated } = useUser()
   const { toast } = useToast()
-  const toastRef = useRef(toast)
-  const itemsRef = useRef(items)
 
-  // Keep refs updated
+  // Cargar wishlist cuando el usuario está autenticado
   useEffect(() => {
-    toastRef.current = toast
-    itemsRef.current = items
-  }, [toast, items])
+    if (isAuthenticated && user?.clienteId) {
+      loadWishlist()
+    } else {
+      setWishlist([])
+    }
+  }, [isAuthenticated, user?.clienteId])
 
-  // Check price drops in useEffect to avoid render-time state updates
-  useEffect(() => {
-    const checkPriceDrops = () => {
-      itemsRef.current.forEach((item) => {
-        if (item.originalPrice && item.price < item.originalPrice) {
-          const discount = Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)
-          // Use setTimeout to ensure toast is called outside render cycle
-          setTimeout(() => {
-            toastRef.current({
-              title: "¡Bajó el precio!",
-              description: `${item.title} ahora tiene ${discount}% de descuento`,
-              duration: 5000,
-            })
-          }, 0)
-        }
+  const loadWishlist = async () => {
+    if (!user?.clienteId) return
+
+    setIsLoading(true)
+    try {
+      const response = await fetch(`/api/wishlist?cliente_id=${user.clienteId}`)
+      const result = await response.json()
+
+      if (result.status === "success") {
+        setWishlist(result.data)
+      }
+    } catch (error) {
+      console.error("Error loading wishlist:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const addToWishlist = async (itinerario_id: number, descripcion?: string): Promise<boolean> => {
+    if (!user?.clienteId) {
+      toast({
+        title: "Error",
+        description: "Debes iniciar sesión para agregar a tu lista de deseos",
+        variant: "destructive",
       })
+      return false
     }
 
-    // Check for price drops every 30 seconds (in production, this would be server-side)
-    const interval = setInterval(checkPriceDrops, 30000)
-    return () => clearInterval(interval)
-  }, []) // Remove items and toast from dependencies
-
-  const addToWishlist = useCallback((item: WishlistItem) => {
-    setItems((prev) => {
-      const exists = prev.find((i) => i.id === item.id)
-      if (exists) {
-        // Use setTimeout to ensure toast is called outside render cycle
-        setTimeout(() => {
-          toastRef.current({
-            title: "Ya está en tu lista",
-            description: "Este artículo ya fue agregado a tu lista de deseos",
-            variant: "destructive",
-          })
-        }, 0)
-        return prev
-      }
-      setTimeout(() => {
-        toastRef.current({
-          title: "Agregado a lista de deseos",
-          description: "Te notificaremos cuando baje el precio",
-        })
-      }, 0)
-      return [...prev, { ...item, addedAt: new Date().toISOString() }]
-    })
-  }, [])
-
-  const removeFromWishlist = useCallback((id: number) => {
-    setItems((prev) => prev.filter((item) => item.id !== id))
-    // Use setTimeout to ensure toast is called outside render cycle
-    setTimeout(() => {
-      toastRef.current({
-        title: "Eliminado de lista de deseos",
-        description: "El artículo se eliminó de tu lista",
+    try {
+      const response = await fetch("/api/wishlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cliente_id: parseInt(user.clienteId),
+          itinerario_id,
+          descripcion: descripcion || "Itinerario guardado",
+        }),
       })
-    }, 0)
-  }, [])
 
-  const isInWishlist = useCallback((id: number) => {
-    return items.some((item) => item.id === id)
-  }, [items])
+      const result = await response.json()
 
-  const totalItems = items.length
+      if (result.status === "success") {
+        toast({
+          title: "¡Agregado a wishlist!",
+          description: "El itinerario se ha agregado a tu lista de deseos",
+        })
+        await loadWishlist() // Recargar la wishlist
+        return true
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "No se pudo agregar a la wishlist",
+          variant: "destructive",
+        })
+        return false
+      }
+    } catch (error) {
+      console.error("Error adding to wishlist:", error)
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al agregar a la wishlist",
+        variant: "destructive",
+      })
+      return false
+    }
+  }
+
+  const removeFromWishlist = async (wishlist_id: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`/api/wishlist?wishlist_id=${wishlist_id}`, {
+        method: "DELETE",
+      })
+
+      const result = await response.json()
+
+      if (result.status === "success") {
+        toast({
+          title: "Eliminado",
+          description: "El itinerario se ha eliminado de tu wishlist",
+        })
+        await loadWishlist() // Recargar la wishlist
+        return true
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "No se pudo eliminar de la wishlist",
+          variant: "destructive",
+        })
+        return false
+      }
+    } catch (error) {
+      console.error("Error removing from wishlist:", error)
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al eliminar de la wishlist",
+        variant: "destructive",
+      })
+      return false
+    }
+  }
+
+  const refreshWishlist = async () => {
+    await loadWishlist()
+  }
+
+  const isInWishlist = (itinerario_id: number): boolean => {
+    return wishlist.some((item) => item.itinerario_id === itinerario_id)
+  }
 
   return (
-    <WishlistContext.Provider value={{ items, addToWishlist, removeFromWishlist, isInWishlist, totalItems }}>
+    <WishlistContext.Provider
+      value={{
+        wishlist,
+        isLoading,
+        addToWishlist,
+        removeFromWishlist,
+        refreshWishlist,
+        isInWishlist,
+      }}
+    >
       {children}
     </WishlistContext.Provider>
   )

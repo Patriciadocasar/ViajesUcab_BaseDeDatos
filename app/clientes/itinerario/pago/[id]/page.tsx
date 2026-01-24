@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft, CreditCard, User, Mail, Phone, MapPin } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { SelectorMetodosPagoMultiple, type MetodoPagoConMonto } from "@/components/selector-metodos-pago-multiple"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function PagoItinerarioPage() {
   const params = useParams()
@@ -31,6 +33,8 @@ export default function PagoItinerarioPage() {
       datos: {},
     },
   ])
+  const [usarFinanciamiento, setUsarFinanciamiento] = useState(false)
+  const [numeroCuotas, setNumeroCuotas] = useState("6")
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -94,67 +98,24 @@ export default function PagoItinerarioPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validar que el total esté completo
-    const totalAsignado = metodosPago.reduce((sum, m) => sum + m.monto, 0)
-    const diferencia = Math.abs(totalPrice - totalAsignado)
+    // Si usa financiamiento, no validar el monto total (solo necesita un método de pago para las cuotas)
+    if (!usarFinanciamiento) {
+      // Validar que el total esté completo solo si NO usa financiamiento
+      const totalAsignado = metodosPago.reduce((sum, m) => sum + m.monto, 0)
+      const diferencia = Math.abs(totalPrice - totalAsignado)
 
-    if (diferencia > 0.01) {
-      toast({
-        title: "Monto incompleto",
-        description: `Faltan $${(totalPrice - totalAsignado).toFixed(2)} por asignar`,
-        variant: "destructive",
-      })
-      return
+      if (diferencia > 0.01) {
+        toast({
+          title: "Monto incompleto",
+          description: `Faltan $${(totalPrice - totalAsignado).toFixed(2)} por asignar`,
+          variant: "destructive",
+        })
+        return
+      }
     }
 
     try {
-      toast({
-        title: "Procesando pago...",
-        description: "Registrando métodos de pago",
-      })
-
-      // Paso 1: Registrar todos los métodos de pago
-      const metodosRegistrados: Array<{ metodo_pago_id: number; monto: number }> = []
-
-      for (const metodo of metodosPago) {
-        const registrarMetodoPagoResponse = await fetch("/api/metodo-pago/registrar-universal", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            tipo: metodo.tipo,
-            cliente_id: parseInt(user.clienteId),
-            datos: metodo.datos,
-          }),
-        })
-
-        const metodoPagoResult = await registrarMetodoPagoResponse.json()
-
-        if (metodoPagoResult.status === "error") {
-          toast({
-            title: "Error al registrar método de pago",
-            description: metodoPagoResult.message,
-            variant: "destructive",
-          })
-          return
-        }
-
-        metodosRegistrados.push({
-          metodo_pago_id: metodoPagoResult.data.metodo_pago_id,
-          monto: metodo.monto,
-        })
-
-        console.log(`✅ Método ${metodosRegistrados.length} registrado:`, {
-          tipo: metodo.tipo,
-          id: metodoPagoResult.data.metodo_pago_id,
-          monto: metodo.monto,
-        })
-      }
-
-      console.log("✅ Todos los métodos registrados:", metodosRegistrados)
-
-      // Paso 2: Obtener la información de la reserva del localStorage
+      // Obtener la información de la reserva del localStorage
       const storedData = JSON.parse(localStorage.getItem("itineraryPurchase") || "{}")
       const reserva_id = storedData.reservaInfo?.reserva_id
 
@@ -167,62 +128,183 @@ export default function PagoItinerarioPage() {
         return
       }
 
-      toast({
-        title: "Procesando pagos...",
-        description: `Procesando ${metodosRegistrados.length} método(s) de pago`,
-      })
-
-      // Paso 3: Procesar cada pago
-      const pagosRealizados = []
+      let financiamientoInfo = null
+      let pagosRealizados = []
       let millasObtenidas = 0
+      const metodosRegistrados: Array<{ metodo_pago_id: number; monto: number }> = []
 
-      for (const metodoRegistrado of metodosRegistrados) {
-        const usaMillas = metodosPago.find((m) => m.tipo === "Milla_MP" && metodosRegistrados.some(mr => mr.metodo_pago_id === metodoRegistrado.metodo_pago_id))
-        
-        console.log(`💳 Procesando pago ${pagosRealizados.length + 1}/${metodosRegistrados.length}:`, {
-          reserva_id: reserva_id,
-          cliente_id: parseInt(user.clienteId),
-          metodo_pago_id: metodoRegistrado.metodo_pago_id,
-          monto_pago: metodoRegistrado.monto,
+      if (usarFinanciamiento) {
+        // FLUJO CON FINANCIAMIENTO: Solo registrar método de pago para las cuotas
+        toast({
+          title: "Registrando método de pago...",
+          description: "Este método se usará para las cuotas mensuales",
         })
 
-        const procesarPagoResponse = await fetch("/api/pago/procesar", {
+        // Registrar solo el primer método de pago (para las cuotas futuras)
+        if (metodosPago.length > 0) {
+          const registrarMetodoPagoResponse = await fetch("/api/metodo-pago/registrar-universal", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              tipo: metodosPago[0].tipo,
+              cliente_id: parseInt(user.clienteId),
+              datos: metodosPago[0].datos,
+            }),
+          })
+
+          const metodoPagoResult = await registrarMetodoPagoResponse.json()
+
+          if (metodoPagoResult.status === "error") {
+            toast({
+              title: "Error al registrar método de pago",
+              description: metodoPagoResult.message,
+              variant: "destructive",
+            })
+            return
+          }
+
+          metodosRegistrados.push({
+            metodo_pago_id: metodoPagoResult.data.metodo_pago_id,
+            monto: 0, // No se paga ahora
+          })
+
+          console.log("✅ Método de pago registrado para cuotas:", metodoPagoResult.data.metodo_pago_id)
+        }
+
+        // NO procesar pagos ahora (se pagarán por cuotas)
+        toast({
+          title: "Registrando financiamiento...",
+          description: `Creando plan de ${numeroCuotas} cuotas`,
+        })
+
+        const financiamientoResponse = await fetch("/api/financiamiento", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
             reserva_id: reserva_id,
-            cliente_id: parseInt(user.clienteId),
-            metodo_pago_id: metodoRegistrado.metodo_pago_id,
-            monto_pago: metodoRegistrado.monto,
-            pago_con_millas: usaMillas ? true : false,
-            cantidad_millas: usaMillas ? Math.floor(metodoRegistrado.monto * 10) : 0, // Ejemplo: 1 dólar = 10 millas
+            numero_cuotas: parseInt(numeroCuotas),
           }),
         })
 
-        const pagoResult = await procesarPagoResponse.json()
+        const financiamientoResult = await financiamientoResponse.json()
 
-        if (pagoResult.status === "error") {
+        if (financiamientoResult.status === "error") {
           toast({
-            title: `Error al procesar pago ${pagosRealizados.length + 1}`,
-            description: pagoResult.message,
+            title: "Error al crear financiamiento",
+            description: financiamientoResult.message,
             variant: "destructive",
           })
           return
         }
 
-        pagosRealizados.push(pagoResult)
-        millasObtenidas += pagoResult.data.millas_obtenidas || 0
+        financiamientoInfo = financiamientoResult.data
+        console.log("✅ Financiamiento registrado:", financiamientoInfo)
 
-        console.log(`✅ Pago ${pagosRealizados.length} procesado:`, pagoResult)
+      } else {
+        // FLUJO SIN FINANCIAMIENTO: Pagar el monto completo ahora
+        toast({
+          title: "Procesando pago...",
+          description: "Registrando métodos de pago",
+        })
+
+        // Paso 1: Registrar todos los métodos de pago
+        for (const metodo of metodosPago) {
+          const registrarMetodoPagoResponse = await fetch("/api/metodo-pago/registrar-universal", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              tipo: metodo.tipo,
+              cliente_id: parseInt(user.clienteId),
+              datos: metodo.datos,
+            }),
+          })
+
+          const metodoPagoResult = await registrarMetodoPagoResponse.json()
+
+          if (metodoPagoResult.status === "error") {
+            toast({
+              title: "Error al registrar método de pago",
+              description: metodoPagoResult.message,
+              variant: "destructive",
+            })
+            return
+          }
+
+          metodosRegistrados.push({
+            metodo_pago_id: metodoPagoResult.data.metodo_pago_id,
+            monto: metodo.monto,
+          })
+
+          console.log(`✅ Método ${metodosRegistrados.length} registrado:`, {
+            tipo: metodo.tipo,
+            id: metodoPagoResult.data.metodo_pago_id,
+            monto: metodo.monto,
+          })
+        }
+
+        toast({
+          title: "Procesando pagos...",
+          description: `Procesando ${metodosRegistrados.length} método(s) de pago`,
+        })
+
+        // Paso 2: Procesar cada pago
+        for (const metodoRegistrado of metodosRegistrados) {
+          const usaMillas = metodosPago.find(
+            (m) => m.tipo === "Milla_MP" && metodosRegistrados.some((mr) => mr.metodo_pago_id === metodoRegistrado.metodo_pago_id)
+          )
+
+          console.log(`💳 Procesando pago ${pagosRealizados.length + 1}/${metodosRegistrados.length}:`, {
+            reserva_id: reserva_id,
+            cliente_id: parseInt(user.clienteId),
+            metodo_pago_id: metodoRegistrado.metodo_pago_id,
+            monto_pago: metodoRegistrado.monto,
+          })
+
+          const procesarPagoResponse = await fetch("/api/pago/procesar", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              reserva_id: reserva_id,
+              cliente_id: parseInt(user.clienteId),
+              metodo_pago_id: metodoRegistrado.metodo_pago_id,
+              monto_pago: metodoRegistrado.monto,
+              pago_con_millas: usaMillas ? true : false,
+              cantidad_millas: usaMillas ? Math.floor(metodoRegistrado.monto * 10) : 0,
+            }),
+          })
+
+          const pagoResult = await procesarPagoResponse.json()
+
+          if (pagoResult.status === "error") {
+            toast({
+              title: `Error al procesar pago ${pagosRealizados.length + 1}`,
+              description: pagoResult.message,
+              variant: "destructive",
+            })
+            return
+          }
+
+          pagosRealizados.push(pagoResult)
+          millasObtenidas += pagoResult.data.millas_obtenidas || 0
+
+          console.log(`✅ Pago ${pagosRealizados.length} procesado:`, pagoResult)
+        }
+
+        console.log("✅ Todos los pagos procesados:", {
+          total_pagos: pagosRealizados.length,
+          millas_totales: millasObtenidas,
+        })
       }
 
-      console.log("✅ Todos los pagos procesados:", {
-        total_pagos: pagosRealizados.length,
-        millas_totales: millasObtenidas,
-      })
-
+      // Continuar con el resto del flujo (confirmación)
       const reservationNumber = storedData.reservaInfo.numero_reserva || `VU${Date.now().toString().slice(-8)}`
 
       // Convert itinerary items to cart items format
@@ -274,15 +356,22 @@ export default function PagoItinerarioPage() {
           millas_obtenidas: millasObtenidas,
           total_pagos: pagosRealizados.length,
         },
+        financiamientoInfo: financiamientoInfo,
       }
 
       localStorage.setItem("lastPurchase", JSON.stringify(confirmationData))
       localStorage.removeItem("itineraryPurchase")
       localStorage.removeItem("currentItineraryPurchase")
 
+      const descripcionToast = usarFinanciamiento && financiamientoInfo
+        ? `Plan de ${numeroCuotas} cuotas creado. Pagarás $${(totalPrice / parseInt(numeroCuotas)).toFixed(2)}/mes. Sin intereses.`
+        : `${pagosRealizados.length} método(s) procesado(s). Has ganado ${millasObtenidas} millas`
+
+      const tituloToast = usarFinanciamiento ? "¡Financiamiento creado!" : "¡Pago exitoso!"
+
       toast({
-        title: "¡Pago exitoso!",
-        description: `${pagosRealizados.length} método(s) procesado(s). Has ganado ${millasObtenidas} millas`,
+        title: tituloToast,
+        description: descripcionToast,
       })
 
       router.push(`/clientes/confirmacion?reservation=${reservationNumber}`)
@@ -348,9 +437,67 @@ export default function PagoItinerarioPage() {
                   </CardContent>
                 </Card>
 
+                {/* Sección de Financiamiento */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CreditCard className="h-5 w-5" />
+                      Opciones de Pago
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="financiamiento"
+                        checked={usarFinanciamiento}
+                        onCheckedChange={(checked) => setUsarFinanciamiento(checked as boolean)}
+                      />
+                      <label
+                        htmlFor="financiamiento"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Financiar esta compra (pagar en cuotas)
+                      </label>
+                    </div>
+
+                    {usarFinanciamiento && (
+                      <div className="space-y-4 pt-4 border-t">
+                        <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <p className="text-sm text-blue-900 dark:text-blue-100 mb-2">
+                            ℹ️ <strong>Pago con financiamiento:</strong> No pagarás ahora. Solo necesitas registrar un método de pago para
+                            las cuotas mensuales.
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="cuotas">Número de cuotas mensuales</Label>
+                          <Select value={numeroCuotas} onValueChange={setNumeroCuotas}>
+                            <SelectTrigger id="cuotas">
+                              <SelectValue placeholder="Selecciona las cuotas" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="3">3 meses (${(totalPrice / 3).toFixed(2)}/mes)</SelectItem>
+                              <SelectItem value="6">6 meses (${(totalPrice / 6).toFixed(2)}/mes)</SelectItem>
+                              <SelectItem value="9">9 meses (${(totalPrice / 9).toFixed(2)}/mes)</SelectItem>
+                              <SelectItem value="12">12 meses (${(totalPrice / 12).toFixed(2)}/mes)</SelectItem>
+                              <SelectItem value="18">18 meses (${(totalPrice / 18).toFixed(2)}/mes)</SelectItem>
+                              <SelectItem value="24">24 meses (${(totalPrice / 24).toFixed(2)}/mes)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-muted-foreground">
+                            💳 Pagarás <span className="font-semibold">${(totalPrice / parseInt(numeroCuotas)).toFixed(2)}</span> por mes
+                            durante {numeroCuotas} meses. Sin intereses.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Métodos de Pago - Solo mostrar si NO usa financiamiento O si usa financiamiento (para registrar método) */}
                 <SelectorMetodosPagoMultiple
                   metodos={metodosPago}
-                  totalRequerido={totalPrice}
+                  totalRequerido={usarFinanciamiento ? 0 : totalPrice}
                   onChange={setMetodosPago}
                 />
               </div>

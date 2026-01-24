@@ -82,12 +82,12 @@ export default function ComprarItinerarioPage() {
 
   const handleContinueToPayment = async () => {
     // Validate all selections are made
-    const requiredSelections = itinerary.items.filter((item) => {
+    const requiredSelections = itinerary.items.filter((item: any) => {
       const options = getSelectionOptions(item)
       return options.length > 0
     })
 
-    const missingSelections = requiredSelections.filter((item) => !selections[item.id])
+    const missingSelections = requiredSelections.filter((item: any) => !selections[item.id])
 
     if (missingSelections.length > 0) {
       toast({
@@ -112,6 +112,52 @@ export default function ComprarItinerarioPage() {
       return
     }
 
+    // Validar restricciones de paquetes ANTES de crear la reserva
+    const paquetes = itinerary.items.filter((item: any) => item.type === "paquete" && item.realId)
+    
+    if (paquetes.length > 0) {
+      toast({
+        title: "Validando restricciones...",
+        description: "Verificando requisitos de paquetes especiales",
+      })
+
+      for (const paquete of paquetes) {
+        try {
+          const validacionResponse = await fetch("/api/paquete-turistico/validar-restricciones", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              paquete_id: paquete.realId,
+              pasajeros: pasajeros,
+            }),
+          })
+
+          const validacionResult = await validacionResponse.json()
+
+          if (validacionResult.status === "error" || validacionResult.cumple === false) {
+            toast({
+              title: "Restricción no cumplida",
+              description: validacionResult.message,
+              variant: "destructive",
+            })
+            return
+          }
+
+          console.log(`✅ Paquete ${paquete.realId} validado correctamente:`, validacionResult)
+        } catch (error) {
+          console.error("Error al validar restricciones:", error)
+          toast({
+            title: "Error de validación",
+            description: "No se pudieron validar las restricciones del paquete",
+            variant: "destructive",
+          })
+          return
+        }
+      }
+    }
+
     // Crear la reserva en la base de datos
     try {
       toast({
@@ -126,6 +172,7 @@ export default function ComprarItinerarioPage() {
       const hospedaje_ids: number[] = []
       const servicio_adicional_ids: number[] = []
       const restaurante_ids: number[] = []
+      const paquete_turistico_ids: number[] = []
       const fechas_inicio: string[] = []
       const fechas_fin: string[] = []
 
@@ -133,7 +180,7 @@ export default function ComprarItinerarioPage() {
       const fechaInicioItinerario = itinerary.startDate || itinerary.items[0]?.date
       const fechaFinItinerario = itinerary.endDate || itinerary.items[itinerary.items.length - 1]?.date
 
-      itinerary.items.forEach((item) => {
+      itinerary.items.forEach((item: any) => {
         // Extraer IDs reales según el tipo
         if (item.type === "vuelo" && item.realId) {
           vuelo_ids.push(item.realId)
@@ -159,6 +206,10 @@ export default function ComprarItinerarioPage() {
           restaurante_ids.push(item.realId)
           fechas_inicio.push(fechaInicioItinerario)
           fechas_fin.push(fechaFinItinerario)
+        } else if (item.type === "paquete" && item.realId) {
+          paquete_turistico_ids.push(item.realId)
+          fechas_inicio.push(fechaInicioItinerario)
+          fechas_fin.push(fechaFinItinerario)
         }
       })
 
@@ -179,6 +230,7 @@ export default function ComprarItinerarioPage() {
         },
         body: JSON.stringify({
           cliente_id: parseInt(user.clienteId),
+          paquete_turistico_ids: paquete_turistico_ids.length > 0 ? paquete_turistico_ids : null,
           vuelo_ids: vuelo_ids.length > 0 ? vuelo_ids : null,
           crucero_ids: crucero_ids.length > 0 ? crucero_ids : null,
           transporte_terrestre_ids: traslado_ids.length > 0 ? traslado_ids : null,
@@ -245,8 +297,8 @@ export default function ComprarItinerarioPage() {
         customerInfo: {
           name: user.name,
           email: user.email,
-          phone: user.phone,
-          passport: user.travelDocuments?.passport || "",
+          phone: "",
+          passport: "",
         },
       }
 
@@ -374,7 +426,7 @@ export default function ComprarItinerarioPage() {
   const calculateTotalWithSelections = () => {
     let total = itinerary.totalPrice
     Object.entries(selections).forEach(([itemId, selection]) => {
-      const item = itinerary.items.find((i) => i.id === itemId)
+      const item = itinerary.items.find((i: any) => i.id === itemId)
       if (item) {
         const options = getSelectionOptions(item)
         const selectedOption = options.find((opt) => opt.value === selection)
@@ -421,8 +473,8 @@ export default function ComprarItinerarioPage() {
             <FormularioPasajeros pasajeros={pasajeros} onChange={setPasajeros} />
 
             {itinerary.items
-              .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-              .map((item) => {
+              .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+              .map((item: any) => {
                 const options = getSelectionOptions(item)
                 const requiresSelection = options.length > 0
 
@@ -508,7 +560,7 @@ export default function ComprarItinerarioPage() {
                     <span className="font-semibold">{formatPrice(itinerary.totalPrice)}</span>
                   </div>
                   {Object.entries(selections).map(([itemId, selection]) => {
-                    const item = itinerary.items.find((i) => i.id === itemId)
+                    const item = itinerary.items.find((i: any) => i.id === itemId)
                     if (!item) return null
                     const options = getSelectionOptions(item)
                     const selectedOption = options.find((opt) => opt.value === selection)

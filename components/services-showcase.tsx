@@ -82,46 +82,60 @@ type PaqueteTuristico = {
 }
 
 const flightImages = [
-  "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800",
-  "https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?w=800",
-  "https://images.unsplash.com/photo-1583308345959-fdb7154e3502?w=800"
+  "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&q=80",
+  "https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?w=800&q=80",
+  "https://images.unsplash.com/photo-1583308345959-fdb7154e3502?w=800&q=80",
+  "https://images.unsplash.com/photo-1473445730015-841f29a9490b?w=800&q=80"
 ]
 
 const cruiseImages = [
-  "https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=800",
-  "https://images.unsplash.com/photo-1548574505-5e239809ee19?w=800",
-  "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=800"
+  "https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=800&q=80",
+  "https://images.unsplash.com/photo-1548574505-5e239809ee19?w=800&q=80",
+  "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=800&q=80",
+  "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80"
 ]
 
 const busImages = [
-  "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800",
-  "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800",
-  "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"
+  "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80",
+  "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800&q=80",
+  "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80",
+  "https://images.unsplash.com/photo-1468164016595-6108e4c60c8b?w=800&q=80"
 ]
 
 const hotelImages = [
-  "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
-  "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
-  "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800"
+  "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80",
+  "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80",
+  "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80",
+  "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80"
 ]
 
 const serviceImages = [
-  "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800", // Parque con terrazas verdes
-  "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800", // Mismo parque
-  "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800", // Mismo parque
-  "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800"  // Mismo parque
+  "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80",
+  "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&q=80",
+  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
+  "https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=800&q=80"
 ]
 
 const restaurantImages = [
-  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800",
-  "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800",
-  "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800"
+  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80",
+  "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80",
+  "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80",
+  "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80"
 ]
 
 const packageImages = [
-  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800", // Maletas de viaje
-  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800", // Aventura en montañas
-  "https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=800"  // Playa paradisíaca
+  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80", // Maletas de viaje
+  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&q=80", // Aventura en montañas
+  "https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=800&q=80", // Playa paradisíaca
+  "https://images.unsplash.com/photo-1527631746610-bca00a040d60?w=800&q=80", // Mapa y brújula
+  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80", // Lago en montañas
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80", // Playa tropical
+  "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800&q=80", // Destino exótico
+  "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=800&q=80", // Viaje familiar
+  "https://images.unsplash.com/photo-1517760444937-f6397edcbbcd?w=800&q=80", // Aventura
+  "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&q=80", // Montaña
+  "https://images.unsplash.com/photo-1476900543704-4312b78632f8?w=800&q=80", // Cabaña
+  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80"  // Montañas nevadas
 ]
 
 export function ServicesShowcase() {
@@ -321,7 +335,7 @@ export function ServicesShowcase() {
       if (vuelosRes.ok) {
         const data = await vuelosRes.json()
         if (data.data && Array.isArray(data.data)) {
-          const vuelosMapeados = data.data.slice(0, 10).map((v, index) => mapearVuelo(v, index))
+          const vuelosMapeados = data.data.map((v, index) => mapearVuelo(v, index))
           setVuelos(vuelosMapeados)
         }
       }
@@ -329,7 +343,7 @@ export function ServicesShowcase() {
       if (crucerosRes.ok) {
         const data = await crucerosRes.json()
         if (data.data && Array.isArray(data.data)) {
-          const crucerosMapeados = data.data.slice(0, 10).map((c, index) => mapearCrucero(c, index))
+          const crucerosMapeados = data.data.map((c, index) => mapearCrucero(c, index))
           setCruceros(crucerosMapeados)
         }
       }
@@ -337,7 +351,7 @@ export function ServicesShowcase() {
       if (trasladosRes.ok) {
         const data = await trasladosRes.json()
         if (data.data && Array.isArray(data.data)) {
-          const trasladosMapeados = data.data.slice(0, 10).map((t, index) => mapearTraslado(t, index))
+          const trasladosMapeados = data.data.map((t, index) => mapearTraslado(t, index))
           setTraslados(trasladosMapeados)
         }
       }
@@ -345,7 +359,7 @@ export function ServicesShowcase() {
       if (hospedajesRes.ok) {
         const data = await hospedajesRes.json()
         if (data.data && Array.isArray(data.data)) {
-          const hospedajesMapeados = data.data.slice(0, 10).map((h, index) => mapearHospedaje(h, index))
+          const hospedajesMapeados = data.data.map((h, index) => mapearHospedaje(h, index))
           setHospedajes(hospedajesMapeados)
         }
       }
@@ -353,7 +367,7 @@ export function ServicesShowcase() {
       if (serviciosRes.ok) {
         const data = await serviciosRes.json()
         if (data.data && Array.isArray(data.data)) {
-          const serviciosMapeados = data.data.slice(0, 10).map((s, index) => mapearServicio(s, index))
+          const serviciosMapeados = data.data.map((s, index) => mapearServicio(s, index))
           setServicios(serviciosMapeados)
         }
       }
@@ -361,7 +375,7 @@ export function ServicesShowcase() {
       if (restaurantesRes.ok) {
         const data = await restaurantesRes.json()
         if (data.data && Array.isArray(data.data)) {
-          const restaurantesMapeados = data.data.slice(0, 10).map((r, index) => mapearRestaurante(r, index))
+          const restaurantesMapeados = data.data.map((r, index) => mapearRestaurante(r, index))
           setRestaurantes(restaurantesMapeados)
         }
       }
@@ -369,7 +383,7 @@ export function ServicesShowcase() {
       if (paquetesRes.ok) {
         const data = await paquetesRes.json()
         if (data.data && Array.isArray(data.data)) {
-          const paquetesMapeados = data.data.slice(0, 10).map((p, index) => mapearPaquete(p, index))
+          const paquetesMapeados = data.data.map((p, index) => mapearPaquete(p, index))
           setPaquetes(paquetesMapeados)
         }
       }

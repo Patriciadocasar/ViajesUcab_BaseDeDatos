@@ -8,6 +8,7 @@ import { useUser } from "@/lib/user-context"
 import { usePurchaseHistory } from "@/lib/purchase-history-context"
 import { useItinerary } from "@/lib/itinerary-context"
 import { useCurrency } from "@/lib/currency-context"
+import { useWishlist } from "@/lib/wishlist-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
@@ -29,26 +30,44 @@ import {
   MapPin,
   ShoppingCart,
   GitCompare,
+  Loader2,
+  Heart,
+  Star,
+  AlertCircle,
+  XCircle,
 } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 
 export default function PerfilPage() {
   const router = useRouter()
   const { user, isAuthenticated, updateProfile } = useUser()
-  const { purchases, getTotalSpent, getTotalMilesEarned } = usePurchaseHistory()
+  const { purchases, getTotalSpent, getTotalMilesEarned, isLoading } = usePurchaseHistory()
   const { savedItineraries } = useItinerary()
   const { currency, formatPrice } = useCurrency()
+  const { wishlist, isLoading: isLoadingWishlist } = useWishlist()
   const { toast } = useToast()
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [resenaDialogOpen, setResenaDialogOpen] = useState(false)
+  const [reclamoDialogOpen, setReclamoDialogOpen] = useState(false)
+  const [selectedItinerario, setSelectedItinerario] = useState<number | null>(null)
+  const [resenaText, setResenaText] = useState("")
+  const [reclamoText, setReclamoText] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [localPurchases, setLocalPurchases] = useState<any[]>([])
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/")
     }
   }, [isAuthenticated, router])
+
+  useEffect(() => {
+    setLocalPurchases(purchases)
+  }, [purchases])
 
   if (!user) {
     return null
@@ -113,6 +132,176 @@ export default function PerfilPage() {
       description: "Tus datos han sido actualizados exitosamente",
     })
     setEditDialogOpen(false)
+  }
+
+  const handleOpenResena = (itinerarioId: number) => {
+    setSelectedItinerario(itinerarioId)
+    setResenaText("")
+    setResenaDialogOpen(true)
+  }
+
+  const handleOpenReclamo = (itinerarioId: number) => {
+    setSelectedItinerario(itinerarioId)
+    setReclamoText("")
+    setReclamoDialogOpen(true)
+  }
+
+  const handleSubmitResena = async () => {
+    if (!resenaText.trim()) {
+      toast({
+        title: "Error",
+        description: "Por favor escribe una reseña",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch("/api/resenas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          itinerario_id: selectedItinerario,
+          descripcion: resenaText,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.status === "success") {
+        toast({
+          title: "¡Reseña enviada!",
+          description: "Tu reseña ha sido registrada correctamente",
+        })
+        setResenaDialogOpen(false)
+        setResenaText("")
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "No se pudo enviar la reseña",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error al enviar reseña:", error)
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al enviar la reseña",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleSubmitReclamo = async () => {
+    if (!reclamoText.trim()) {
+      toast({
+        title: "Error",
+        description: "Por favor describe tu reclamo",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch("/api/reclamos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          itinerario_id: selectedItinerario,
+          descripcion: reclamoText,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.status === "success") {
+        toast({
+          title: "¡Reclamo enviado!",
+          description: "Tu reclamo ha sido registrado correctamente",
+        })
+        setReclamoDialogOpen(false)
+        setReclamoText("")
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "No se pudo enviar el reclamo",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error al enviar reclamo:", error)
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al enviar el reclamo",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleCancelarReserva = async (reservaId: string) => {
+    // Confirmar cancelación
+    if (!confirm("¿Estás seguro que deseas cancelar esta reserva? Se te devolverá el 90% del monto pagado.")) {
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch("/api/reembolso", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reserva_id: parseInt(reservaId),
+          divisa: "USD",
+          tasa_aplicada: 1.0,
+          metodo_pago_id: 1, // Asumiendo un método de pago por defecto
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.status === "success") {
+        // Actualizar el estado local de la reserva
+        setLocalPurchases((prevPurchases) =>
+          prevPurchases.map((purchase) =>
+            purchase.id === reservaId
+              ? { ...purchase, status: "Cancelado" }
+              : purchase
+          )
+        )
+
+        toast({
+          title: "Reserva cancelada",
+          description: `Se ha procesado tu reembolso de ${formatPrice(result.data.monto_devuelto)}. La retención es de ${formatPrice(result.data.monto_retenido)}.`,
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "No se pudo cancelar la reserva",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error al cancelar reserva:", error)
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al cancelar la reserva",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -214,8 +403,8 @@ export default function PerfilPage() {
                   Millas
                 </TabsTrigger>
                 <TabsTrigger value="itineraries">
-                  <Map className="h-4 w-4 mr-2" />
-                  Itinerarios
+                  <Heart className="h-4 w-4 mr-2" />
+                  Wishlist
                 </TabsTrigger>
                 <TabsTrigger value="promotions">
                   <Tag className="h-4 w-4 mr-2" />
@@ -280,7 +469,12 @@ export default function PerfilPage() {
                     <CardDescription>Todas tus reservas y servicios adquiridos</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {purchases.length === 0 ? (
+                    {isLoading ? (
+                      <div className="flex justify-center items-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <p className="ml-4 text-muted-foreground">Cargando compras...</p>
+                      </div>
+                    ) : localPurchases.length === 0 ? (
                       <div className="text-center py-12">
                         <ShoppingBag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-lg font-medium mb-2">No hay compras aún</h3>
@@ -289,7 +483,7 @@ export default function PerfilPage() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {purchases.map((purchase) => (
+                        {localPurchases.map((purchase) => (
                           <Card key={purchase.id}>
                             <CardHeader>
                               <div className="flex items-start justify-between">
@@ -305,16 +499,16 @@ export default function PerfilPage() {
                                 </div>
                                 <Badge
                                   variant={
-                                    purchase.status === "completed"
+                                    purchase.status === "Completado" || purchase.status === "completed"
                                       ? "default"
-                                      : purchase.status === "pending"
+                                      : purchase.status === "Pendiente" || purchase.status === "pending"
                                         ? "secondary"
                                         : "destructive"
                                   }
                                 >
-                                  {purchase.status === "completed"
+                                  {purchase.status === "Completado" || purchase.status === "completed"
                                     ? "Completado"
-                                    : purchase.status === "pending"
+                                    : purchase.status === "Pendiente" || purchase.status === "pending"
                                       ? "Pendiente"
                                       : "Cancelado"}
                                 </Badge>
@@ -323,22 +517,85 @@ export default function PerfilPage() {
                             <CardContent>
                               <div className="space-y-3">
                                 {purchase.items.map((item) => (
-                                  <div key={item.id} className="flex items-center gap-3">
-                                    <div className="flex-shrink-0">{getItemIcon(item.type)}</div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="font-medium truncate">{item.title}</p>
-                                      <p className="text-sm text-muted-foreground">{item.location}</p>
+                                  <div key={item.id} className="space-y-2">
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex-shrink-0">{getItemIcon(item.type)}</div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="font-medium truncate">{item.title}</p>
+                                        <p className="text-sm text-muted-foreground">{item.location}</p>
+                                      </div>
+                                      <p className="font-semibold">{formatPrice(item.price)}</p>
                                     </div>
-                                    <p className="font-semibold">{formatPrice(item.price)}</p>
+                                    <div className="flex gap-2 ml-12">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1"
+                                        onClick={() => handleOpenResena(parseInt(item.id))}
+                                        disabled={
+                                          purchase.status === "Cancelado" ||
+                                          purchase.status === "cancelled" ||
+                                          parseInt(item.id) > 2147483647 // Deshabilitar si es ID temporal
+                                        }
+                                        title={
+                                          parseInt(item.id) > 2147483647
+                                            ? "Itinerario pendiente de sincronización"
+                                            : ""
+                                        }
+                                      >
+                                        <Star className="h-4 w-4 mr-2" />
+                                        Dejar Reseña
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1"
+                                        onClick={() => handleOpenReclamo(parseInt(item.id))}
+                                        disabled={
+                                          purchase.status === "Cancelado" ||
+                                          purchase.status === "cancelled" ||
+                                          parseInt(item.id) > 2147483647 // Deshabilitar si es ID temporal
+                                        }
+                                        title={
+                                          parseInt(item.id) > 2147483647
+                                            ? "Itinerario pendiente de sincronización"
+                                            : ""
+                                        }
+                                      >
+                                        <AlertCircle className="h-4 w-4 mr-2" />
+                                        Hacer Reclamo
+                                      </Button>
+                                    </div>
                                   </div>
                                 ))}
                                 <Separator />
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <Award className="h-4 w-4 text-yellow-500" />
-                                    <span className="text-sm">+{purchase.milesEarned} millas ganadas</span>
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <Award className="h-4 w-4 text-yellow-500" />
+                                      <span className="text-sm">+{purchase.milesEarned} millas ganadas</span>
+                                    </div>
+                                    <p className="text-lg font-bold">{formatPrice(purchase.totalPrice)}</p>
                                   </div>
-                                  <p className="text-lg font-bold">{formatPrice(purchase.totalPrice)}</p>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    className="w-full"
+                                    onClick={() => handleCancelarReserva(purchase.id)}
+                                    disabled={isSubmitting || purchase.status === "Cancelado" || purchase.status === "cancelled"}
+                                  >
+                                    {isSubmitting ? (
+                                      <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Procesando...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <XCircle className="h-4 w-4 mr-2" />
+                                        Cancelar Reserva
+                                      </>
+                                    )}
+                                  </Button>
                                 </div>
                               </div>
                             </CardContent>
@@ -428,8 +685,8 @@ export default function PerfilPage() {
               <TabsContent value="itineraries">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Itinerarios Guardados</CardTitle>
-                    <CardDescription>Tus planes de viaje personalizados</CardDescription>
+                    <CardTitle>Wishlist</CardTitle>
+                    <CardDescription>Tus itinerarios guardados</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {savedItineraries.length === 0 ? (
@@ -492,6 +749,7 @@ export default function PerfilPage() {
               </TabsContent>
 
               {/* Promotions Tab */}
+              {/* Wishlist Tab */}
               <TabsContent value="promotions">
                 <Card>
                   <CardHeader>
@@ -589,6 +847,102 @@ export default function PerfilPage() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reseña Dialog */}
+      <Dialog open={resenaDialogOpen} onOpenChange={setResenaDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-yellow-500" />
+              Dejar una Reseña
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="resena-text">Tu reseña</Label>
+              <Textarea
+                id="resena-text"
+                placeholder="Comparte tu experiencia con este itinerario..."
+                value={resenaText}
+                onChange={(e) => setResenaText(e.target.value)}
+                rows={6}
+                className="resize-none"
+              />
+              <p className="text-sm text-muted-foreground">
+                Cuéntanos qué te pareció el servicio, los lugares visitados y tu experiencia general.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setResenaDialogOpen(false)}
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmitResena} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                "Enviar Reseña"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reclamo Dialog */}
+      <Dialog open={reclamoDialogOpen} onOpenChange={setReclamoDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              Registrar un Reclamo
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="reclamo-text">Describe tu reclamo</Label>
+              <Textarea
+                id="reclamo-text"
+                placeholder="Por favor, describe el problema que experimentaste..."
+                value={reclamoText}
+                onChange={(e) => setReclamoText(e.target.value)}
+                rows={6}
+                className="resize-none"
+              />
+              <p className="text-sm text-muted-foreground">
+                Nuestro equipo revisará tu reclamo y se pondrá en contacto contigo lo antes posible.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setReclamoDialogOpen(false)}
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmitReclamo} disabled={isSubmitting} variant="destructive">
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                "Enviar Reclamo"
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

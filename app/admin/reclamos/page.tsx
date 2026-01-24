@@ -50,36 +50,26 @@ export default function ReclamosPage() {
 
   // Función para mapear reclamos de la base de datos
   const mapearReclamo = (r: any, index: number): Claim => {
-    const idRaw = r.Rec_COD || r.rec_cod || r.rec_COD || r.Rec_cod || r.RecCod || r.recCod || r.cod || r.COD || r.id || Object.values(r).find((val: any) => typeof val === 'number' && val > 0)
-    const id = idRaw != null && !isNaN(Number(idRaw)) ? idRaw.toString() : `temp-${index}`
+    const id = r.reclamo_id?.toString() || `temp-${index}`
     
-    // Mapear estado de la BD al formato esperado
-    const estadoBD = r.Rec_Estado || r.rec_estado || r.estado || r.Estado || "pendiente"
-    let estado: ClaimStatus = "pendiente"
+    // Por ahora todos los reclamos están pendientes
+    const estado: ClaimStatus = "pendiente"
     
-    const estadoBDLower = String(estadoBD).toLowerCase().trim()
-    if (estadoBDLower === "pendiente") {
-      estado = "pendiente"
-    } else if (estadoBDLower === "listo") {
-      estado = "listo"
-    } else {
-      // Si el estado no es reconocido, usar "pendiente" por defecto
-      console.warn(`Estado no reconocido: "${estadoBD}", usando "pendiente" por defecto`)
-      estado = "pendiente"
-    }
+    // Extraer información del itinerario
+    const itinerarioId = r.itinerario_id?.toString() || ""
     
     return {
       id: id,
-      numeroReclamo: r.Rec_Numero || r.rec_numero || r.numeroReclamo || r.Numero || `REC-${id}`,
-      userId: r.Rec_Usuario_ID?.toString() || r.rec_usuario_id?.toString() || r.userId || r.Usuario_ID?.toString() || "",
-      categoria: r.Rec_Categoria || r.rec_categoria || r.categoria || r.Categoria || "Otro",
-      razon: r.Rec_Razon || r.rec_razon || r.razon || r.Razon || "",
-      descripcion: r.Rec_Descripcion || r.rec_descripcion || r.descripcion || r.Descripcion || "",
+      numeroReclamo: `REC-${id}`,
+      userId: "", // No disponible en la versión simplificada
+      categoria: "Itinerario",
+      razon: "Reclamo de itinerario",
+      descripcion: r.descripcion || "",
       estado: estado,
-      urgente: r.Rec_Urgente === true || r.rec_urgente === true || r.Rec_Urgente === 1 || r.rec_urgente === 1 || r.urgente === true || false,
-      fechaCreacion: r.Rec_Fecha_Creacion || r.rec_fecha_creacion || r.fechaCreacion || r.Fecha_Creacion || new Date().toISOString(), // Usar fecha actual si no existe
-      reservaRelacionada: r.Rec_Reserva_ID?.toString() || r.rec_reserva_id?.toString() || r.reservaRelacionada || r.Reserva_ID?.toString() || r.Itinerario_Iti_COD?.toString() || r.itinerario_iti_cod?.toString() || undefined,
-      respuestaAdmin: r.Rec_Respuesta_Admin || r.rec_respuesta_admin || r.respuestaAdmin || r.Respuesta_Admin || undefined,
+      urgente: false,
+      fechaCreacion: new Date().toISOString(),
+      reservaRelacionada: itinerarioId,
+      respuestaAdmin: undefined,
     }
   }
 

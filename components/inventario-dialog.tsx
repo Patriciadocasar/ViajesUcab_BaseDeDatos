@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
+import { Plus, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 type Vuelo = {
@@ -79,6 +81,12 @@ type PaqueteTuristico = {
   tipo: "especial" | "regular"
 }
 
+type Restriccion = {
+  id?: string
+  tipo: string
+  descripcion: string
+}
+
 type Promocion = {
   id: string
   tipo: string
@@ -126,6 +134,8 @@ type InventarioDialogProps = {
 export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, modoEdicion }: InventarioDialogProps) {
   const [formData, setFormData] = useState<any>({})
   const [paises, setPaises] = useState<any[]>([])
+  const [restricciones, setRestricciones] = useState<Restriccion[]>([])
+  const [nuevaRestriccion, setNuevaRestriccion] = useState<Restriccion>({ tipo: "", descripcion: "" })
   const { toast } = useToast()
 
   // Cargar países cuando se abre el diálogo para aerolíneas
@@ -166,6 +176,10 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
       console.log("Cargando item existente en formData:", item)
       setFormData(item)
     } else {
+      // Limpiar restricciones al abrir para nuevo paquete
+      if (tipo === "paquete") {
+        setRestricciones([])
+      }
       // Inicializar formulario vacío según el tipo
       if (tipo === "vuelo") {
         setFormData({
@@ -258,6 +272,46 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
     }
   }, [item, tipo, open])
 
+  // Cargar restricciones cuando se edita un paquete especial
+  useEffect(() => {
+    if (open && tipo === "paquete" && item && item.id) {
+      const cargarRestricciones = async () => {
+        try {
+          const res = await fetch(`/api/restriccion-paquete?paquete_id=${item.id}`)
+          if (res.ok) {
+            const data = await res.json()
+            if (data.status === "success" && Array.isArray(data.data)) {
+              setRestricciones(data.data)
+            }
+          }
+        } catch (error) {
+          console.error("Error cargando restricciones:", error)
+        }
+      }
+      cargarRestricciones()
+    } else if (tipo === "paquete" && !item) {
+      setRestricciones([])
+    }
+  }, [open, tipo, item])
+
+  // Funciones para manejar restricciones
+  const handleAgregarRestriccion = () => {
+    if (!nuevaRestriccion.tipo || !nuevaRestriccion.descripcion) {
+      toast({
+        title: "Error",
+        description: "Debes completar el tipo y descripción de la restricción",
+        variant: "destructive",
+      })
+      return
+    }
+    setRestricciones([...restricciones, { ...nuevaRestriccion }])
+    setNuevaRestriccion({ tipo: "", descripcion: "" })
+  }
+
+  const handleEliminarRestriccion = (index: number) => {
+    setRestricciones(restricciones.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -307,7 +361,9 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
       }
     }
     
-    onGuardar(formData)
+    // Pasar las restricciones junto con los datos del formulario si es paquete
+    const dataAGuardar = tipo === "paquete" ? { ...formData, restricciones } : formData
+    onGuardar(dataAGuardar)
   }
 
   const handleChange = (field: string, value: string | number | null) => {
@@ -841,6 +897,76 @@ export function InventarioDialog({ open, onOpenChange, tipo, item, onGuardar, mo
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Restricciones para paquetes especiales */}
+              {formData.tipo === "especial" && (
+                <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-semibold">Restricciones del Paquete</Label>
+                    <Badge variant="secondary">{restricciones.length} restricción(es)</Badge>
+                  </div>
+
+                  {/* Formulario para agregar nueva restricción */}
+                  <div className="space-y-3 p-3 border rounded bg-background">
+                    <Label className="text-sm font-medium">Agregar Restricción</Label>
+                    <div className="space-y-2">
+                      <Select
+                        value={nuevaRestriccion.tipo}
+                        onValueChange={(value) => setNuevaRestriccion({ ...nuevaRestriccion, tipo: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona el tipo de restricción" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Edad">Edad</SelectItem>
+                          <SelectItem value="Estado Civil">Estado Civil</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Textarea
+                        placeholder="Descripción detallada de la restricción"
+                        value={nuevaRestriccion.descripcion}
+                        onChange={(e) => setNuevaRestriccion({ ...nuevaRestriccion, descripcion: e.target.value })}
+                        rows={2}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="w-full"
+                        onClick={handleAgregarRestriccion}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Agregar Restricción
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Lista de restricciones */}
+                  {restricciones.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Restricciones Agregadas</Label>
+                      {restricciones.map((restriccion, index) => (
+                        <div key={index} className="p-3 border rounded bg-background space-y-1">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">{restriccion.tipo}</p>
+                              <p className="text-sm text-muted-foreground">{restriccion.descripcion}</p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEliminarRestriccion(index)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
 

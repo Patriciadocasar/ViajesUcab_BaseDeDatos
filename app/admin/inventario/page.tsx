@@ -1361,7 +1361,7 @@ export default function InventarioPage() {
         setCompaniasTransporte([...companiasTransporte, { ...compania, id: Date.now().toString() }])
       }
     } else if (tipoActual === "paquete") {
-      const paquete = item as PaqueteTuristico
+      const paquete = item as PaqueteTuristico & { restricciones?: Array<{ tipo: string; descripcion: string; id?: string }> }
       if (modoEdicion) {
         // Actualizar paquete turístico
         try {
@@ -1373,10 +1373,12 @@ export default function InventarioPage() {
             costo_millas: paquete.costoMillas,
             cant_milla: paquete.millasOtorga,
             tipo: paquete.tipo.charAt(0).toUpperCase() + paquete.tipo.slice(1), // Capitalizar
+            restricciones: paquete.restricciones || [] // Agregar restricciones
           }
           
           console.log("=== Enviando PUT a /api/paquete-turistico ===")
           console.log("Payload a enviar:", payload)
+          console.log("Restricciones incluidas:", paquete.restricciones)
           
           const res = await fetch("/api/paquete-turistico", {
             method: "PUT",
@@ -1387,6 +1389,36 @@ export default function InventarioPage() {
           const data = await res.json()
 
           if (data.status === "success") {
+            // Si el paquete es especial y tiene restricciones, guardarlas
+            if (paquete.tipo === "especial" && paquete.restricciones && paquete.restricciones.length > 0) {
+              // Primero, eliminar restricciones existentes
+              const resGetRestricciones = await fetch(`/api/restriccion-paquete?paquete_id=${paquete.id}`)
+              const dataRestricciones = await resGetRestricciones.json()
+              
+              if (dataRestricciones.status === "success" && Array.isArray(dataRestricciones.data)) {
+                for (const restriccion of dataRestricciones.data) {
+                  await fetch("/api/restriccion-paquete", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: restriccion.id }),
+                  })
+                }
+              }
+
+              // Guardar nuevas restricciones
+              for (const restriccion of paquete.restricciones) {
+                await fetch("/api/restriccion-paquete", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    tipo: restriccion.tipo,
+                    descripcion: restriccion.descripcion,
+                    paquete_id: parseInt(paquete.id),
+                  }),
+                })
+              }
+            }
+
             // Recargar paquetes desde la base de datos
             const resGet = await fetch("/api/paquete-turistico?id=0")
             const dataGet = await resGet.json()
@@ -1426,10 +1458,12 @@ export default function InventarioPage() {
             costo_millas: paquete.costoMillas,
             cant_milla: paquete.millasOtorga,
             tipo: paquete.tipo.charAt(0).toUpperCase() + paquete.tipo.slice(1), // Capitalizar
+            restricciones: paquete.restricciones || [] // Agregar restricciones
           }
           
           console.log("=== Enviando POST a /api/paquete-turistico ===")
           console.log("Payload a enviar:", payload)
+          console.log("Restricciones incluidas:", paquete.restricciones)
           
           const res = await fetch("/api/paquete-turistico", {
             method: "POST",
@@ -1450,6 +1484,21 @@ export default function InventarioPage() {
           const data = await res.json()
 
           if (data.status === "success") {
+            // Si el paquete es especial y tiene restricciones, guardarlas
+            if (paquete.tipo === "especial" && paquete.restricciones && paquete.restricciones.length > 0 && data.data?.id) {
+              for (const restriccion of paquete.restricciones) {
+                await fetch("/api/restriccion-paquete", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    tipo: restriccion.tipo,
+                    descripcion: restriccion.descripcion,
+                    paquete_id: data.data.id,
+                  }),
+                })
+              }
+            }
+
             // Recargar paquetes desde la base de datos
             const resGet = await fetch("/api/paquete-turistico?id=0")
             const dataGet = await resGet.json()

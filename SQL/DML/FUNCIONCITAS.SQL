@@ -1,23 +1,16 @@
 --Registrar Usuario
-CREATE OR REPLACE FUNCTION registrar_usuario_cliente(
+CREATE OR REPLACE FUNCTION registrar_usuario(
     U_Correo VARCHAR,
     U_Contrasena VARCHAR,
     U_Primer_Nombre VARCHAR,
     U_Primer_Apellido VARCHAR,
-    U_Rol_ID INTEGER,
-    C_Primer_Nombre VARCHAR,
-    C_Segundo_Nombre VARCHAR,
-    C_Apellido VARCHAR,
-    C_Segundo_Apellido VARCHAR,
-    C_Fecha_Nacimiento DATE,
-    C_Estado_Civil VARCHAR,
-    C_Lugar_ID INTEGER
-) RETURNS JSON AS $$
+    U_Rol_ID INTEGER
+)
+RETURNS JSON AS $$
 DECLARE
     resultado JSON;
     validar_existe VARCHAR(100);
     nuevo_usuario_id INTEGER;
-    nuevo_cliente_id INTEGER;
 BEGIN
     -- Verificar si el correo ya existe
     SELECT Usu_Correo INTO validar_existe
@@ -32,32 +25,20 @@ BEGIN
         RETURN resultado;
     END IF;
 
-    -- Insertar nuevo cliente primero
-    INSERT INTO Cliente (
-        Cli_Primer_Nombre, Cli_Segundo_Nombre, Cli_Apellido, Cli_Segundo_Apellido,
-        Cli_Fecha_Nacimiento, Cli_Estado_Civil, Cli_Millas_Acum, Lugar_Lug_COD
-    )
-    VALUES (
-        C_Primer_Nombre, C_Segundo_Nombre, C_Apellido, C_Segundo_Apellido,
-        C_Fecha_Nacimiento, C_Estado_Civil, 0, C_Lugar_ID
-    )
-    RETURNING Cli_COD INTO nuevo_cliente_id;
-
-    -- Insertar usuario con referencia al cliente
+    -- Insertar nuevo usuario
     INSERT INTO Usuario (
-        Usu_Correo, Usu_Contrasena, Usu_Primer_Nombre, Usu_Primer_Apellido, Rol_Rol_COD, Cliente_Cli_COD
+        Usu_Correo, Usu_Contrasena, Usu_Primer_Nombre, Usu_Primer_Apellido, Rol_Rol_COD
     )
     VALUES (
-        U_Correo, U_Contrasena, U_Primer_Nombre, U_Primer_Apellido, U_Rol_ID, nuevo_cliente_id
+        U_Correo, U_Contrasena, U_Primer_Nombre, U_Primer_Apellido, U_Rol_ID
     )
     RETURNING Usu_COD INTO nuevo_usuario_id;
 
-    -- Resultado final
+    -- Si todo sale bien
     resultado := json_build_object(
         'status', 'success',
-        'message', 'Usuario y cliente registrados correctamente',
-        'usuario_ID', nuevo_usuario_id,
-        'cliente_ID', nuevo_cliente_id
+        'message', 'Usuario registrado correctamente',
+        'usuario_ID', nuevo_usuario_id
     );
     RETURN resultado;
 
@@ -71,7 +52,6 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
---Iniciar Sesion
 -- Iniciar Sesion
 CREATE OR REPLACE FUNCTION inicio_sesion(
     correo VARCHAR,
@@ -81,7 +61,6 @@ RETURNS JSON AS $$
 DECLARE
     resultado JSON;
     v_usuario_id INTEGER;
-    v_cliente_id INTEGER;
     v_rol_id INTEGER;
     v_contrasena VARCHAR;
     v_primer_nombre VARCHAR;
@@ -89,8 +68,8 @@ DECLARE
     v_correo VARCHAR;
 BEGIN
     -- Primero verificamos si el correo existe
-    SELECT Usu_COD, Cliente_Cli_COD, Rol_Rol_COD, Usu_Contrasena, Usu_Primer_Nombre, Usu_Primer_Apellido, Usu_Correo
-    INTO v_usuario_id, v_cliente_id, v_rol_id, v_contrasena, v_primer_nombre, v_primer_apellido, v_correo
+    SELECT Usu_COD, Rol_Rol_COD, Usu_Contrasena, Usu_Primer_Nombre, Usu_Primer_Apellido, Usu_Correo
+    INTO v_usuario_id, v_rol_id, v_contrasena, v_primer_nombre, v_primer_apellido, v_correo
     FROM Usuario
     WHERE Usu_Correo = correo;
 
@@ -107,7 +86,6 @@ BEGIN
                 'status', 'success',
                 'message', 'Inicio de sesión correcto',
                 'usuario_ID', v_usuario_id,
-                'cliente_ID', v_cliente_id,
                 'rol_ID', v_rol_id,
                 'primerNombre', v_primer_nombre,
                 'primerApellido', v_primer_apellido,
@@ -133,6 +111,47 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
+
+CREATE OR REPLACE FUNCTION insertar_aerolinea(
+    Aer_Nombre VARCHAR,
+    Aer_Direccion TEXT,
+    Aer_Telefono NUMERIC,
+    Aer_Correo VARCHAR,
+    Aer_Fecha_Fundacion DATE,
+    Lugar_ID INTEGER
+)
+RETURNS JSON AS $$
+BEGIN
+    INSERT INTO Aerolinea(
+        Pro_Nombre,
+        Pro_Direccion,
+        Pro_Telefono,
+        Pro_Correo,
+        A_Fecha_Fundacion,
+        Lugar_Lug_COD
+    )
+    VALUES (
+        Aer_Nombre,
+        Aer_Direccion,
+        Aer_Telefono,
+        Aer_Correo,
+        Aer_Fecha_Fundacion,
+        Lugar_ID
+    );
+
+    RETURN json_build_object(
+        'status', 'success',
+        'message', 'Aerolinea insertada correctamente'
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
 
 
 
@@ -176,35 +195,6 @@ EXCEPTION
         );
 END;
 $$ LANGUAGE plpgsql;
-
--- =====================================================
--- FUNCIONES PARA GESTIÓN DE ITINERARIOS Y PAGOS
--- Agregadas: Diciembre 2024
--- =====================================================
-
--- Ver archivo: SQL/DDL/functions.sql para el código completo
--- Las siguientes funciones están disponibles:
-
--- 1. crear_itinerario_con_reserva()
---    Crea una reserva con uno o varios itinerarios asociados
---    Calcula automáticamente costos totales y millas
-
--- 2. procesar_pago_reserva()
---    Procesa el pago de una reserva
---    Soporta pago con millas y financiamiento
-
--- 3. registrar_metodo_pago_tarjeta()
---    Registra un nuevo método de pago de tipo tarjeta
-
--- 4. obtener_detalle_reserva()
---    Obtiene el detalle completo de una reserva con sus itinerarios
-
--- 5. cancelar_reserva_con_reembolso()
---    Cancela una reserva y genera un reembolso
-
--- Para ejemplos de uso, ver: SQL/DDL/EJEMPLOS_FUNCIONES_ITINERARIO.md
--- Para el flujo completo, ver: SQL/DDL/FLUJO_ITINERARIO_PAGO.md
-
 
 CREATE OR REPLACE FUNCTION actualizar_aerolinea(
     Aer_ID INTEGER,
@@ -253,33 +243,6 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- =====================================================
--- FUNCIONES PARA GESTIÓN DE ITINERARIOS Y PAGOS
--- Agregadas: Diciembre 2024
--- =====================================================
-
--- Ver archivo: SQL/DDL/functions.sql para el código completo
--- Las siguientes funciones están disponibles:
-
--- 1. crear_itinerario_con_reserva()
---    Crea una reserva con uno o varios itinerarios asociados
---    Calcula automáticamente costos totales y millas
-
--- 2. procesar_pago_reserva()
---    Procesa el pago de una reserva
---    Soporta pago con millas y financiamiento
-
--- 3. registrar_metodo_pago_tarjeta()
---    Registra un nuevo método de pago de tipo tarjeta
-
--- 4. obtener_detalle_reserva()
---    Obtiene el detalle completo de una reserva con sus itinerarios
-
--- 5. cancelar_reserva_con_reembolso()
---    Cancela una reserva y genera un reembolso
-
--- Para ejemplos de uso, ver: SQL/DDL/EJEMPLOS_FUNCIONES_ITINERARIO.md
--- Para el flujo completo, ver: SQL/DDL/FLUJO_ITINERARIO_PAGO.md
 
 CREATE OR REPLACE FUNCTION eliminar_aerolinea(
     Aer_ID INTEGER
@@ -315,33 +278,6 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- =====================================================
--- FUNCIONES PARA GESTIÓN DE ITINERARIOS Y PAGOS
--- Agregadas: Diciembre 2024
--- =====================================================
-
--- Ver archivo: SQL/DDL/functions.sql para el código completo
--- Las siguientes funciones están disponibles:
-
--- 1. crear_itinerario_con_reserva()
---    Crea una reserva con uno o varios itinerarios asociados
---    Calcula automáticamente costos totales y millas
-
--- 2. procesar_pago_reserva()
---    Procesa el pago de una reserva
---    Soporta pago con millas y financiamiento
-
--- 3. registrar_metodo_pago_tarjeta()
---    Registra un nuevo método de pago de tipo tarjeta
-
--- 4. obtener_detalle_reserva()
---    Obtiene el detalle completo de una reserva con sus itinerarios
-
--- 5. cancelar_reserva_con_reembolso()
---    Cancela una reserva y genera un reembolso
-
--- Para ejemplos de uso, ver: SQL/DDL/EJEMPLOS_FUNCIONES_ITINERARIO.md
--- Para el flujo completo, ver: SQL/DDL/FLUJO_ITINERARIO_PAGO.md
 
 
 
@@ -512,6 +448,7 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
+
 CREATE OR REPLACE FUNCTION registrar_promocion(
     P_Tipo VARCHAR,
     P_Fecha_Inicio DATE,
@@ -540,34 +477,6 @@ EXCEPTION
         );
 END;
 $$ LANGUAGE plpgsql;
-
--- =====================================================
--- FUNCIONES PARA GESTIÓN DE ITINERARIOS Y PAGOS
--- Agregadas: Diciembre 2024
--- =====================================================
-
--- Ver archivo: SQL/DDL/functions.sql para el código completo
--- Las siguientes funciones están disponibles:
-
--- 1. crear_itinerario_con_reserva()
---    Crea una reserva con uno o varios itinerarios asociados
---    Calcula automáticamente costos totales y millas
-
--- 2. procesar_pago_reserva()
---    Procesa el pago de una reserva
---    Soporta pago con millas y financiamiento
-
--- 3. registrar_metodo_pago_tarjeta()
---    Registra un nuevo método de pago de tipo tarjeta
-
--- 4. obtener_detalle_reserva()
---    Obtiene el detalle completo de una reserva con sus itinerarios
-
--- 5. cancelar_reserva_con_reembolso()
---    Cancela una reserva y genera un reembolso
-
--- Para ejemplos de uso, ver: SQL/DDL/EJEMPLOS_FUNCIONES_ITINERARIO.md
--- Para el flujo completo, ver: SQL/DDL/FLUJO_ITINERARIO_PAGO.md
 
 CREATE OR REPLACE FUNCTION consultar_promocion(
     ID INTEGER
@@ -607,34 +516,6 @@ EXCEPTION
         );
 END;
 $$ LANGUAGE plpgsql;
-
--- =====================================================
--- FUNCIONES PARA GESTIÓN DE ITINERARIOS Y PAGOS
--- Agregadas: Diciembre 2024
--- =====================================================
-
--- Ver archivo: SQL/DDL/functions.sql para el código completo
--- Las siguientes funciones están disponibles:
-
--- 1. crear_itinerario_con_reserva()
---    Crea una reserva con uno o varios itinerarios asociados
---    Calcula automáticamente costos totales y millas
-
--- 2. procesar_pago_reserva()
---    Procesa el pago de una reserva
---    Soporta pago con millas y financiamiento
-
--- 3. registrar_metodo_pago_tarjeta()
---    Registra un nuevo método de pago de tipo tarjeta
-
--- 4. obtener_detalle_reserva()
---    Obtiene el detalle completo de una reserva con sus itinerarios
-
--- 5. cancelar_reserva_con_reembolso()
---    Cancela una reserva y genera un reembolso
-
--- Para ejemplos de uso, ver: SQL/DDL/EJEMPLOS_FUNCIONES_ITINERARIO.md
--- Para el flujo completo, ver: SQL/DDL/FLUJO_ITINERARIO_PAGO.md
 
 CREATE OR REPLACE FUNCTION consultar_compania_crucero(
     ID INTEGER
@@ -676,34 +557,6 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- =====================================================
--- FUNCIONES PARA GESTIÓN DE ITINERARIOS Y PAGOS
--- Agregadas: Diciembre 2024
--- =====================================================
-
--- Ver archivo: SQL/DDL/functions.sql para el código completo
--- Las siguientes funciones están disponibles:
-
--- 1. crear_itinerario_con_reserva()
---    Crea una reserva con uno o varios itinerarios asociados
---    Calcula automáticamente costos totales y millas
-
--- 2. procesar_pago_reserva()
---    Procesa el pago de una reserva
---    Soporta pago con millas y financiamiento
-
--- 3. registrar_metodo_pago_tarjeta()
---    Registra un nuevo método de pago de tipo tarjeta
-
--- 4. obtener_detalle_reserva()
---    Obtiene el detalle completo de una reserva con sus itinerarios
-
--- 5. cancelar_reserva_con_reembolso()
---    Cancela una reserva y genera un reembolso
-
--- Para ejemplos de uso, ver: SQL/DDL/EJEMPLOS_FUNCIONES_ITINERARIO.md
--- Para el flujo completo, ver: SQL/DDL/FLUJO_ITINERARIO_PAGO.md
-
 CREATE OR REPLACE FUNCTION consultar_transporte_terrestre(
     ID INTEGER
 )
@@ -743,33 +596,6 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- =====================================================
--- FUNCIONES PARA GESTIÓN DE ITINERARIOS Y PAGOS
--- Agregadas: Diciembre 2024
--- =====================================================
-
--- Ver archivo: SQL/DDL/functions.sql para el código completo
--- Las siguientes funciones están disponibles:
-
--- 1. crear_itinerario_con_reserva()
---    Crea una reserva con uno o varios itinerarios asociados
---    Calcula automáticamente costos totales y millas
-
--- 2. procesar_pago_reserva()
---    Procesa el pago de una reserva
---    Soporta pago con millas y financiamiento
-
--- 3. registrar_metodo_pago_tarjeta()
---    Registra un nuevo método de pago de tipo tarjeta
-
--- 4. obtener_detalle_reserva()
---    Obtiene el detalle completo de una reserva con sus itinerarios
-
--- 5. cancelar_reserva_con_reembolso()
---    Cancela una reserva y genera un reembolso
-
--- Para ejemplos de uso, ver: SQL/DDL/EJEMPLOS_FUNCIONES_ITINERARIO.md
--- Para el flujo completo, ver: SQL/DDL/FLUJO_ITINERARIO_PAGO.md
 
 CREATE OR REPLACE FUNCTION consultar_reclamos(
     ID INTEGER
@@ -808,94 +634,6 @@ EXCEPTION
         );
 END;
 $$ LANGUAGE plpgsql;
-
--- =====================================================
--- FUNCIONES PARA GESTIÓN DE ITINERARIOS Y PAGOS
--- Agregadas: Diciembre 2024
--- =====================================================
-
--- Ver archivo: SQL/DDL/functions.sql para el código completo
--- Las siguientes funciones están disponibles:
-
--- 1. crear_itinerario_con_reserva()
---    Crea una reserva con uno o varios itinerarios asociados
---    Calcula automáticamente costos totales y millas
-
--- 2. procesar_pago_reserva()
---    Procesa el pago de una reserva
---    Soporta pago con millas y financiamiento
-
--- 3. registrar_metodo_pago_tarjeta()
---    Registra un nuevo método de pago de tipo tarjeta
-
--- 4. obtener_detalle_reserva()
---    Obtiene el detalle completo de una reserva con sus itinerarios
-
--- 5. cancelar_reserva_con_reembolso()
---    Cancela una reserva y genera un reembolso
-
--- Para ejemplos de uso, ver: SQL/DDL/EJEMPLOS_FUNCIONES_ITINERARIO.md
--- Para el flujo completo, ver: SQL/DDL/FLUJO_ITINERARIO_PAGO.md
-
-
-CREATE OR REPLACE FUNCTION obtener_direcciones_filtro()
-RETURNS JSON
-LANGUAGE plpgsql AS
-$$
-BEGIN
-    RETURN (
-        SELECT json_build_object(
-            'direcciones',
-            json_agg(
-                json_build_object(
-                    'lug_cod', Lug_COD,
-                    'direccion', direccion
-                )
-                ORDER BY direccion
-            )
-        )
-        FROM (
-            -- Países
-            SELECT p.Lug_COD,
-                   p.Lug_Nombre AS direccion
-            FROM Lugar p
-            WHERE p.Lug_Tipo = 'Pais'
-
-            UNION ALL
-
-            -- Regiones con su país
-            SELECT r.Lug_COD,
-                   r.Lug_Nombre || ', ' || p.Lug_Nombre AS direccion
-            FROM Lugar r
-            JOIN Lugar p ON r.Lugar_Lug_COD = p.Lug_COD
-            WHERE p.Lug_Tipo = 'Pais'
-              AND r.Lug_Tipo = 'Region'
-        ) sub
-    );
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION filtrar_pais_json()
-RETURNS JSON AS $$
-BEGIN
-    RETURN (
-        SELECT json_build_object(
-            'status', 'success',
-            'paises',
-            json_agg(
-                json_build_object(
-                    'direccion', L.lug_nombre,
-                    'lug_cod', L.lug_cod
-                )
-                ORDER BY L.lug_nombre
-            )
-        )
-        FROM Lugar L
-        WHERE L.lug_tipo = 'Pais'
-    );
-END;
-$$ LANGUAGE plpgsql;
-
 
 CREATE OR REPLACE FUNCTION mostrar_vuelo_json(
     id INTEGER
@@ -987,61 +725,24 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- =====================================================
--- FUNCIONES PARA GESTIÓN DE ITINERARIOS Y PAGOS
--- Agregadas: Diciembre 2024
--- =====================================================
 
--- Ver archivo: SQL/DDL/functions.sql para el código completo
--- Las siguientes funciones están disponibles:
+select mostrar_vuelo_json(1);
 
--- 1. crear_itinerario_con_reserva()
---    Crea una reserva con uno o varios itinerarios asociados
---    Calcula automáticamente costos totales y millas
-
--- 2. procesar_pago_reserva()
---    Procesa el pago de una reserva
---    Soporta pago con millas y financiamiento
-
--- 3. registrar_metodo_pago_tarjeta()
---    Registra un nuevo método de pago de tipo tarjeta
-
--- 4. obtener_detalle_reserva()
---    Obtiene el detalle completo de una reserva con sus itinerarios
-
--- 5. cancelar_reserva_con_reembolso()
---    Cancela una reserva y genera un reembolso
-
--- Para ejemplos de uso, ver: SQL/DDL/EJEMPLOS_FUNCIONES_ITINERARIO.md
--- Para el flujo completo, ver: SQL/DDL/FLUJO_ITINERARIO_PAGO.md
-
---PARA CRUCERO
-CREATE OR REPLACE FUNCTION mostrar_crucero(
+CREATE OR REPLACE FUNCTION mostrar_crucero_json(
     id INTEGER
 )
-RETURNS TABLE(
-    Cru_COD INTEGER,
-    Cru_Nombre VARCHAR,
-    Barco_Bar_COD INTEGER,
-    Cru_Huella_Carbono NUMERIC,
-    Cru_Fecha_Hora_Salida TIMESTAMP,
-    Cru_Fecha_Hora_Llegada TIMESTAMP,
-    Cru_Cant_Millas NUMERIC,
-    Cru_Costo NUMERIC,
-    Origen VARCHAR,
-    Destino VARCHAR,
-    Nombre_Viaje_Crucero TEXT
-)
-AS $$
+RETURNS JSON AS $$
+DECLARE
+    resultado RECORD;
 BEGIN
-    RETURN QUERY
+    -- Obtener los datos del crucero
     SELECT 
         C.cru_cod,
         C.cru_nombre,
         C.barco_bar_cod,
         C.cru_huella_carbono,
         C.cru_fecha_hora_salida,
-        C.cru_fecha_hora_lllegada,   
+        C.cru_fecha_hora_lllegada,
         C.cru_cant_millas,
         C.cru_costo,
 
@@ -1080,9 +781,323 @@ BEGIN
              AND L.lug_cod = T.lugar_lug_cod2
             )
         ) AS nombre_viaje_crucero
-
+    INTO resultado
     FROM Crucero C
     WHERE C.cru_cod = id;
+
+    -- Si no existe
+    IF resultado IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Crucero no encontrado'
+        );
+    END IF;
+
+    -- Si existe, devolver JSON
+    RETURN json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'Cru_COD', resultado.cru_cod,
+            'Cru_Nombre', resultado.cru_nombre,
+            'Barco_Bar_COD', resultado.barco_bar_cod,
+            'Cru_Huella_Carbono', resultado.cru_huella_carbono,
+            'Cru_Fecha_Hora_Salida', resultado.cru_fecha_hora_salida,
+            'Cru_Fecha_Hora_Llegada', resultado.cru_fecha_hora_lllegada,
+            'Cru_Cant_Millas', resultado.cru_cant_millas,
+            'Cru_Costo', resultado.cru_costo,
+            'Origen', resultado.origen,
+            'Destino', resultado.destino,
+            'Nombre_Viaje_Crucero', resultado.nombre_viaje_crucero
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION mostrar_transporte_json(
+    id INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    resultado RECORD;
+BEGIN
+    -- Obtener los datos del transporte
+    SELECT 
+        T.tra_cod,
+        T.vehiculo_veh_cod,
+        T.tra_huella_carbono,
+        T.tra_fecha_hora_salida,
+        T.tra_fecha_hora_llegada,
+        T.tra_costo,
+
+        -- ORIGEN
+        (
+            SELECT L.lug_nombre
+            FROM Ruta R, Terminal Te, Lugar L
+            WHERE R.transporte_tra_cod = id
+            AND Te.ter_cod = R.terminal_ter_cod
+            AND L.lug_cod = Te.lugar_lug_cod
+        ) AS origen,
+
+        -- DESTINO
+        (
+            SELECT L.lug_nombre
+            FROM Ruta R, Terminal Te, Lugar L
+            WHERE R.transporte_tra_cod = id
+            AND Te.ter_cod = R.terminal_ter_cod
+            AND L.lug_cod = Te.lugar_lug_cod2
+        ) AS destino,
+
+        -- NOMBRE DEL TRANSPORTE
+        (
+            'Transporte ' ||
+            (SELECT L.lug_nombre
+             FROM Ruta R, Terminal Te, Lugar L
+             WHERE R.transporte_tra_cod = id
+             AND Te.ter_cod = R.terminal_ter_cod
+             AND L.lug_cod = Te.lugar_lug_cod
+            )
+            || '-' ||
+            (SELECT L.lug_nombre
+             FROM Ruta R, Terminal Te, Lugar L
+             WHERE R.transporte_tra_cod = id
+             AND Te.ter_cod = R.terminal_ter_cod
+             AND L.lug_cod = Te.lugar_lug_cod2
+            )
+        ) AS nombre_transporte
+    INTO resultado
+    FROM Transporte T
+    WHERE T.tra_cod = id;
+
+    -- Si no existe
+    IF resultado IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Transporte no encontrado'
+        );
+    END IF;
+
+    -- Si existe, devolver JSON
+    RETURN json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'Tra_COD', resultado.tra_cod,
+            'Vehiculo_Veh_COD', resultado.vehiculo_veh_cod,
+            'Tra_Huella_Carbono', resultado.tra_huella_carbono,
+            'Tra_Fecha_Hora_Salida', resultado.tra_fecha_hora_salida,
+            'Tra_Fecha_Hora_Llegada', resultado.tra_fecha_hora_llegada,
+            'Tra_Costo', resultado.tra_costo,
+            'Origen', resultado.origen,
+            'Destino', resultado.destino,
+            'Nombre_Transporte', resultado.nombre_transporte
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION filtrar_pais_json()
+RETURNS JSON AS $$
+BEGIN
+    RETURN (
+        SELECT json_build_object(
+            'status', 'success',
+            'paises',
+            json_agg(
+                json_build_object(
+                    'direccion', L.lug_nombre,
+                    'lug_cod', L.lug_cod
+                )
+                ORDER BY L.lug_nombre
+            )
+        )
+        FROM Lugar L
+        WHERE L.lug_tipo = 'Pais'
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION obtener_direcciones_filtro()
+RETURNS JSON
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    RETURN (
+        SELECT json_build_object(
+            'direcciones',
+            json_agg(
+                json_build_object(
+                    'lug_cod', Lug_COD,
+                    'direccion', direccion
+                )
+                ORDER BY direccion
+            )
+        )
+        FROM (
+            -- Países
+            SELECT p.Lug_COD,
+                   p.Lug_Nombre AS direccion
+            FROM Lugar p
+            WHERE p.Lug_Tipo = 'Pais'
+
+            UNION ALL
+
+            -- Regiones con su país
+            SELECT r.Lug_COD,
+                   r.Lug_Nombre || ', ' || p.Lug_Nombre AS direccion
+            FROM Lugar r
+            JOIN Lugar p ON r.Lugar_Lug_COD = p.Lug_COD
+            WHERE p.Lug_Tipo = 'Pais'
+              AND r.Lug_Tipo = 'Region'
+        ) sub
+    );
+END;
+$$;
+
+--Registrar Usuario
+CREATE OR REPLACE FUNCTION registrar_usuario_cliente(
+    U_Correo VARCHAR,
+    U_Contrasena VARCHAR,
+    U_Primer_Nombre VARCHAR,
+    U_Primer_Apellido VARCHAR,
+    U_Rol_ID INTEGER,
+    C_Primer_Nombre VARCHAR,
+    C_Segundo_Nombre VARCHAR,
+    C_Apellido VARCHAR,
+    C_Segundo_Apellido VARCHAR,
+    C_Fecha_Nacimiento DATE,
+    C_Estado_Civil VARCHAR,
+    C_Lugar_ID INTEGER
+) RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+    validar_existe VARCHAR(100);
+    nuevo_usuario_id INTEGER;
+    nuevo_cliente_id INTEGER;
+BEGIN
+    -- Verificar si el correo ya existe
+    SELECT Usu_Correo INTO validar_existe
+    FROM Usuario
+    WHERE Usu_Correo = U_Correo;
+
+    IF validar_existe IS NOT NULL THEN
+        resultado := json_build_object(
+            'status', 'error',
+            'message', format('El correo %s ya está registrado', U_Correo)
+        );
+        RETURN resultado;
+    END IF;
+
+    -- Insertar nuevo cliente primero
+    INSERT INTO Cliente (
+        Cli_Primer_Nombre, Cli_Segundo_Nombre, Cli_Apellido, Cli_Segundo_Apellido,
+        Cli_Fecha_Nacimiento, Cli_Estado_Civil, Cli_Millas_Acum, Lugar_Lug_COD
+    )
+    VALUES (
+        C_Primer_Nombre, C_Segundo_Nombre, C_Apellido, C_Segundo_Apellido,
+        C_Fecha_Nacimiento, C_Estado_Civil, 0, C_Lugar_ID
+    )
+    RETURNING Cli_COD INTO nuevo_cliente_id;
+
+    -- Insertar usuario con referencia al cliente
+    INSERT INTO Usuario (
+        Usu_Correo, Usu_Contrasena, Usu_Primer_Nombre, Usu_Primer_Apellido, Rol_Rol_COD, Cliente_Cli_COD
+    )
+    VALUES (
+        U_Correo, U_Contrasena, U_Primer_Nombre, U_Primer_Apellido, U_Rol_ID, nuevo_cliente_id
+    )
+    RETURNING Usu_COD INTO nuevo_usuario_id;
+
+    -- Resultado final
+    resultado := json_build_object(
+        'status', 'success',
+        'message', 'Usuario y cliente registrados correctamente',
+        'usuario_ID', nuevo_usuario_id,
+        'cliente_ID', nuevo_cliente_id
+    );
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        resultado := json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+        RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;
+
+--Iniciar Sesion
+-- Iniciar Sesion
+CREATE OR REPLACE FUNCTION inicio_sesion(
+    correo VARCHAR,
+    contrasena VARCHAR
+) 
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+    v_usuario_id INTEGER;
+    v_rol_id INTEGER;
+    v_contrasena VARCHAR;
+    v_primer_nombre VARCHAR;
+    v_primer_apellido VARCHAR;
+    v_correo VARCHAR;
+BEGIN
+    -- Primero verificamos si el correo existe
+    SELECT Usu_COD, Rol_Rol_COD, Usu_Contrasena, Usu_Primer_Nombre, Usu_Primer_Apellido, Usu_Correo
+    INTO v_usuario_id, v_rol_id, v_contrasena, v_primer_nombre, v_primer_apellido, v_correo
+    FROM Usuario
+    WHERE Usu_Correo = correo;
+
+    IF NOT FOUND THEN
+        -- No existe el correo
+        resultado := json_build_object(
+            'status', 'error',
+            'message', 'Usuario no existe'
+        );
+    ELSE
+        -- Existe el correo, verificamos contraseña
+        IF v_contrasena = contrasena THEN
+            resultado := json_build_object(
+                'status', 'success',
+                'message', 'Inicio de sesión correcto',
+                'usuario_ID', v_usuario_id,
+                'rol_ID', v_rol_id,
+                'primerNombre', v_primer_nombre,
+                'primerApellido', v_primer_apellido,
+                'email', v_correo
+            );
+        ELSE
+            resultado := json_build_object(
+                'status', 'error',
+                'message', 'Usuario o contraseña no coinciden'
+            );
+        END IF;
+    END IF;
+
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        resultado := json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+        RETURN resultado;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -1164,7 +1179,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
 --PARA MOSTRAR LOS HOSPEDAJES Y SU HOTEL
 CREATE OR REPLACE FUNCTION mostrar_hospedaje(
     id INTEGER
@@ -1202,7 +1216,8 @@ RETURN QUERY
 
         -- NOMBRE DEL HOTEL
         (
-            SELECT H.pro_nombre
+            SELECT 
+                H.pro_nombre
             FROM Hotel H
             WHERE H.pro_cod = Ho.hotel_pro_cod
         ) AS nombre_hotel,
@@ -1302,7 +1317,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-
 --PARA MOSTRAR OPERADOR TURISTICO
 CREATE OR REPLACE FUNCTION consultar_operador_turistico(
     ID INTEGER
@@ -1348,33 +1362,6 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- =====================================================
--- FUNCIONES PARA GESTIÓN DE ITINERARIOS Y PAGOS
--- Agregadas: Diciembre 2024
--- =====================================================
-
--- Ver archivo: SQL/DDL/functions.sql para el código completo
--- Las siguientes funciones están disponibles:
-
--- 1. crear_itinerario_con_reserva()
---    Crea una reserva con uno o varios itinerarios asociados
---    Calcula automáticamente costos totales y millas
-
--- 2. procesar_pago_reserva()
---    Procesa el pago de una reserva
---    Soporta pago con millas y financiamiento
-
--- 3. registrar_metodo_pago_tarjeta()
---    Registra un nuevo método de pago de tipo tarjeta
-
--- 4. obtener_detalle_reserva()
---    Obtiene el detalle completo de una reserva con sus itinerarios
-
--- 5. cancelar_reserva_con_reembolso()
---    Cancela una reserva y genera un reembolso
-
--- Para ejemplos de uso, ver: SQL/DDL/EJEMPLOS_FUNCIONES_ITINERARIO.md
--- Para el flujo completo, ver: SQL/DDL/FLUJO_ITINERARIO_PAGO.md
 
 --PARA MOSTRAR USUARIOS 
 CREATE OR REPLACE FUNCTION mostrar_usuario(
@@ -1430,51 +1417,457 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- =====================================================
--- FUNCIONES PARA GESTIÓN DE ITINERARIOS Y PAGOS
--- Agregadas: Diciembre 2024
--- =====================================================
 
--- Ver archivo: SQL/DDL/functions.sql para el código completo
--- Las siguientes funciones están disponibles:
-
--- 1. crear_itinerario_con_reserva()
---    Crea una reserva con uno o varios itinerarios asociados
---    Calcula automáticamente costos totales y millas
-
--- 2. procesar_pago_reserva()
---    Procesa el pago de una reserva
---    Soporta pago con millas y financiamiento
-
--- 3. registrar_metodo_pago_tarjeta()
---    Registra un nuevo método de pago de tipo tarjeta
-
--- 4. obtener_detalle_reserva()
---    Obtiene el detalle completo de una reserva con sus itinerarios
-
--- 5. cancelar_reserva_con_reembolso()
---    Cancela una reserva y genera un reembolso
-
--- Para ejemplos de uso, ver: SQL/DDL/EJEMPLOS_FUNCIONES_ITINERARIO.md
--- Para el flujo completo, ver: SQL/DDL/FLUJO_ITINERARIO_PAGO.md
+--Obtener pasajeros 
+CREATE OR REPLACE FUNCTION insertar_pasajero(
+    p_Primer_Nombre VARCHAR,
+    p_Primer_Apellido VARCHAR,
+    p_Fecha_Nacimiento DATE,
+    p_Estado_Civil VARCHAR,
+    p_Segundo_Nombre VARCHAR DEFAULT NULL,
+    p_Segundo_Apellido VARCHAR DEFAULT NULL
+)
+RETURNS VOID
+AS $$
+BEGIN
+    INSERT INTO Pasajero (Pas_Primer_Nombre, Pas_Segundo_Nombre, Pas_Primer_Apellido, Pas_Segundo_Apellido, Pas_Fecha_Nacimiento, Pas_Estado_Civil)
+    VALUES (p_Primer_Nombre, p_Segundo_Nombre, p_Primer_Apellido, p_Segundo_Apellido, p_Fecha_Nacimiento, p_Estado_Civil);
+END;
+$$ LANGUAGE plpgsql;
 
 
--- =====================================================
--- FUNCIONES PARA GESTIÓN DE ITINERARIOS Y PAGOS
--- =====================================================
+--Obtener documentos
+CREATE OR REPLACE FUNCTION obtener_documento(
+    d_Nombre VARCHAR,
+    d_Numero_Identificacion VARCHAR,
+    d_Fecha_Emision DATE,
+    d_Fecha_Vencimiento DATE
+)
+RETURNS VOID 
+AS $$
+BEGIN
+INSERT INTO Documento (Doc_Nombre, Doc_Numero_Identificacion, Doc_Fecha_Emision, Doc_Fecha_Vencimiento)
+VALUES (d_Nombre, d_Numero_Identificacion, d_Fecha_Emision, d_Fecha_Vencimiento);
+END;
+$$ LANGUAGE plpgsql;
 
--- =====================================================
--- 1. FUNCIÓN: crear_itinerario_con_reserva
--- Descripción: Crea una reserva y uno o varios itinerarios asociados
--- =====================================================
+
+--Obtener metodo de pago
+CREATE OR REPLACE FUNCTION obtener_metodo_pago(
+    p_id INTEGER
+)
+RETURNS TABLE (
+    MP_COD INTEGER,
+    Tipo VARCHAR,
+    Fecha_Registro TIMESTAMP,
+
+    Num_Tarjeta NUMERIC,
+    Cod_Seguridad NUMERIC,
+    Emisor VARCHAR,
+    Marca VARCHAR,
+    Fecha_Vencimiento DATE,
+    Nombre_Titular VARCHAR,
+
+    Id_Transaccion VARCHAR,
+    Fecha_Hora TIMESTAMP,
+    Monto NUMERIC,
+
+    Cod_Cuenta_Cliente NUMERIC,
+    Num_Cheque NUMERIC,
+    Banco_Emisor VARCHAR,
+    Fecha_Emision DATE,
+
+    Tipo_Moneda VARCHAR,
+
+    Num_Cuenta_Destino NUMERIC,
+    Banco VARCHAR,
+    Fecha DATE,
+    Num_Referencia NUMERIC,
+
+    Num_Confirmacion NUMERIC,
+    Monto_Billetera NUMERIC
+)
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        mp.MP_COD,
+        mp.Tipo,
+        mp.Fecha_Registro,
+
+        mp.Num_Tarjeta,
+        mp.Cod_Seguridad,
+        mp.Emisor,
+        mp.Marca,
+        mp.Fecha_Vencimiento,
+        mp.Nombre_Titular,
+
+        mp.Id_Transaccion,
+        mp.Fecha_Hora,
+        mp.Monto,
+
+        mp.Cod_Cuenta_Cliente,
+        mp.Num_Cheque,
+        mp.Banco_Emisor,
+        mp.Fecha_Emision,
+
+        mp.Tipo_Moneda,
+
+        mp.Num_Cuenta_Destino,
+        mp.Banco,
+        mp.Fecha,
+        mp.Num_Referencia,
+
+        mp.Num_Confirmacion,
+        mp.Monto_Billetera
+    FROM Metodo_de_Pago mp
+    WHERE mp.MP_COD = p_id;
+END;
+$$ LANGUAGE plpgsql;
+
+--PARA PAQUETE 
+-- =====================================================================
+-- Función: insertar_paquete_turistico
+-- Descripción: Inserta un nuevo paquete turístico en la base de datos.
+--              Si el paquete es de tipo "Especial", se debe especificar
+--              el tipo de restricción (Edad o Estado Civil) que se 
+--              guardará automáticamente en la tabla Restriccion_Paquete.
+-- 
+-- Parámetros:
+--   - PaqTur_Restriccion_Tipo: 'Edad' o 'Estado Civil' (OBLIGATORIO si tipo = 'Especial')
+--   - PaqTur_Restriccion_Descripcion: Descripción de la restricción (OPCIONAL)
+--
+-- Ejemplo de uso para paquete especial:
+--   SELECT insertar_paquete_turistico(
+--       'Paquete Luna de Miel',
+--       'Viaje romántico todo incluido',
+--       5000.00,
+--       2500.00,
+--       400,
+--       'Especial',
+--       'Estado Civil',
+--       'Exclusivo para parejas casadas'
+--   );
+-- =====================================================================
+CREATE OR REPLACE FUNCTION insertar_paquete_turistico(
+    PaqTur_Nombre VARCHAR,
+    PaqTur_Descripcion TEXT,
+    PaqTur_Costo NUMERIC,
+    PaqTur_Costo_Millas NUMERIC,
+    PaqTur_Cant_Milla NUMERIC,
+    PaqTur_Tipo VARCHAR,
+    PaqTur_Restriccion_Tipo VARCHAR DEFAULT NULL,
+    PaqTur_Restriccion_Descripcion TEXT DEFAULT NULL
+)
+RETURNS JSON AS $$
+DECLARE
+    nuevo_id INTEGER;
+    restriccion_id INTEGER;
+BEGIN
+    -- Validar que si es especial, debe tener tipo de restricción
+    IF LOWER(PaqTur_Tipo) = 'especial' AND PaqTur_Restriccion_Tipo IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Los paquetes especiales requieren especificar el tipo de restricción (Edad o Estado Civil)'
+        );
+    END IF;
+
+    -- Validar que el tipo de restricción sea válido
+    IF PaqTur_Restriccion_Tipo IS NOT NULL AND 
+       LOWER(PaqTur_Restriccion_Tipo) NOT IN ('edad', 'estado civil') THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'El tipo de restricción debe ser "Edad" o "Estado Civil"'
+        );
+    END IF;
+
+    -- Insertar el paquete turístico
+    INSERT INTO Paquete_Turistico(
+        PT_Nombre,
+        PT_Descripcion,
+        PT_Costo,
+        PT_Costo_Millas,
+        PT_Cant_Milla,
+        PT_Tipo
+    )
+    VALUES (
+        PaqTur_Nombre,
+        PaqTur_Descripcion,
+        PaqTur_Costo,
+        PaqTur_Costo_Millas,
+        PaqTur_Cant_Milla,
+        PaqTur_Tipo
+    )
+    RETURNING PT_COD INTO nuevo_id;
+
+    -- Si es un paquete especial, insertar la restricción
+    IF LOWER(PaqTur_Tipo) = 'especial' AND PaqTur_Restriccion_Tipo IS NOT NULL THEN
+        INSERT INTO Restriccion_Paquete(
+            RP_Tipo,
+            RP_Descripción,
+            Paquete_Turistico_PT_COD
+        )
+        VALUES (
+            PaqTur_Restriccion_Tipo,
+            COALESCE(PaqTur_Restriccion_Descripcion, 'Restricción de ' || PaqTur_Restriccion_Tipo),
+            nuevo_id
+        )
+        RETURNING RP_COD INTO restriccion_id;
+
+        RETURN json_build_object(
+            'status', 'success',
+            'message', 'Paquete turístico especial insertado correctamente con restricción',
+            'id', nuevo_id,
+            'restriccion_id', restriccion_id,
+            'tipo_restriccion', PaqTur_Restriccion_Tipo
+        );
+    END IF;
+
+    RETURN json_build_object(
+        'status', 'success',
+        'message', 'Paquete turístico insertado correctamente',
+        'id', nuevo_id
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION consultar_paquete_turistico(
+    PaqTur_ID INTEGER
+)
+RETURNS JSON
+AS $$
+DECLARE
+    resultado RECORD;
+BEGIN
+    -- Buscar el paquete turístico
+    SELECT 
+        PT_COD,
+        PT_Nombre,
+        PT_Descripcion,
+        PT_Costo,
+        PT_Costo_Millas,
+        PT_Cant_Milla,
+        PT_Tipo
+    INTO resultado
+    FROM Paquete_Turistico
+    WHERE PT_COD = PaqTur_ID;
+
+    -- Si no existe
+    IF resultado IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Paquete turístico no encontrado'
+        );
+    END IF;
+
+    -- Si existe, devolver JSON
+    RETURN json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'PT_COD', resultado.PT_COD,
+            'PT_Nombre', resultado.PT_Nombre,
+            'PT_Descripcion', resultado.PT_Descripcion,
+            'PT_Costo', resultado.PT_Costo,
+            'PT_Costo_Millas', resultado.PT_Costo_Millas,
+            'PT_Cant_Milla', resultado.PT_Cant_Milla,
+            'PT_Tipo', resultado.PT_Tipo
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- =====================================================================
+-- Función: actualizar_paquete_turistico
+-- Descripción: Actualiza un paquete turístico existente.
+--              Si el paquete cambia a tipo "Especial", se debe especificar
+--              el tipo de restricción que se guardará en Restriccion_Paquete.
+--              Si cambia de "Especial" a "Regular", las restricciones se eliminan.
+-- 
+-- Parámetros:
+--   - PaqTur_Restriccion_Tipo: 'Edad' o 'Estado Civil' (OBLIGATORIO si tipo = 'Especial')
+--   - PaqTur_Restriccion_Descripcion: Descripción de la restricción (OPCIONAL)
+--
+-- Ejemplo de uso:
+--   SELECT actualizar_paquete_turistico(
+--       1,
+--       'Paquete Quinceañera',
+--       'Viaje especial para celebrar los 15 años',
+--       3000.00,
+--       1500.00,
+--       250,
+--       'Especial',
+--       'Edad',
+--       'Exclusivo para personas de 15 años'
+--   );
+-- =====================================================================
+CREATE OR REPLACE FUNCTION actualizar_paquete_turistico(
+    PaqTur_ID INTEGER,
+    PaqTur_Nombre VARCHAR,
+    PaqTur_Descripcion TEXT,
+    PaqTur_Costo NUMERIC,
+    PaqTur_Costo_Millas NUMERIC,
+    PaqTur_Cant_Milla NUMERIC,
+    PaqTur_Tipo VARCHAR,
+    PaqTur_Restriccion_Tipo VARCHAR DEFAULT NULL,
+    PaqTur_Restriccion_Descripcion TEXT DEFAULT NULL
+)
+RETURNS JSON AS $$
+DECLARE
+    filas_actualizadas INTEGER;
+    restriccion_existente INTEGER;
+    restriccion_id INTEGER;
+BEGIN
+    -- Validar que el paquete existe
+    IF NOT EXISTS (SELECT 1 FROM Paquete_Turistico WHERE PT_COD = PaqTur_ID) THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Paquete turístico no encontrado'
+        );
+    END IF;
+
+    -- Validar que si es especial, debe tener tipo de restricción
+    IF LOWER(PaqTur_Tipo) = 'especial' AND PaqTur_Restriccion_Tipo IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Los paquetes especiales requieren especificar el tipo de restricción (Edad o Estado Civil)'
+        );
+    END IF;
+
+    -- Validar que el tipo de restricción sea válido
+    IF PaqTur_Restriccion_Tipo IS NOT NULL AND 
+       LOWER(PaqTur_Restriccion_Tipo) NOT IN ('edad', 'estado civil') THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'El tipo de restricción debe ser "Edad" o "Estado Civil"'
+        );
+    END IF;
+
+    -- Actualizar el paquete turístico
+    UPDATE Paquete_Turistico
+    SET
+        PT_Nombre = PaqTur_Nombre,
+        PT_Descripcion = PaqTur_Descripcion,
+        PT_Costo = PaqTur_Costo,
+        PT_Costo_Millas = PaqTur_Costo_Millas,
+        PT_Cant_Milla = PaqTur_Cant_Milla,
+        PT_Tipo = PaqTur_Tipo
+    WHERE PT_COD = PaqTur_ID;
+
+    -- Verificar si ya existe una restricción para este paquete
+    SELECT RP_COD INTO restriccion_existente
+    FROM Restriccion_Paquete
+    WHERE Paquete_Turistico_PT_COD = PaqTur_ID
+    LIMIT 1;
+
+    -- Si el paquete es especial, crear o actualizar la restricción
+    IF LOWER(PaqTur_Tipo) = 'especial' AND PaqTur_Restriccion_Tipo IS NOT NULL THEN
+        IF restriccion_existente IS NOT NULL THEN
+            -- Actualizar restricción existente
+            UPDATE Restriccion_Paquete
+            SET
+                RP_Tipo = PaqTur_Restriccion_Tipo,
+                RP_Descripción = COALESCE(PaqTur_Restriccion_Descripcion, 'Restricción de ' || PaqTur_Restriccion_Tipo)
+            WHERE RP_COD = restriccion_existente;
+        ELSE
+            -- Crear nueva restricción
+            INSERT INTO Restriccion_Paquete(
+                RP_Tipo,
+                RP_Descripción,
+                Paquete_Turistico_PT_COD
+            )
+            VALUES (
+                PaqTur_Restriccion_Tipo,
+                COALESCE(PaqTur_Restriccion_Descripcion, 'Restricción de ' || PaqTur_Restriccion_Tipo),
+                PaqTur_ID
+            );
+        END IF;
+    ELSE
+        -- Si cambió a regular, eliminar las restricciones
+        IF restriccion_existente IS NOT NULL THEN
+            DELETE FROM Restriccion_Paquete
+            WHERE Paquete_Turistico_PT_COD = PaqTur_ID;
+        END IF;
+    END IF;
+
+    RETURN json_build_object(
+        'status', 'success',
+        'message', 'Paquete turístico actualizado correctamente',
+        'id', PaqTur_ID,
+        'tipo_restriccion', PaqTur_Restriccion_Tipo
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION eliminar_paquete_turistico(
+    PaqTur_ID INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    filas_eliminadas INTEGER;
+BEGIN
+    DELETE FROM Paquete_Turistico
+    WHERE PT_COD = PaqTur_ID
+    RETURNING 1 INTO filas_eliminadas;
+
+    -- Si no se eliminó nada
+    IF filas_eliminadas IS NULL THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Paquete turístico no encontrado'
+        );
+    END IF;
+
+    -- Eliminación exitosa
+    RETURN json_build_object(
+        'status', 'success',
+        'message', 'Paquete turístico eliminado correctamente',
+        'id', PaqTur_ID
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+
+--Crear una reserva y uno o varios itinerarios asociados
+
 CREATE OR REPLACE FUNCTION crear_itinerario_con_reserva(
-    -- Datos del Cliente
     p_cliente_id INTEGER,
     
     -- Datos de la Reserva
     p_res_camarote VARCHAR DEFAULT NULL,
     
-    -- Datos del Itinerario (pueden ser arrays para múltiples itinerarios)
+    -- Datos del Itinerario (pueden ser arrays por si hay varios itinerarios)
     p_paquete_turistico_ids INTEGER[] DEFAULT NULL,
     p_hospedaje_ids INTEGER[] DEFAULT NULL,
     p_restaurante_ids INTEGER[] DEFAULT NULL,
@@ -1524,13 +1917,11 @@ BEGIN
         );
     END IF;
 
-    -- Generar número de reserva único (últimos 4 dígitos del timestamp)
+    -- Generar número de reserva único (últimos 4 dígitos del timestamp) es como un randomizer
     v_numero_reserva := (EXTRACT(EPOCH FROM NOW())::BIGINT % 10000)::INTEGER;
 
-    -- Calcular subtotal y millas antes de crear la reserva
-    -- Procesar cada tipo de servicio
     
-    -- Paquetes Turísticos
+--Calculo de los precios de cada servicio
     IF p_paquete_turistico_ids IS NOT NULL THEN
         FOR i IN 1..array_length(p_paquete_turistico_ids, 1) LOOP
             SELECT COALESCE(PT_Costo, 0), COALESCE(PT_Cant_Milla, 0)
@@ -1543,7 +1934,6 @@ BEGIN
         END LOOP;
     END IF;
 
-    -- Hospedajes
     IF p_hospedaje_ids IS NOT NULL THEN
         FOR i IN 1..array_length(p_hospedaje_ids, 1) LOOP
             SELECT COALESCE(Hos_Costo, 0), COALESCE(Hot_Cant_Milla, 0)
@@ -1556,7 +1946,6 @@ BEGIN
         END LOOP;
     END IF;
 
-    -- Vuelos
     IF p_vuelo_ids IS NOT NULL THEN
         FOR i IN 1..array_length(p_vuelo_ids, 1) LOOP
             SELECT COALESCE(Vue_Costo, 0), COALESCE(Vue_Cant_Millas, 0)
@@ -1569,7 +1958,7 @@ BEGIN
         END LOOP;
     END IF;
 
-    -- Cruceros
+
     IF p_crucero_ids IS NOT NULL THEN
         FOR i IN 1..array_length(p_crucero_ids, 1) LOOP
             SELECT COALESCE(Cru_Costo, 0), COALESCE(Cru_Cant_Millas, 0)
@@ -1582,7 +1971,6 @@ BEGIN
         END LOOP;
     END IF;
 
-    -- Transporte Terrestre
     IF p_transporte_terrestre_ids IS NOT NULL THEN
         FOR i IN 1..array_length(p_transporte_terrestre_ids, 1) LOOP
             SELECT COALESCE(TT_Costo, 0), COALESCE(TT_Cant_Millas, 0)
@@ -1595,7 +1983,6 @@ BEGIN
         END LOOP;
     END IF;
 
-    -- Servicios Adicionales
     IF p_servicio_adicional_ids IS NOT NULL THEN
         FOR i IN 1..array_length(p_servicio_adicional_ids, 1) LOOP
             SELECT COALESCE(SA_Costo, 0), COALESCE(SA_Cant_Milla, 0)
@@ -1608,11 +1995,11 @@ BEGIN
         END LOOP;
     END IF;
 
-    -- Calcular total (podría incluir impuestos aquí si es necesario)
+    -- Calcular total 
     v_total := v_subtotal;
     
-    -- Calcular millas obtenidas (suma de las millas de todos los servicios, máximo 999)
-    v_millas_obtenidas := LEAST(v_millas_totales, 999);
+    -- Calcular millas obtenidas, se hizo esto porque el total de millas es muy grande y no tiene sentido que ganes 14000 millas, ya que la gente pagaria siempre con eso 
+    v_millas_obtenidas := FLOOR(v_total * 0.10);
 
     -- Crear la reserva
     INSERT INTO Reserva (
@@ -1636,7 +2023,6 @@ BEGIN
     RETURNING Res_COD INTO v_nueva_reserva_id;
 
     -- Crear los itinerarios
-    -- Determinar cuántos itinerarios crear (el máximo de los arrays)
     v_count := GREATEST(
         COALESCE(array_length(p_paquete_turistico_ids, 1), 1),
         COALESCE(array_length(p_hospedaje_ids, 1), 1),
@@ -1647,13 +2033,12 @@ BEGIN
         COALESCE(array_length(p_servicio_adicional_ids, 1), 1)
     );
 
-    -- Crear itinerarios
     FOR i IN 1..v_count LOOP
         -- Calcular costo del itinerario individual
         v_costo_itinerario := 0;
         v_millas_itinerario := 0;
 
-        -- Sumar costo de cada servicio si existe en este índice
+        -- Suma del costo de cada servicio 
         IF p_paquete_turistico_ids IS NOT NULL AND i <= array_length(p_paquete_turistico_ids, 1) THEN
             SELECT COALESCE(PT_Costo, 0), COALESCE(PT_Cant_Milla, 0)
             INTO v_costo_itinerario, v_millas_itinerario
@@ -1762,10 +2147,8 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- =====================================================
--- 2. FUNCIÓN: procesar_pago_reserva
--- Descripción: Procesa el pago de una reserva completa
--- =====================================================
+
+-- procesar el pago de una reserva
 CREATE OR REPLACE FUNCTION procesar_pago_reserva(
     -- Datos de la Reserva
     p_reserva_id INTEGER,
@@ -1779,7 +2162,7 @@ CREATE OR REPLACE FUNCTION procesar_pago_reserva(
     p_pago_con_millas BOOLEAN DEFAULT FALSE,
     p_cantidad_millas INTEGER DEFAULT 0,
     
-    -- Tasa de Cambio (opcional)
+    -- Tasa de Cambio 
     p_tasa_cambio_id INTEGER DEFAULT NULL,
     
     -- Financiamiento (opcional)
@@ -1945,14 +2328,319 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- =====================================================
--- FUNCIONES PARA GESTIÓN DE PASAJEROS Y MÉTODOS DE PAGO
--- Fecha: Diciembre 2024
--- =====================================================
+
+
+-- Descripción: Registra un nuevo método de pago de tipo tarjeta
+CREATE OR REPLACE FUNCTION registrar_metodo_pago_tarjeta(
+    p_tipo VARCHAR, -- 'Tarjeta_Credito' o 'Tarjeta_Debito'
+    p_num_tarjeta NUMERIC(16),
+    p_cod_seguridad NUMERIC(3),
+    p_emisor VARCHAR(60),
+    p_marca VARCHAR(60),
+    p_fecha_vencimiento DATE,
+    p_nombre_titular VARCHAR(60)
+)
+RETURNS JSON AS $$
+DECLARE
+    v_nuevo_id INTEGER;
+BEGIN
+    -- Validar que el tipo sea correcto
+    IF p_tipo NOT IN ('Tarjeta_Credito', 'Tarjeta_Debito') THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'El tipo debe ser Tarjeta_Credito o Tarjeta_Debito'
+        );
+    END IF;
+
+    -- Insertar el método de pago
+    INSERT INTO Metodo_de_Pago (
+        Tipo,
+        Num_Tarjeta,
+        Cod_Seguridad,
+        Emisor,
+        Marca,
+        Fecha_Vencimiento,
+        Nombre_Titular
+    )
+    VALUES (
+        p_tipo,
+        p_num_tarjeta,
+        p_cod_seguridad,
+        p_emisor,
+        p_marca,
+        p_fecha_vencimiento,
+        p_nombre_titular
+    )
+    RETURNING MP_COD INTO v_nuevo_id;
+
+    RETURN json_build_object(
+        'status', 'success',
+        'message', 'Método de pago registrado correctamente',
+        'data', json_build_object(
+            'metodo_pago_id', v_nuevo_id
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Error al registrar método de pago: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
 
 -- =====================================================
--- 1. FUNCIÓN PARA REGISTRAR PASAJEROS
+-- 4. FUNCIÓN: obtener_detalle_reserva
+-- Descripción: Obtiene el detalle completo de una reserva con sus itinerarios
 -- =====================================================
+CREATE OR REPLACE FUNCTION obtener_detalle_reserva(
+    p_reserva_id INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    v_resultado JSON;
+    v_reserva RECORD;
+    v_itinerarios JSON;
+BEGIN
+    -- Obtener datos de la reserva
+    SELECT 
+        R.Res_COD,
+        R.Res_Numero_Reserva,
+        R.Res_Milla_Obtenida,
+        R.Res_Fecha_Hora,
+        R.Res_Camarote,
+        R.Res_Subtotal,
+        R.Res_Total,
+        C.Cli_Primer_Nombre,
+        C.Cli_Apellido,
+        C.Cli_COD
+    INTO v_reserva
+    FROM Reserva R
+    JOIN Cliente C ON R.Cliente_Cli_COD = C.Cli_COD
+    WHERE R.Res_COD = p_reserva_id;
+
+    IF NOT FOUND THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Reserva no encontrada'
+        );
+    END IF;
+
+    -- Obtener los itinerarios de la reserva
+    SELECT json_agg(
+        json_build_object(
+            'itinerario_id', I.Iti_COD,
+            'costo_total', I.Iti_Costo_Total,
+            'fecha_inicio', I.Iti_Fecha_Inicio,
+            'fecha_fin', I.Iti_Fecha_Fin,
+            'millas_totales', I.Iti_Cant_Milla_Total,
+            'paquete_turistico_id', I.Paquete_Turistico_PT_COD,
+            'hospedaje_id', I.Hospedaje_Hos_COD,
+            'restaurante_id', I.Restaurante_Rest_COD,
+            'vuelo_id', I.Vuelo_Vue_COD,
+            'crucero_id', I.Crucero_Cru_COD,
+            'transporte_terrestre_id', I.Transporte_Terrestre_TT_COD,
+            'servicio_adicional_id', I.Servicio_Adicional_SA_COD
+        )
+    )
+    INTO v_itinerarios
+    FROM Itinerario I
+    WHERE I.Reserva_Res_COD = p_reserva_id;
+
+    -- Construir el resultado
+    v_resultado := json_build_object(
+        'status', 'success',
+        'data', json_build_object(
+            'reserva', json_build_object(
+                'reserva_id', v_reserva.Res_COD,
+                'numero_reserva', v_reserva.Res_Numero_Reserva,
+                'fecha_hora', v_reserva.Res_Fecha_Hora,
+                'subtotal', v_reserva.Res_Subtotal,
+                'total', v_reserva.Res_Total,
+                'millas_obtenidas', v_reserva.Res_Milla_Obtenida,
+                'camarote', v_reserva.Res_Camarote,
+                'cliente', json_build_object(
+                    'cliente_id', v_reserva.Cli_COD,
+                    'nombre', v_reserva.Cli_Primer_Nombre || ' ' || v_reserva.Cli_Apellido
+                )
+            ),
+            'itinerarios', COALESCE(v_itinerarios, '[]'::json)
+        )
+    );
+
+    RETURN v_resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Error al obtener detalle de reserva: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+-- =====================================================
+-- 5. FUNCIÓN: cancelar_reserva_con_reembolso
+-- Descripción: Cancela una reserva y genera un reembolso
+-- =====================================================
+CREATE OR REPLACE FUNCTION cancelar_reserva_con_reembolso(
+    p_reserva_id INTEGER,
+    p_porcentaje_retencion NUMERIC(4,2),
+    p_metodo_pago_reembolso_id INTEGER,
+    p_tasa_cambio_id INTEGER
+)
+RETURNS JSON AS $$
+DECLARE
+    v_resultado JSON;
+    v_total_reserva NUMERIC(8,2);
+    v_monto_retenido NUMERIC(8,2);
+    v_monto_devuelto NUMERIC(8,2);
+    v_nuevo_reembolso_id INTEGER;
+    v_tasa_aplicada NUMERIC(8,2) := 1.00;
+    v_divisa VARCHAR(60) := 'USD';
+BEGIN
+    -- Obtener el total de la reserva
+    SELECT Res_Total INTO v_total_reserva
+    FROM Reserva
+    WHERE Res_COD = p_reserva_id;
+
+    IF NOT FOUND THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Reserva no encontrada'
+        );
+    END IF;
+
+    -- Calcular montos
+    v_monto_retenido := v_total_reserva * (p_porcentaje_retencion / 100);
+    v_monto_devuelto := v_total_reserva - v_monto_retenido;
+
+    -- Obtener tasa de cambio si se proporciona
+    IF p_tasa_cambio_id IS NOT NULL THEN
+        SELECT TC_Valor, TC_Tipo_Moneda
+        INTO v_tasa_aplicada, v_divisa
+        FROM Tasa_de_Cambio
+        WHERE TC_COD = p_tasa_cambio_id;
+    END IF;
+
+    -- Crear el reembolso
+    INSERT INTO Reembolso (
+        Rem_Monto_Devuelto,
+        Rem_Monto_Retenido,
+        Reserva_Res_COD
+    )
+    VALUES (
+        v_monto_devuelto,
+        v_monto_retenido,
+        p_reserva_id
+    )
+    RETURNING Rem_COD INTO v_nuevo_reembolso_id;
+
+    -- Registrar el pago reembolsado
+    INSERT INTO Pago_Reembolsado (
+        Reembolso_Rem_COD,
+        Metodo_de_Pago_MP_COD,
+        Fecha_Hora_Reembolso,
+        Monto_Reembolso,
+        Divisa_Utilizada,
+        Tasa_Aplicada,
+        Tasa_de_Cambio_TC_COD
+    )
+    VALUES (
+        v_nuevo_reembolso_id,
+        p_metodo_pago_reembolso_id,
+        NOW(),
+        v_monto_devuelto,
+        v_divisa,
+        v_tasa_aplicada,
+        p_tasa_cambio_id
+    );
+
+    -- Retornar resultado
+    RETURN json_build_object(
+        'status', 'success',
+        'message', 'Reserva cancelada y reembolso procesado',
+        'data', json_build_object(
+            'reembolso_id', v_nuevo_reembolso_id,
+            'monto_total', v_total_reserva,
+            'monto_retenido', v_monto_retenido,
+            'monto_devuelto', v_monto_devuelto,
+            'porcentaje_retencion', p_porcentaje_retencion
+        )
+    );
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Error al procesar cancelación: ' || SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Iniciar Sesion
+CREATE OR REPLACE FUNCTION inicio_sesion(
+    correo VARCHAR,
+    contrasena VARCHAR
+) 
+RETURNS JSON AS $$
+DECLARE
+    resultado JSON;
+    v_usuario_id INTEGER;
+    v_cliente_id INTEGER;
+    v_rol_id INTEGER;
+    v_contrasena VARCHAR;
+    v_primer_nombre VARCHAR;
+    v_primer_apellido VARCHAR;
+    v_correo VARCHAR;
+BEGIN
+    -- Primero verificamos si el correo existe
+    SELECT Usu_COD, Cliente_Cli_COD, Rol_Rol_COD, Usu_Contrasena, Usu_Primer_Nombre, Usu_Primer_Apellido, Usu_Correo
+    INTO v_usuario_id, v_cliente_id, v_rol_id, v_contrasena, v_primer_nombre, v_primer_apellido, v_correo
+    FROM Usuario
+    WHERE Usu_Correo = correo;
+
+    IF NOT FOUND THEN
+        -- No existe el correo
+        resultado := json_build_object(
+            'status', 'error',
+            'message', 'Usuario no existe'
+        );
+    ELSE
+        -- Existe el correo, verificamos contraseña
+        IF v_contrasena = contrasena THEN
+            resultado := json_build_object(
+                'status', 'success',
+                'message', 'Inicio de sesión correcto',
+                'usuario_ID', v_usuario_id,
+                'cliente_ID', v_cliente_id,
+                'rol_ID', v_rol_id,
+                'primerNombre', v_primer_nombre,
+                'primerApellido', v_primer_apellido,
+                'email', v_correo
+            );
+        ELSE
+            resultado := json_build_object(
+                'status', 'error',
+                'message', 'Usuario o contraseña no coinciden'
+            );
+        END IF;
+    END IF;
+
+    RETURN resultado;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        resultado := json_build_object(
+            'status', 'error',
+            'message', SQLERRM
+        );
+        RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;
+
 
 CREATE OR REPLACE FUNCTION registrar_pasajeros(
     p_cliente_id INTEGER,
@@ -2033,10 +2721,9 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- =====================================================
--- 2. FUNCIÓN PARA REGISTRAR MÉTODO DE PAGO (UNIVERSAL)
--- =====================================================
 
+
+--PARA REGISTRAR MÉTODO DE PAGO
 CREATE OR REPLACE FUNCTION registrar_metodo_pago(
     p_tipo VARCHAR,
     p_cliente_id INTEGER,
@@ -2062,7 +2749,6 @@ BEGIN
 
     -- Insertar método de pago según el tipo
     CASE p_tipo
-        -- TARJETAS (Crédito y Débito)
         WHEN 'Tarjeta_Credito', 'Tarjeta_Debito' THEN
             INSERT INTO Metodo_de_Pago (
                 Tipo,
@@ -2083,8 +2769,6 @@ BEGIN
                 p_datos->>'nombreTitular'
             )
             RETURNING MP_COD INTO nuevo_mp_id;
-
-        -- CHEQUE
         WHEN 'Cheque' THEN
             INSERT INTO Metodo_de_Pago (
                 Tipo,
@@ -2101,8 +2785,6 @@ BEGIN
                 (p_datos->>'fechaEmision')::DATE
             )
             RETURNING MP_COD INTO nuevo_mp_id;
-
-        -- EFECTIVO
         WHEN 'Efectivo' THEN
             INSERT INTO Metodo_de_Pago (
                 Tipo,
@@ -2113,16 +2795,12 @@ BEGIN
                 COALESCE(p_datos->>'tipoMoneda', 'USD')
             )
             RETURNING MP_COD INTO nuevo_mp_id;
-
-        -- MILLAS
         WHEN 'Milla_MP' THEN
             INSERT INTO Metodo_de_Pago (
                 Tipo
             )
             VALUES (p_tipo)
             RETURNING MP_COD INTO nuevo_mp_id;
-
-        -- CRIPTOMONEDAS
         WHEN 'Criptomonedas' THEN
             INSERT INTO Metodo_de_Pago (
                 Tipo,
@@ -2139,8 +2817,6 @@ BEGIN
                 p_datos->>'tipoMoneda'
             )
             RETURNING MP_COD INTO nuevo_mp_id;
-
-        -- BILLETERA DIGITAL (PayPal, Zinli, etc.)
         WHEN 'Billetera_Digital', 'PayPal', 'Zinli' THEN
             INSERT INTO Metodo_de_Pago (
                 Tipo,
@@ -2153,8 +2829,6 @@ BEGIN
                 (p_datos->>'montoBilletera')::NUMERIC(10,2)
             )
             RETURNING MP_COD INTO nuevo_mp_id;
-
-        -- PAGO MÓVIL
         WHEN 'Pago_Movil' THEN
             INSERT INTO Metodo_de_Pago (
                 Tipo,
@@ -2169,8 +2843,6 @@ BEGIN
                 COALESCE((p_datos->>'fecha')::DATE, CURRENT_DATE)
             )
             RETURNING MP_COD INTO nuevo_mp_id;
-
-        -- TRANSFERENCIA y ZELLE
         WHEN 'Transferencia', 'Zelle' THEN
             INSERT INTO Metodo_de_Pago (
                 Tipo,
@@ -2215,10 +2887,9 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- =====================================================
--- 3. FUNCIÓN PARA OBTENER PASAJEROS DE UNA RESERVA
--- =====================================================
 
+
+--PARA OBTENER PASAJEROS DE UNA RESERVA
 CREATE OR REPLACE FUNCTION obtener_pasajeros_reserva(
     p_reserva_id INTEGER
 )
@@ -2236,7 +2907,7 @@ BEGIN
         RETURN resultado;
     END IF;
 
-    -- Obtener todos los pasajeros de la reserva
+    -- Obtener los pasajeros de la reserva
     SELECT json_agg(
         json_build_object(
             'pas_cod', p.Pas_COD,
@@ -2272,126 +2943,294 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
--- =====================================================
--- COMENTARIOS Y EJEMPLOS DE USO
--- =====================================================
 
--- EJEMPLO 1: Registrar múltiples pasajeros
-/*
-SELECT registrar_pasajeros(
-    51,  -- cliente_id
-    1,   -- reserva_id
-    '[
-        {
-            "primerNombre": "Juan",
-            "segundoNombre": "Carlos",
-            "primerApellido": "Pérez",
-            "segundoApellido": "González",
-            "fechaNacimiento": "1990-05-15",
-            "estadoCivil": "Casado"
-        },
-        {
-            "primerNombre": "María",
-            "segundoNombre": null,
-            "primerApellido": "López",
-            "segundoApellido": "Martínez",
-            "fechaNacimiento": "1992-08-20",
-            "estadoCivil": "Casado"
-        }
-    ]'::jsonb
-);
-*/
-
--- EJEMPLO 2: Registrar Tarjeta de Crédito
-/*
-SELECT registrar_metodo_pago(
-    'Tarjeta_Credito',
-    51,  -- cliente_id
-    '{
-        "numTarjeta": "4111111111111111",
-        "codSeguridad": "123",
-        "emisor": "Banco XYZ",
-        "marca": "Visa",
-        "fechaVencimiento": "2026-12-31",
-        "nombreTitular": "JUAN PEREZ"
-    }'::jsonb
-);
-*/
-
--- EJEMPLO 3: Registrar Pago Móvil
-/*
-SELECT registrar_metodo_pago(
-    'Pago_Movil',
-    51,
-    '{
-        "numReferencia": "123456789012345",
-        "banco": "Banco Provincial",
-        "fecha": "2024-12-14"
-    }'::jsonb
-);
-*/
-
--- EJEMPLO 4: Registrar Zelle
-/*
-SELECT registrar_metodo_pago(
-    'Zelle',
-    51,
-    '{
-        "numCuentaDestino": "1234567890",
-        "banco": "Bank of America",
-        "fecha": "2024-12-14",
-        "numReferencia": "987654321"
-    }'::jsonb
-);
-*/
-
--- EJEMPLO 5: Obtener pasajeros de una reserva
-/*
-SELECT obtener_pasajeros_reserva(1);
-*/
-
---PARA PAQUETE TURISTICO
-CREATE OR REPLACE FUNCTION insertar_paquete_turistico(
-    PaqTur_Nombre VARCHAR,
-    PaqTur_Descripcion TEXT,
-    PaqTur_Costo NUMERIC,
-    PaqTur_Costo_Millas NUMERIC,
-    PaqTur_Cant_Milla NUMERIC,
-    PaqTur_Tipo VARCHAR
+CREATE OR REPLACE FUNCTION crear_itinerario_con_reserva(
+    -- Datos del Cliente
+    p_cliente_id INTEGER,
+    
+    -- Datos de la Reserva
+    p_res_camarote VARCHAR DEFAULT NULL,
+    
+    -- Datos del Itinerario 
+    p_paquete_turistico_ids INTEGER[] DEFAULT NULL,
+    p_hospedaje_ids INTEGER[] DEFAULT NULL,
+    p_restaurante_ids INTEGER[] DEFAULT NULL,
+    p_vuelo_ids INTEGER[] DEFAULT NULL,
+    p_crucero_ids INTEGER[] DEFAULT NULL,
+    p_transporte_terrestre_ids INTEGER[] DEFAULT NULL,
+    p_servicio_adicional_ids INTEGER[] DEFAULT NULL,
+    p_fechas_inicio DATE[] DEFAULT NULL,
+    p_fechas_fin DATE[] DEFAULT NULL
 )
 RETURNS JSON AS $$
 DECLARE
-    nuevo_id INTEGER;
+    v_resultado JSON;
+    v_nueva_reserva_id INTEGER;
+    v_numero_reserva INTEGER;
+    v_subtotal NUMERIC(8,2) := 0;
+    v_total NUMERIC(8,2) := 0;
+    v_millas_obtenidas NUMERIC(3) := 0;
+    v_millas_totales NUMERIC(4) := 0;
+    v_nuevo_itinerario_id INTEGER;
+    v_costo_itinerario NUMERIC(8,2);
+    v_millas_itinerario NUMERIC(4);
+    i INTEGER;
+    v_count INTEGER;
 BEGIN
-    INSERT INTO Paquete_Turistico(
-        PT_Nombre,
-        PT_Descripcion,
-        PT_Costo,
-        PT_Costo_Millas,
-        PT_Cant_Milla,
-        PT_Tipo
+    -- Validar que el cliente existe
+    IF NOT EXISTS (SELECT 1 FROM Cliente WHERE Cli_COD = p_cliente_id) THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'El cliente especificado no existe'
+        );
+    END IF;
+
+    -- Validar que hay al menos un servicio
+    v_count := COALESCE(array_length(p_paquete_turistico_ids, 1), 0) +
+               COALESCE(array_length(p_hospedaje_ids, 1), 0) +
+               COALESCE(array_length(p_restaurante_ids, 1), 0) +
+               COALESCE(array_length(p_vuelo_ids, 1), 0) +
+               COALESCE(array_length(p_crucero_ids, 1), 0) +
+               COALESCE(array_length(p_transporte_terrestre_ids, 1), 0) +
+               COALESCE(array_length(p_servicio_adicional_ids, 1), 0);
+
+    IF v_count = 0 THEN
+        RETURN json_build_object(
+            'status', 'error',
+            'message', 'Debe incluir al menos un servicio en el itinerario'
+        );
+    END IF;
+
+    -- Generar número de reserva único (últimos 4 dígitos del timestamp), es como un radomizer
+    v_numero_reserva := (EXTRACT(EPOCH FROM NOW())::BIGINT % 10000)::INTEGER;
+    
+    -- Paquetes Turísticos
+    IF p_paquete_turistico_ids IS NOT NULL THEN
+        FOR i IN 1..array_length(p_paquete_turistico_ids, 1) LOOP
+            SELECT COALESCE(PT_Costo, 0), COALESCE(PT_Cant_Milla, 0)
+            INTO v_costo_itinerario, v_millas_itinerario
+            FROM Paquete_Turistico
+            WHERE PT_COD = p_paquete_turistico_ids[i];
+            
+            v_subtotal := v_subtotal + v_costo_itinerario;
+            v_millas_totales := v_millas_totales + v_millas_itinerario;
+        END LOOP;
+    END IF;
+
+    -- Hospedajes
+    IF p_hospedaje_ids IS NOT NULL THEN
+        FOR i IN 1..array_length(p_hospedaje_ids, 1) LOOP
+            SELECT COALESCE(Hos_Costo, 0), COALESCE(Hot_Cant_Milla, 0)
+            INTO v_costo_itinerario, v_millas_itinerario
+            FROM Hospedaje
+            WHERE Hos_COD = p_hospedaje_ids[i];
+            
+            v_subtotal := v_subtotal + v_costo_itinerario;
+            v_millas_totales := v_millas_totales + v_millas_itinerario;
+        END LOOP;
+    END IF;
+
+    -- Vuelos
+    IF p_vuelo_ids IS NOT NULL THEN
+        FOR i IN 1..array_length(p_vuelo_ids, 1) LOOP
+            SELECT COALESCE(Vue_Costo, 0), COALESCE(Vue_Cant_Millas, 0)
+            INTO v_costo_itinerario, v_millas_itinerario
+            FROM Vuelo
+            WHERE Vue_COD = p_vuelo_ids[i];
+            
+            v_subtotal := v_subtotal + v_costo_itinerario;
+            v_millas_totales := v_millas_totales + v_millas_itinerario;
+        END LOOP;
+    END IF;
+
+    -- Cruceros
+    IF p_crucero_ids IS NOT NULL THEN
+        FOR i IN 1..array_length(p_crucero_ids, 1) LOOP
+            SELECT COALESCE(Cru_Costo, 0), COALESCE(Cru_Cant_Millas, 0)
+            INTO v_costo_itinerario, v_millas_itinerario
+            FROM Crucero
+            WHERE Cru_COD = p_crucero_ids[i];
+            
+            v_subtotal := v_subtotal + v_costo_itinerario;
+            v_millas_totales := v_millas_totales + v_millas_itinerario;
+        END LOOP;
+    END IF;
+
+    -- Transporte Terrestre
+    IF p_transporte_terrestre_ids IS NOT NULL THEN
+        FOR i IN 1..array_length(p_transporte_terrestre_ids, 1) LOOP
+            SELECT COALESCE(TT_Costo, 0), COALESCE(TT_Cant_Millas, 0)
+            INTO v_costo_itinerario, v_millas_itinerario
+            FROM Transporte_Terrestre
+            WHERE TT_COD = p_transporte_terrestre_ids[i];
+            
+            v_subtotal := v_subtotal + v_costo_itinerario;
+            v_millas_totales := v_millas_totales + v_millas_itinerario;
+        END LOOP;
+    END IF;
+
+    -- Servicios Adicionales
+    IF p_servicio_adicional_ids IS NOT NULL THEN
+        FOR i IN 1..array_length(p_servicio_adicional_ids, 1) LOOP
+            SELECT COALESCE(SA_Costo, 0), COALESCE(SA_Cant_Milla, 0)
+            INTO v_costo_itinerario, v_millas_itinerario
+            FROM Servicio_Adicional
+            WHERE SA_COD = p_servicio_adicional_ids[i];
+            
+            v_subtotal := v_subtotal + v_costo_itinerario;
+            v_millas_totales := v_millas_totales + v_millas_itinerario;
+        END LOOP;
+    END IF;
+
+    v_total := v_subtotal;
+    
+    -- Calcular millas obtenidas (suma de las millas de todos los servicios, máximo 999)
+    v_millas_obtenidas := LEAST(v_millas_totales, 999);
+
+    -- Crear la reserva
+    INSERT INTO Reserva (
+        Res_Numero_Reserva,
+        Res_Milla_Obtenida,
+        Res_Fecha_Hora,
+        Res_Camarote,
+        Cliente_Cli_COD,
+        Res_Subtotal,
+        Res_Total
     )
     VALUES (
-        PaqTur_Nombre,
-        PaqTur_Descripcion,
-        PaqTur_Costo,
-        PaqTur_Costo_Millas,
-        PaqTur_Cant_Milla,
-        PaqTur_Tipo
+        v_numero_reserva,
+        v_millas_obtenidas,
+        NOW(),
+        p_res_camarote,
+        p_cliente_id,
+        v_subtotal,
+        v_total
     )
-    RETURNING PT_COD INTO nuevo_id;
+    RETURNING Res_COD INTO v_nueva_reserva_id;
 
-    RETURN json_build_object(
-        'status', 'success',
-        'message', 'Paquete turístico insertado correctamente',
-        'id', nuevo_id
+    -- Crear los itinerarios
+    -- Determinar cuántos itinerarios crear 
+    v_count := GREATEST(
+        COALESCE(array_length(p_paquete_turistico_ids, 1), 1),
+        COALESCE(array_length(p_hospedaje_ids, 1), 1),
+        COALESCE(array_length(p_restaurante_ids, 1), 1),
+        COALESCE(array_length(p_vuelo_ids, 1), 1),
+        COALESCE(array_length(p_crucero_ids, 1), 1),
+        COALESCE(array_length(p_transporte_terrestre_ids, 1), 1),
+        COALESCE(array_length(p_servicio_adicional_ids, 1), 1)
     );
+
+    -- Crear itinerarios
+    FOR i IN 1..v_count LOOP
+        -- Calcular costo del itinerario individual
+        v_costo_itinerario := 0;
+        v_millas_itinerario := 0;
+
+        -- Sumar costo de cada servicio si existe en este índice
+        IF p_paquete_turistico_ids IS NOT NULL AND i <= array_length(p_paquete_turistico_ids, 1) THEN
+            SELECT COALESCE(PT_Costo, 0), COALESCE(PT_Cant_Milla, 0)
+            INTO v_costo_itinerario, v_millas_itinerario
+            FROM Paquete_Turistico WHERE PT_COD = p_paquete_turistico_ids[i];
+        END IF;
+
+        IF p_hospedaje_ids IS NOT NULL AND i <= array_length(p_hospedaje_ids, 1) THEN
+            SELECT v_costo_itinerario + COALESCE(Hos_Costo, 0), 
+                   v_millas_itinerario + COALESCE(Hot_Cant_Milla, 0)
+            INTO v_costo_itinerario, v_millas_itinerario
+            FROM Hospedaje WHERE Hos_COD = p_hospedaje_ids[i];
+        END IF;
+
+        IF p_vuelo_ids IS NOT NULL AND i <= array_length(p_vuelo_ids, 1) THEN
+            SELECT v_costo_itinerario + COALESCE(Vue_Costo, 0),
+                   v_millas_itinerario + COALESCE(Vue_Cant_Millas, 0)
+            INTO v_costo_itinerario, v_millas_itinerario
+            FROM Vuelo WHERE Vue_COD = p_vuelo_ids[i];
+        END IF;
+
+        IF p_crucero_ids IS NOT NULL AND i <= array_length(p_crucero_ids, 1) THEN
+            SELECT v_costo_itinerario + COALESCE(Cru_Costo, 0),
+                   v_millas_itinerario + COALESCE(Cru_Cant_Millas, 0)
+            INTO v_costo_itinerario, v_millas_itinerario
+            FROM Crucero WHERE Cru_COD = p_crucero_ids[i];
+        END IF;
+
+        IF p_transporte_terrestre_ids IS NOT NULL AND i <= array_length(p_transporte_terrestre_ids, 1) THEN
+            SELECT v_costo_itinerario + COALESCE(TT_Costo, 0),
+                   v_millas_itinerario + COALESCE(TT_Cant_Millas, 0)
+            INTO v_costo_itinerario, v_millas_itinerario
+            FROM Transporte_Terrestre WHERE TT_COD = p_transporte_terrestre_ids[i];
+        END IF;
+
+        IF p_servicio_adicional_ids IS NOT NULL AND i <= array_length(p_servicio_adicional_ids, 1) THEN
+            SELECT v_costo_itinerario + COALESCE(SA_Costo, 0),
+                   v_millas_itinerario + COALESCE(SA_Cant_Milla, 0)
+            INTO v_costo_itinerario, v_millas_itinerario
+            FROM Servicio_Adicional WHERE SA_COD = p_servicio_adicional_ids[i];
+        END IF;
+
+        -- Insertar el itinerario
+        INSERT INTO Itinerario (
+            Paquete_Turistico_PT_COD,
+            Iti_Costo_Total,
+            Hospedaje_Hos_COD,
+            Restaurante_Rest_COD,
+            Vuelo_Vue_COD,
+            Crucero_Cru_COD,
+            Transporte_Terrestre_TT_COD,
+            Iti_Fecha_Inicio,
+            Iti_Fecha_Fin,
+            Servicio_Adicional_SA_COD,
+            Iti_Cant_Milla_Total,
+            Reserva_Res_COD
+        )
+        VALUES (
+            CASE WHEN p_paquete_turistico_ids IS NOT NULL AND i <= array_length(p_paquete_turistico_ids, 1) 
+                 THEN p_paquete_turistico_ids[i] ELSE NULL END,
+            v_costo_itinerario,
+            CASE WHEN p_hospedaje_ids IS NOT NULL AND i <= array_length(p_hospedaje_ids, 1) 
+                 THEN p_hospedaje_ids[i] ELSE NULL END,
+            CASE WHEN p_restaurante_ids IS NOT NULL AND i <= array_length(p_restaurante_ids, 1) 
+                 THEN p_restaurante_ids[i] ELSE NULL END,
+            CASE WHEN p_vuelo_ids IS NOT NULL AND i <= array_length(p_vuelo_ids, 1) 
+                 THEN p_vuelo_ids[i] ELSE NULL END,
+            CASE WHEN p_crucero_ids IS NOT NULL AND i <= array_length(p_crucero_ids, 1) 
+                 THEN p_crucero_ids[i] ELSE NULL END,
+            CASE WHEN p_transporte_terrestre_ids IS NOT NULL AND i <= array_length(p_transporte_terrestre_ids, 1) 
+                 THEN p_transporte_terrestre_ids[i] ELSE NULL END,
+            CASE WHEN p_fechas_inicio IS NOT NULL AND i <= array_length(p_fechas_inicio, 1) 
+                 THEN p_fechas_inicio[i] ELSE CURRENT_DATE END,
+            CASE WHEN p_fechas_fin IS NOT NULL AND i <= array_length(p_fechas_fin, 1) 
+                 THEN p_fechas_fin[i] ELSE CURRENT_DATE + INTERVAL '7 days' END,
+            CASE WHEN p_servicio_adicional_ids IS NOT NULL AND i <= array_length(p_servicio_adicional_ids, 1) 
+                 THEN p_servicio_adicional_ids[i] ELSE NULL END,
+            v_millas_itinerario,
+            v_nueva_reserva_id
+        )
+        RETURNING Iti_COD INTO v_nuevo_itinerario_id;
+    END LOOP;
+
+    -- Retornar resultado exitoso
+    v_resultado := json_build_object(
+        'status', 'success',
+        'message', 'Reserva e itinerario(s) creados correctamente',
+        'data', json_build_object(
+            'reserva_id', v_nueva_reserva_id,
+            'numero_reserva', v_numero_reserva,
+            'subtotal', v_subtotal,
+            'total', v_total,
+            'millas_obtenidas', v_millas_obtenidas,
+            'millas_totales_servicios', v_millas_totales,
+            'itinerarios_creados', v_count
+        )
+    );
+
+    RETURN v_resultado;
 
 EXCEPTION
     WHEN OTHERS THEN
         RETURN json_build_object(
             'status', 'error',
-            'message', SQLERRM
+            'message', 'Error al crear la reserva: ' || SQLERRM
         );
 END;
 $$ LANGUAGE plpgsql;
